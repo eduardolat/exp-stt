@@ -11,6 +11,12 @@ tasks:
       - task: lint
       - task: test
 
+  run:
+    desc: Build and run the project
+    deps:
+      - build
+    cmd: ./dist/stt
+
   build:
     desc: Build the project
     cmd: go build -o ./dist/stt ./cmd/main.go

@@ -1,0 +1,28 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  ci:
+    desc: Run CI tasks
+    cmds:
+      - task: fmt
+      - task: build
+      - task: lint
+      - task: test
+
+  build:
+    desc: Build the project
+    cmd: go build -o ./dist/stt ./cmd/main.go
+
+  test:
+    desc: Run all tests
+    cmd: go test ./...
+
+  lint:
+    desc: Run all linters
+    cmd: golangci-lint run
+
+  fmt:
+    desc: Format all code
+    cmd: go fmt ./...

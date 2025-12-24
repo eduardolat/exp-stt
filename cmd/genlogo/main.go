@@ -68,7 +68,7 @@ func main() {
 }
 
 func generateSVGS() error {
-	outputDir := "./assets/logo"
+	outputDir := "./assets/logo/svg"
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func generateSVGS() error {
 }
 
 func generatePNGS() error {
-	svgDir := "./assets/logo"
+	svgDir := "./assets/logo/svg"
 	pngDir := "./assets/logo/png"
 	if err := os.MkdirAll(pngDir, 0755); err != nil {
 		return err
@@ -132,19 +132,9 @@ func generatePNGS() error {
 		baseName := strings.TrimSuffix(svgFile, ".svg")
 
 		for _, size := range sizes {
-			size := size
 			g.Go(func() error {
 				outputName := fmt.Sprintf("%s_%d.png", baseName, size)
 				outputPath := filepath.Join(pngDir, outputName)
-
-				// If it's the 512 size, also save it as the main png in assets/logo
-				if size == 512 {
-					mainPngPath := filepath.Join(svgDir, baseName+".png")
-					cmd := exec.Command("rsvg-convert", "-w", fmt.Sprintf("%d", size), "-h", fmt.Sprintf("%d", size), filepath.Join(svgDir, svgFile), "-o", mainPngPath)
-					if err := cmd.Run(); err != nil {
-						return fmt.Errorf("error generating main png %s: %v", mainPngPath, err)
-					}
-				}
 
 				cmd := exec.Command("rsvg-convert", "-w", fmt.Sprintf("%d", size), "-h", fmt.Sprintf("%d", size), filepath.Join(svgDir, svgFile), "-o", outputPath)
 				if err := cmd.Run(); err != nil {
@@ -160,17 +150,19 @@ func generatePNGS() error {
 }
 
 func generateICOS() error {
+	svgDir := "./assets/logo/svg"
 	pngDir := "./assets/logo/png"
 	icoDir := "./assets/logo/ico"
 	if err := os.MkdirAll(icoDir, 0755); err != nil {
 		return err
 	}
 
-	files, err := os.ReadDir("./assets/logo")
+	files, err := os.ReadDir(svgDir)
 	if err != nil {
 		return err
 	}
 
+	sizes := []int{16, 32, 48, 64, 128, 256, 512}
 	g, _ := errgroup.WithContext(context.Background())
 	g.SetLimit(5)
 
@@ -183,15 +175,11 @@ func generateICOS() error {
 		g.Go(func() error {
 			icoPath := filepath.Join(icoDir, baseName+".ico")
 
-			// Sizes for ICO: 16, 32, 48, 256 as per user request
-			args := []string{
-				filepath.Join(pngDir, baseName+"_16.png"),
-				filepath.Join(pngDir, baseName+"_32.png"),
-				filepath.Join(pngDir, baseName+"_48.png"),
-				filepath.Join(pngDir, baseName+"_256.png"),
-				icoPath,
+			args := []string{}
+			for _, size := range sizes {
+				args = append(args, filepath.Join(pngDir, fmt.Sprintf("%s_%d.png", baseName, size)))
 			}
-
+			args = append(args, icoPath)
 			cmd := exec.Command("magick", args...)
 			if err := cmd.Run(); err != nil {
 				return fmt.Errorf("error generating ico %s: %v", icoPath, err)

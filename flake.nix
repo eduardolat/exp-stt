@@ -17,6 +17,7 @@
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           go
+          golangci-lint
           go-task
         ];
       };

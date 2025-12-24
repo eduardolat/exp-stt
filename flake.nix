@@ -15,11 +15,13 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
+        packages = with pkgs; [
           go
+          gopls
+          delve
           golangci-lint
           go-task
-          gopls
+          git
         ];
       };
     };

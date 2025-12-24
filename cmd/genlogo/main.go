@@ -41,10 +41,13 @@ type Color struct {
 }
 
 var (
-	ColorWhite = Color{Name: "white", Hex: "#ffffff"}
-	ColorBlack = Color{Name: "black", Hex: "#000000"}
-	ColorBlue  = Color{Name: "blue", Hex: "#00a6ff"}
-	ColorPink  = Color{Name: "pink", Hex: "#dd00c7"}
+	ColorGray  = Color{Name: "gray", Hex: "#808080"}  // Model unmounted
+	ColorWhite = Color{Name: "white", Hex: "#ffffff"} // Model mounted
+	ColorAmber = Color{Name: "amber", Hex: "#ffd700"} // Model mounting
+	ColorBlack = Color{Name: "black", Hex: "#000000"} // Background
+	ColorPink  = Color{Name: "pink", Hex: "#dd00c7"}  // Recording
+	ColorBlue  = Color{Name: "blue", Hex: "#00a6ff"}  // Transcribing
+	ColorGreen = Color{Name: "green", Hex: "#00ff6a"} // Post-processing
 )
 
 type BarVariant struct {
@@ -60,6 +63,11 @@ var BarVariants = []BarVariant{
 	{Name: "middle", LeftSize: BAR_SIZE_SHORT, MiddleSize: BAR_SIZE_TALL, RightSize: BAR_SIZE_SHORT},
 	{Name: "right", LeftSize: BAR_SIZE_SHORT, MiddleSize: BAR_SIZE_SHORT, RightSize: BAR_SIZE_TALL},
 }
+
+var (
+	BlackBarColors = []Color{ColorWhite, ColorGray, ColorAmber, ColorPink, ColorBlue, ColorGreen}
+	WhiteBarColors = []Color{ColorBlack, ColorGray, ColorAmber, ColorPink, ColorBlue, ColorGreen}
+)
 
 func main() {
 	if err := os.RemoveAll("./assets/logo"); err != nil {
@@ -105,11 +113,9 @@ func generateSVGS() (int, error) {
 	var count int
 
 	for _, bg := range bgColors {
-		var barColors []Color
+		barColors := WhiteBarColors
 		if bg.Name == "black" {
-			barColors = []Color{ColorWhite, ColorPink, ColorBlue}
-		} else {
-			barColors = []Color{ColorBlack, ColorPink, ColorBlue}
+			barColors = BlackBarColors
 		}
 
 		for _, bar := range barColors {
@@ -268,11 +274,9 @@ func generateEmbedGo() (int, error) {
 	}
 
 	for _, bg := range bgColors {
-		var barColors []Color
+		barColors := WhiteBarColors
 		if bg.Name == "black" {
-			barColors = []Color{ColorWhite, ColorPink, ColorBlue}
-		} else {
-			barColors = []Color{ColorBlack, ColorPink, ColorBlue}
+			barColors = BlackBarColors
 		}
 
 		for _, bar := range barColors {
@@ -344,11 +348,9 @@ func generateEmbedGo() (int, error) {
 	// Exported variables
 	buf.WriteString("var (\n")
 	for _, bg := range bgColors {
-		var barColors []Color
+		barColors := WhiteBarColors
 		if bg.Name == "black" {
-			barColors = []Color{ColorWhite, ColorPink, ColorBlue}
-		} else {
-			barColors = []Color{ColorBlack, ColorPink, ColorBlue}
+			barColors = BlackBarColors
 		}
 
 		for _, bar := range barColors {

@@ -14,6 +14,22 @@ var (
 	blackWhiteMiddleSVG []byte
 	//go:embed svg/black-white-right.svg
 	blackWhiteRightSVG []byte
+	//go:embed svg/black-gray-logo.svg
+	blackGrayLogoSVG []byte
+	//go:embed svg/black-gray-left.svg
+	blackGrayLeftSVG []byte
+	//go:embed svg/black-gray-middle.svg
+	blackGrayMiddleSVG []byte
+	//go:embed svg/black-gray-right.svg
+	blackGrayRightSVG []byte
+	//go:embed svg/black-amber-logo.svg
+	blackAmberLogoSVG []byte
+	//go:embed svg/black-amber-left.svg
+	blackAmberLeftSVG []byte
+	//go:embed svg/black-amber-middle.svg
+	blackAmberMiddleSVG []byte
+	//go:embed svg/black-amber-right.svg
+	blackAmberRightSVG []byte
 	//go:embed svg/black-pink-logo.svg
 	blackPinkLogoSVG []byte
 	//go:embed svg/black-pink-left.svg
@@ -30,6 +46,14 @@ var (
 	blackBlueMiddleSVG []byte
 	//go:embed svg/black-blue-right.svg
 	blackBlueRightSVG []byte
+	//go:embed svg/black-green-logo.svg
+	blackGreenLogoSVG []byte
+	//go:embed svg/black-green-left.svg
+	blackGreenLeftSVG []byte
+	//go:embed svg/black-green-middle.svg
+	blackGreenMiddleSVG []byte
+	//go:embed svg/black-green-right.svg
+	blackGreenRightSVG []byte
 	//go:embed svg/white-black-logo.svg
 	whiteBlackLogoSVG []byte
 	//go:embed svg/white-black-left.svg
@@ -38,6 +62,22 @@ var (
 	whiteBlackMiddleSVG []byte
 	//go:embed svg/white-black-right.svg
 	whiteBlackRightSVG []byte
+	//go:embed svg/white-gray-logo.svg
+	whiteGrayLogoSVG []byte
+	//go:embed svg/white-gray-left.svg
+	whiteGrayLeftSVG []byte
+	//go:embed svg/white-gray-middle.svg
+	whiteGrayMiddleSVG []byte
+	//go:embed svg/white-gray-right.svg
+	whiteGrayRightSVG []byte
+	//go:embed svg/white-amber-logo.svg
+	whiteAmberLogoSVG []byte
+	//go:embed svg/white-amber-left.svg
+	whiteAmberLeftSVG []byte
+	//go:embed svg/white-amber-middle.svg
+	whiteAmberMiddleSVG []byte
+	//go:embed svg/white-amber-right.svg
+	whiteAmberRightSVG []byte
 	//go:embed svg/white-pink-logo.svg
 	whitePinkLogoSVG []byte
 	//go:embed svg/white-pink-left.svg
@@ -54,6 +94,14 @@ var (
 	whiteBlueMiddleSVG []byte
 	//go:embed svg/white-blue-right.svg
 	whiteBlueRightSVG []byte
+	//go:embed svg/white-green-logo.svg
+	whiteGreenLogoSVG []byte
+	//go:embed svg/white-green-left.svg
+	whiteGreenLeftSVG []byte
+	//go:embed svg/white-green-middle.svg
+	whiteGreenMiddleSVG []byte
+	//go:embed svg/white-green-right.svg
+	whiteGreenRightSVG []byte
 	//go:embed png/black-white-logo-16.png
 	blackWhiteLogoPNG16 []byte
 	//go:embed png/black-white-logo-32.png
@@ -110,6 +158,118 @@ var (
 	blackWhiteRightPNG256 []byte
 	//go:embed png/black-white-right-512.png
 	blackWhiteRightPNG512 []byte
+	//go:embed png/black-gray-logo-16.png
+	blackGrayLogoPNG16 []byte
+	//go:embed png/black-gray-logo-32.png
+	blackGrayLogoPNG32 []byte
+	//go:embed png/black-gray-logo-48.png
+	blackGrayLogoPNG48 []byte
+	//go:embed png/black-gray-logo-64.png
+	blackGrayLogoPNG64 []byte
+	//go:embed png/black-gray-logo-128.png
+	blackGrayLogoPNG128 []byte
+	//go:embed png/black-gray-logo-256.png
+	blackGrayLogoPNG256 []byte
+	//go:embed png/black-gray-logo-512.png
+	blackGrayLogoPNG512 []byte
+	//go:embed png/black-gray-left-16.png
+	blackGrayLeftPNG16 []byte
+	//go:embed png/black-gray-left-32.png
+	blackGrayLeftPNG32 []byte
+	//go:embed png/black-gray-left-48.png
+	blackGrayLeftPNG48 []byte
+	//go:embed png/black-gray-left-64.png
+	blackGrayLeftPNG64 []byte
+	//go:embed png/black-gray-left-128.png
+	blackGrayLeftPNG128 []byte
+	//go:embed png/black-gray-left-256.png
+	blackGrayLeftPNG256 []byte
+	//go:embed png/black-gray-left-512.png
+	blackGrayLeftPNG512 []byte
+	//go:embed png/black-gray-middle-16.png
+	blackGrayMiddlePNG16 []byte
+	//go:embed png/black-gray-middle-32.png
+	blackGrayMiddlePNG32 []byte
+	//go:embed png/black-gray-middle-48.png
+	blackGrayMiddlePNG48 []byte
+	//go:embed png/black-gray-middle-64.png
+	blackGrayMiddlePNG64 []byte
+	//go:embed png/black-gray-middle-128.png
+	blackGrayMiddlePNG128 []byte
+	//go:embed png/black-gray-middle-256.png
+	blackGrayMiddlePNG256 []byte
+	//go:embed png/black-gray-middle-512.png
+	blackGrayMiddlePNG512 []byte
+	//go:embed png/black-gray-right-16.png
+	blackGrayRightPNG16 []byte
+	//go:embed png/black-gray-right-32.png
+	blackGrayRightPNG32 []byte
+	//go:embed png/black-gray-right-48.png
+	blackGrayRightPNG48 []byte
+	//go:embed png/black-gray-right-64.png
+	blackGrayRightPNG64 []byte
+	//go:embed png/black-gray-right-128.png
+	blackGrayRightPNG128 []byte
+	//go:embed png/black-gray-right-256.png
+	blackGrayRightPNG256 []byte
+	//go:embed png/black-gray-right-512.png
+	blackGrayRightPNG512 []byte
+	//go:embed png/black-amber-logo-16.png
+	blackAmberLogoPNG16 []byte
+	//go:embed png/black-amber-logo-32.png
+	blackAmberLogoPNG32 []byte
+	//go:embed png/black-amber-logo-48.png
+	blackAmberLogoPNG48 []byte
+	//go:embed png/black-amber-logo-64.png
+	blackAmberLogoPNG64 []byte
+	//go:embed png/black-amber-logo-128.png
+	blackAmberLogoPNG128 []byte
+	//go:embed png/black-amber-logo-256.png
+	blackAmberLogoPNG256 []byte
+	//go:embed png/black-amber-logo-512.png
+	blackAmberLogoPNG512 []byte
+	//go:embed png/black-amber-left-16.png
+	blackAmberLeftPNG16 []byte
+	//go:embed png/black-amber-left-32.png
+	blackAmberLeftPNG32 []byte
+	//go:embed png/black-amber-left-48.png
+	blackAmberLeftPNG48 []byte
+	//go:embed png/black-amber-left-64.png
+	blackAmberLeftPNG64 []byte
+	//go:embed png/black-amber-left-128.png
+	blackAmberLeftPNG128 []byte
+	//go:embed png/black-amber-left-256.png
+	blackAmberLeftPNG256 []byte
+	//go:embed png/black-amber-left-512.png
+	blackAmberLeftPNG512 []byte
+	//go:embed png/black-amber-middle-16.png
+	blackAmberMiddlePNG16 []byte
+	//go:embed png/black-amber-middle-32.png
+	blackAmberMiddlePNG32 []byte
+	//go:embed png/black-amber-middle-48.png
+	blackAmberMiddlePNG48 []byte
+	//go:embed png/black-amber-middle-64.png
+	blackAmberMiddlePNG64 []byte
+	//go:embed png/black-amber-middle-128.png
+	blackAmberMiddlePNG128 []byte
+	//go:embed png/black-amber-middle-256.png
+	blackAmberMiddlePNG256 []byte
+	//go:embed png/black-amber-middle-512.png
+	blackAmberMiddlePNG512 []byte
+	//go:embed png/black-amber-right-16.png
+	blackAmberRightPNG16 []byte
+	//go:embed png/black-amber-right-32.png
+	blackAmberRightPNG32 []byte
+	//go:embed png/black-amber-right-48.png
+	blackAmberRightPNG48 []byte
+	//go:embed png/black-amber-right-64.png
+	blackAmberRightPNG64 []byte
+	//go:embed png/black-amber-right-128.png
+	blackAmberRightPNG128 []byte
+	//go:embed png/black-amber-right-256.png
+	blackAmberRightPNG256 []byte
+	//go:embed png/black-amber-right-512.png
+	blackAmberRightPNG512 []byte
 	//go:embed png/black-pink-logo-16.png
 	blackPinkLogoPNG16 []byte
 	//go:embed png/black-pink-logo-32.png
@@ -222,6 +382,62 @@ var (
 	blackBlueRightPNG256 []byte
 	//go:embed png/black-blue-right-512.png
 	blackBlueRightPNG512 []byte
+	//go:embed png/black-green-logo-16.png
+	blackGreenLogoPNG16 []byte
+	//go:embed png/black-green-logo-32.png
+	blackGreenLogoPNG32 []byte
+	//go:embed png/black-green-logo-48.png
+	blackGreenLogoPNG48 []byte
+	//go:embed png/black-green-logo-64.png
+	blackGreenLogoPNG64 []byte
+	//go:embed png/black-green-logo-128.png
+	blackGreenLogoPNG128 []byte
+	//go:embed png/black-green-logo-256.png
+	blackGreenLogoPNG256 []byte
+	//go:embed png/black-green-logo-512.png
+	blackGreenLogoPNG512 []byte
+	//go:embed png/black-green-left-16.png
+	blackGreenLeftPNG16 []byte
+	//go:embed png/black-green-left-32.png
+	blackGreenLeftPNG32 []byte
+	//go:embed png/black-green-left-48.png
+	blackGreenLeftPNG48 []byte
+	//go:embed png/black-green-left-64.png
+	blackGreenLeftPNG64 []byte
+	//go:embed png/black-green-left-128.png
+	blackGreenLeftPNG128 []byte
+	//go:embed png/black-green-left-256.png
+	blackGreenLeftPNG256 []byte
+	//go:embed png/black-green-left-512.png
+	blackGreenLeftPNG512 []byte
+	//go:embed png/black-green-middle-16.png
+	blackGreenMiddlePNG16 []byte
+	//go:embed png/black-green-middle-32.png
+	blackGreenMiddlePNG32 []byte
+	//go:embed png/black-green-middle-48.png
+	blackGreenMiddlePNG48 []byte
+	//go:embed png/black-green-middle-64.png
+	blackGreenMiddlePNG64 []byte
+	//go:embed png/black-green-middle-128.png
+	blackGreenMiddlePNG128 []byte
+	//go:embed png/black-green-middle-256.png
+	blackGreenMiddlePNG256 []byte
+	//go:embed png/black-green-middle-512.png
+	blackGreenMiddlePNG512 []byte
+	//go:embed png/black-green-right-16.png
+	blackGreenRightPNG16 []byte
+	//go:embed png/black-green-right-32.png
+	blackGreenRightPNG32 []byte
+	//go:embed png/black-green-right-48.png
+	blackGreenRightPNG48 []byte
+	//go:embed png/black-green-right-64.png
+	blackGreenRightPNG64 []byte
+	//go:embed png/black-green-right-128.png
+	blackGreenRightPNG128 []byte
+	//go:embed png/black-green-right-256.png
+	blackGreenRightPNG256 []byte
+	//go:embed png/black-green-right-512.png
+	blackGreenRightPNG512 []byte
 	//go:embed png/white-black-logo-16.png
 	whiteBlackLogoPNG16 []byte
 	//go:embed png/white-black-logo-32.png
@@ -278,6 +494,118 @@ var (
 	whiteBlackRightPNG256 []byte
 	//go:embed png/white-black-right-512.png
 	whiteBlackRightPNG512 []byte
+	//go:embed png/white-gray-logo-16.png
+	whiteGrayLogoPNG16 []byte
+	//go:embed png/white-gray-logo-32.png
+	whiteGrayLogoPNG32 []byte
+	//go:embed png/white-gray-logo-48.png
+	whiteGrayLogoPNG48 []byte
+	//go:embed png/white-gray-logo-64.png
+	whiteGrayLogoPNG64 []byte
+	//go:embed png/white-gray-logo-128.png
+	whiteGrayLogoPNG128 []byte
+	//go:embed png/white-gray-logo-256.png
+	whiteGrayLogoPNG256 []byte
+	//go:embed png/white-gray-logo-512.png
+	whiteGrayLogoPNG512 []byte
+	//go:embed png/white-gray-left-16.png
+	whiteGrayLeftPNG16 []byte
+	//go:embed png/white-gray-left-32.png
+	whiteGrayLeftPNG32 []byte
+	//go:embed png/white-gray-left-48.png
+	whiteGrayLeftPNG48 []byte
+	//go:embed png/white-gray-left-64.png
+	whiteGrayLeftPNG64 []byte
+	//go:embed png/white-gray-left-128.png
+	whiteGrayLeftPNG128 []byte
+	//go:embed png/white-gray-left-256.png
+	whiteGrayLeftPNG256 []byte
+	//go:embed png/white-gray-left-512.png
+	whiteGrayLeftPNG512 []byte
+	//go:embed png/white-gray-middle-16.png
+	whiteGrayMiddlePNG16 []byte
+	//go:embed png/white-gray-middle-32.png
+	whiteGrayMiddlePNG32 []byte
+	//go:embed png/white-gray-middle-48.png
+	whiteGrayMiddlePNG48 []byte
+	//go:embed png/white-gray-middle-64.png
+	whiteGrayMiddlePNG64 []byte
+	//go:embed png/white-gray-middle-128.png
+	whiteGrayMiddlePNG128 []byte
+	//go:embed png/white-gray-middle-256.png
+	whiteGrayMiddlePNG256 []byte
+	//go:embed png/white-gray-middle-512.png
+	whiteGrayMiddlePNG512 []byte
+	//go:embed png/white-gray-right-16.png
+	whiteGrayRightPNG16 []byte
+	//go:embed png/white-gray-right-32.png
+	whiteGrayRightPNG32 []byte
+	//go:embed png/white-gray-right-48.png
+	whiteGrayRightPNG48 []byte
+	//go:embed png/white-gray-right-64.png
+	whiteGrayRightPNG64 []byte
+	//go:embed png/white-gray-right-128.png
+	whiteGrayRightPNG128 []byte
+	//go:embed png/white-gray-right-256.png
+	whiteGrayRightPNG256 []byte
+	//go:embed png/white-gray-right-512.png
+	whiteGrayRightPNG512 []byte
+	//go:embed png/white-amber-logo-16.png
+	whiteAmberLogoPNG16 []byte
+	//go:embed png/white-amber-logo-32.png
+	whiteAmberLogoPNG32 []byte
+	//go:embed png/white-amber-logo-48.png
+	whiteAmberLogoPNG48 []byte
+	//go:embed png/white-amber-logo-64.png
+	whiteAmberLogoPNG64 []byte
+	//go:embed png/white-amber-logo-128.png
+	whiteAmberLogoPNG128 []byte
+	//go:embed png/white-amber-logo-256.png
+	whiteAmberLogoPNG256 []byte
+	//go:embed png/white-amber-logo-512.png
+	whiteAmberLogoPNG512 []byte
+	//go:embed png/white-amber-left-16.png
+	whiteAmberLeftPNG16 []byte
+	//go:embed png/white-amber-left-32.png
+	whiteAmberLeftPNG32 []byte
+	//go:embed png/white-amber-left-48.png
+	whiteAmberLeftPNG48 []byte
+	//go:embed png/white-amber-left-64.png
+	whiteAmberLeftPNG64 []byte
+	//go:embed png/white-amber-left-128.png
+	whiteAmberLeftPNG128 []byte
+	//go:embed png/white-amber-left-256.png
+	whiteAmberLeftPNG256 []byte
+	//go:embed png/white-amber-left-512.png
+	whiteAmberLeftPNG512 []byte
+	//go:embed png/white-amber-middle-16.png
+	whiteAmberMiddlePNG16 []byte
+	//go:embed png/white-amber-middle-32.png
+	whiteAmberMiddlePNG32 []byte
+	//go:embed png/white-amber-middle-48.png
+	whiteAmberMiddlePNG48 []byte
+	//go:embed png/white-amber-middle-64.png
+	whiteAmberMiddlePNG64 []byte
+	//go:embed png/white-amber-middle-128.png
+	whiteAmberMiddlePNG128 []byte
+	//go:embed png/white-amber-middle-256.png
+	whiteAmberMiddlePNG256 []byte
+	//go:embed png/white-amber-middle-512.png
+	whiteAmberMiddlePNG512 []byte
+	//go:embed png/white-amber-right-16.png
+	whiteAmberRightPNG16 []byte
+	//go:embed png/white-amber-right-32.png
+	whiteAmberRightPNG32 []byte
+	//go:embed png/white-amber-right-48.png
+	whiteAmberRightPNG48 []byte
+	//go:embed png/white-amber-right-64.png
+	whiteAmberRightPNG64 []byte
+	//go:embed png/white-amber-right-128.png
+	whiteAmberRightPNG128 []byte
+	//go:embed png/white-amber-right-256.png
+	whiteAmberRightPNG256 []byte
+	//go:embed png/white-amber-right-512.png
+	whiteAmberRightPNG512 []byte
 	//go:embed png/white-pink-logo-16.png
 	whitePinkLogoPNG16 []byte
 	//go:embed png/white-pink-logo-32.png
@@ -390,6 +718,62 @@ var (
 	whiteBlueRightPNG256 []byte
 	//go:embed png/white-blue-right-512.png
 	whiteBlueRightPNG512 []byte
+	//go:embed png/white-green-logo-16.png
+	whiteGreenLogoPNG16 []byte
+	//go:embed png/white-green-logo-32.png
+	whiteGreenLogoPNG32 []byte
+	//go:embed png/white-green-logo-48.png
+	whiteGreenLogoPNG48 []byte
+	//go:embed png/white-green-logo-64.png
+	whiteGreenLogoPNG64 []byte
+	//go:embed png/white-green-logo-128.png
+	whiteGreenLogoPNG128 []byte
+	//go:embed png/white-green-logo-256.png
+	whiteGreenLogoPNG256 []byte
+	//go:embed png/white-green-logo-512.png
+	whiteGreenLogoPNG512 []byte
+	//go:embed png/white-green-left-16.png
+	whiteGreenLeftPNG16 []byte
+	//go:embed png/white-green-left-32.png
+	whiteGreenLeftPNG32 []byte
+	//go:embed png/white-green-left-48.png
+	whiteGreenLeftPNG48 []byte
+	//go:embed png/white-green-left-64.png
+	whiteGreenLeftPNG64 []byte
+	//go:embed png/white-green-left-128.png
+	whiteGreenLeftPNG128 []byte
+	//go:embed png/white-green-left-256.png
+	whiteGreenLeftPNG256 []byte
+	//go:embed png/white-green-left-512.png
+	whiteGreenLeftPNG512 []byte
+	//go:embed png/white-green-middle-16.png
+	whiteGreenMiddlePNG16 []byte
+	//go:embed png/white-green-middle-32.png
+	whiteGreenMiddlePNG32 []byte
+	//go:embed png/white-green-middle-48.png
+	whiteGreenMiddlePNG48 []byte
+	//go:embed png/white-green-middle-64.png
+	whiteGreenMiddlePNG64 []byte
+	//go:embed png/white-green-middle-128.png
+	whiteGreenMiddlePNG128 []byte
+	//go:embed png/white-green-middle-256.png
+	whiteGreenMiddlePNG256 []byte
+	//go:embed png/white-green-middle-512.png
+	whiteGreenMiddlePNG512 []byte
+	//go:embed png/white-green-right-16.png
+	whiteGreenRightPNG16 []byte
+	//go:embed png/white-green-right-32.png
+	whiteGreenRightPNG32 []byte
+	//go:embed png/white-green-right-48.png
+	whiteGreenRightPNG48 []byte
+	//go:embed png/white-green-right-64.png
+	whiteGreenRightPNG64 []byte
+	//go:embed png/white-green-right-128.png
+	whiteGreenRightPNG128 []byte
+	//go:embed png/white-green-right-256.png
+	whiteGreenRightPNG256 []byte
+	//go:embed png/white-green-right-512.png
+	whiteGreenRightPNG512 []byte
 	//go:embed ico/black-white-logo.ico
 	blackWhiteLogoICO []byte
 	//go:embed ico/black-white-left.ico
@@ -398,6 +782,22 @@ var (
 	blackWhiteMiddleICO []byte
 	//go:embed ico/black-white-right.ico
 	blackWhiteRightICO []byte
+	//go:embed ico/black-gray-logo.ico
+	blackGrayLogoICO []byte
+	//go:embed ico/black-gray-left.ico
+	blackGrayLeftICO []byte
+	//go:embed ico/black-gray-middle.ico
+	blackGrayMiddleICO []byte
+	//go:embed ico/black-gray-right.ico
+	blackGrayRightICO []byte
+	//go:embed ico/black-amber-logo.ico
+	blackAmberLogoICO []byte
+	//go:embed ico/black-amber-left.ico
+	blackAmberLeftICO []byte
+	//go:embed ico/black-amber-middle.ico
+	blackAmberMiddleICO []byte
+	//go:embed ico/black-amber-right.ico
+	blackAmberRightICO []byte
 	//go:embed ico/black-pink-logo.ico
 	blackPinkLogoICO []byte
 	//go:embed ico/black-pink-left.ico
@@ -414,6 +814,14 @@ var (
 	blackBlueMiddleICO []byte
 	//go:embed ico/black-blue-right.ico
 	blackBlueRightICO []byte
+	//go:embed ico/black-green-logo.ico
+	blackGreenLogoICO []byte
+	//go:embed ico/black-green-left.ico
+	blackGreenLeftICO []byte
+	//go:embed ico/black-green-middle.ico
+	blackGreenMiddleICO []byte
+	//go:embed ico/black-green-right.ico
+	blackGreenRightICO []byte
 	//go:embed ico/white-black-logo.ico
 	whiteBlackLogoICO []byte
 	//go:embed ico/white-black-left.ico
@@ -422,6 +830,22 @@ var (
 	whiteBlackMiddleICO []byte
 	//go:embed ico/white-black-right.ico
 	whiteBlackRightICO []byte
+	//go:embed ico/white-gray-logo.ico
+	whiteGrayLogoICO []byte
+	//go:embed ico/white-gray-left.ico
+	whiteGrayLeftICO []byte
+	//go:embed ico/white-gray-middle.ico
+	whiteGrayMiddleICO []byte
+	//go:embed ico/white-gray-right.ico
+	whiteGrayRightICO []byte
+	//go:embed ico/white-amber-logo.ico
+	whiteAmberLogoICO []byte
+	//go:embed ico/white-amber-left.ico
+	whiteAmberLeftICO []byte
+	//go:embed ico/white-amber-middle.ico
+	whiteAmberMiddleICO []byte
+	//go:embed ico/white-amber-right.ico
+	whiteAmberRightICO []byte
 	//go:embed ico/white-pink-logo.ico
 	whitePinkLogoICO []byte
 	//go:embed ico/white-pink-left.ico
@@ -438,6 +862,14 @@ var (
 	whiteBlueMiddleICO []byte
 	//go:embed ico/white-blue-right.ico
 	whiteBlueRightICO []byte
+	//go:embed ico/white-green-logo.ico
+	whiteGreenLogoICO []byte
+	//go:embed ico/white-green-left.ico
+	whiteGreenLeftICO []byte
+	//go:embed ico/white-green-middle.ico
+	whiteGreenMiddleICO []byte
+	//go:embed ico/white-green-right.ico
+	whiteGreenRightICO []byte
 )
 
 type ResourceSet struct {
@@ -520,6 +952,122 @@ var (
 			Left:   blackWhiteLeftICO,
 			Middle: blackWhiteMiddleICO,
 			Right:  blackWhiteRightICO,
+		},
+	}
+	LogoBlackGray = LogoResources{
+		SVG: ResourceSet{
+			Logo:   blackGrayLogoSVG,
+			Left:   blackGrayLeftSVG,
+			Middle: blackGrayMiddleSVG,
+			Right:  blackGrayRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   blackGrayLogoPNG16,
+				Left:   blackGrayLeftPNG16,
+				Middle: blackGrayMiddlePNG16,
+				Right:  blackGrayRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   blackGrayLogoPNG32,
+				Left:   blackGrayLeftPNG32,
+				Middle: blackGrayMiddlePNG32,
+				Right:  blackGrayRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   blackGrayLogoPNG48,
+				Left:   blackGrayLeftPNG48,
+				Middle: blackGrayMiddlePNG48,
+				Right:  blackGrayRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   blackGrayLogoPNG64,
+				Left:   blackGrayLeftPNG64,
+				Middle: blackGrayMiddlePNG64,
+				Right:  blackGrayRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   blackGrayLogoPNG128,
+				Left:   blackGrayLeftPNG128,
+				Middle: blackGrayMiddlePNG128,
+				Right:  blackGrayRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   blackGrayLogoPNG256,
+				Left:   blackGrayLeftPNG256,
+				Middle: blackGrayMiddlePNG256,
+				Right:  blackGrayRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   blackGrayLogoPNG512,
+				Left:   blackGrayLeftPNG512,
+				Middle: blackGrayMiddlePNG512,
+				Right:  blackGrayRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   blackGrayLogoICO,
+			Left:   blackGrayLeftICO,
+			Middle: blackGrayMiddleICO,
+			Right:  blackGrayRightICO,
+		},
+	}
+	LogoBlackAmber = LogoResources{
+		SVG: ResourceSet{
+			Logo:   blackAmberLogoSVG,
+			Left:   blackAmberLeftSVG,
+			Middle: blackAmberMiddleSVG,
+			Right:  blackAmberRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   blackAmberLogoPNG16,
+				Left:   blackAmberLeftPNG16,
+				Middle: blackAmberMiddlePNG16,
+				Right:  blackAmberRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   blackAmberLogoPNG32,
+				Left:   blackAmberLeftPNG32,
+				Middle: blackAmberMiddlePNG32,
+				Right:  blackAmberRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   blackAmberLogoPNG48,
+				Left:   blackAmberLeftPNG48,
+				Middle: blackAmberMiddlePNG48,
+				Right:  blackAmberRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   blackAmberLogoPNG64,
+				Left:   blackAmberLeftPNG64,
+				Middle: blackAmberMiddlePNG64,
+				Right:  blackAmberRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   blackAmberLogoPNG128,
+				Left:   blackAmberLeftPNG128,
+				Middle: blackAmberMiddlePNG128,
+				Right:  blackAmberRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   blackAmberLogoPNG256,
+				Left:   blackAmberLeftPNG256,
+				Middle: blackAmberMiddlePNG256,
+				Right:  blackAmberRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   blackAmberLogoPNG512,
+				Left:   blackAmberLeftPNG512,
+				Middle: blackAmberMiddlePNG512,
+				Right:  blackAmberRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   blackAmberLogoICO,
+			Left:   blackAmberLeftICO,
+			Middle: blackAmberMiddleICO,
+			Right:  blackAmberRightICO,
 		},
 	}
 	LogoBlackPink = LogoResources{
@@ -638,6 +1186,64 @@ var (
 			Right:  blackBlueRightICO,
 		},
 	}
+	LogoBlackGreen = LogoResources{
+		SVG: ResourceSet{
+			Logo:   blackGreenLogoSVG,
+			Left:   blackGreenLeftSVG,
+			Middle: blackGreenMiddleSVG,
+			Right:  blackGreenRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   blackGreenLogoPNG16,
+				Left:   blackGreenLeftPNG16,
+				Middle: blackGreenMiddlePNG16,
+				Right:  blackGreenRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   blackGreenLogoPNG32,
+				Left:   blackGreenLeftPNG32,
+				Middle: blackGreenMiddlePNG32,
+				Right:  blackGreenRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   blackGreenLogoPNG48,
+				Left:   blackGreenLeftPNG48,
+				Middle: blackGreenMiddlePNG48,
+				Right:  blackGreenRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   blackGreenLogoPNG64,
+				Left:   blackGreenLeftPNG64,
+				Middle: blackGreenMiddlePNG64,
+				Right:  blackGreenRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   blackGreenLogoPNG128,
+				Left:   blackGreenLeftPNG128,
+				Middle: blackGreenMiddlePNG128,
+				Right:  blackGreenRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   blackGreenLogoPNG256,
+				Left:   blackGreenLeftPNG256,
+				Middle: blackGreenMiddlePNG256,
+				Right:  blackGreenRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   blackGreenLogoPNG512,
+				Left:   blackGreenLeftPNG512,
+				Middle: blackGreenMiddlePNG512,
+				Right:  blackGreenRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   blackGreenLogoICO,
+			Left:   blackGreenLeftICO,
+			Middle: blackGreenMiddleICO,
+			Right:  blackGreenRightICO,
+		},
+	}
 	LogoWhiteBlack = LogoResources{
 		SVG: ResourceSet{
 			Logo:   whiteBlackLogoSVG,
@@ -694,6 +1300,122 @@ var (
 			Left:   whiteBlackLeftICO,
 			Middle: whiteBlackMiddleICO,
 			Right:  whiteBlackRightICO,
+		},
+	}
+	LogoWhiteGray = LogoResources{
+		SVG: ResourceSet{
+			Logo:   whiteGrayLogoSVG,
+			Left:   whiteGrayLeftSVG,
+			Middle: whiteGrayMiddleSVG,
+			Right:  whiteGrayRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   whiteGrayLogoPNG16,
+				Left:   whiteGrayLeftPNG16,
+				Middle: whiteGrayMiddlePNG16,
+				Right:  whiteGrayRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   whiteGrayLogoPNG32,
+				Left:   whiteGrayLeftPNG32,
+				Middle: whiteGrayMiddlePNG32,
+				Right:  whiteGrayRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   whiteGrayLogoPNG48,
+				Left:   whiteGrayLeftPNG48,
+				Middle: whiteGrayMiddlePNG48,
+				Right:  whiteGrayRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   whiteGrayLogoPNG64,
+				Left:   whiteGrayLeftPNG64,
+				Middle: whiteGrayMiddlePNG64,
+				Right:  whiteGrayRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   whiteGrayLogoPNG128,
+				Left:   whiteGrayLeftPNG128,
+				Middle: whiteGrayMiddlePNG128,
+				Right:  whiteGrayRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   whiteGrayLogoPNG256,
+				Left:   whiteGrayLeftPNG256,
+				Middle: whiteGrayMiddlePNG256,
+				Right:  whiteGrayRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   whiteGrayLogoPNG512,
+				Left:   whiteGrayLeftPNG512,
+				Middle: whiteGrayMiddlePNG512,
+				Right:  whiteGrayRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   whiteGrayLogoICO,
+			Left:   whiteGrayLeftICO,
+			Middle: whiteGrayMiddleICO,
+			Right:  whiteGrayRightICO,
+		},
+	}
+	LogoWhiteAmber = LogoResources{
+		SVG: ResourceSet{
+			Logo:   whiteAmberLogoSVG,
+			Left:   whiteAmberLeftSVG,
+			Middle: whiteAmberMiddleSVG,
+			Right:  whiteAmberRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   whiteAmberLogoPNG16,
+				Left:   whiteAmberLeftPNG16,
+				Middle: whiteAmberMiddlePNG16,
+				Right:  whiteAmberRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   whiteAmberLogoPNG32,
+				Left:   whiteAmberLeftPNG32,
+				Middle: whiteAmberMiddlePNG32,
+				Right:  whiteAmberRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   whiteAmberLogoPNG48,
+				Left:   whiteAmberLeftPNG48,
+				Middle: whiteAmberMiddlePNG48,
+				Right:  whiteAmberRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   whiteAmberLogoPNG64,
+				Left:   whiteAmberLeftPNG64,
+				Middle: whiteAmberMiddlePNG64,
+				Right:  whiteAmberRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   whiteAmberLogoPNG128,
+				Left:   whiteAmberLeftPNG128,
+				Middle: whiteAmberMiddlePNG128,
+				Right:  whiteAmberRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   whiteAmberLogoPNG256,
+				Left:   whiteAmberLeftPNG256,
+				Middle: whiteAmberMiddlePNG256,
+				Right:  whiteAmberRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   whiteAmberLogoPNG512,
+				Left:   whiteAmberLeftPNG512,
+				Middle: whiteAmberMiddlePNG512,
+				Right:  whiteAmberRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   whiteAmberLogoICO,
+			Left:   whiteAmberLeftICO,
+			Middle: whiteAmberMiddleICO,
+			Right:  whiteAmberRightICO,
 		},
 	}
 	LogoWhitePink = LogoResources{
@@ -810,6 +1532,64 @@ var (
 			Left:   whiteBlueLeftICO,
 			Middle: whiteBlueMiddleICO,
 			Right:  whiteBlueRightICO,
+		},
+	}
+	LogoWhiteGreen = LogoResources{
+		SVG: ResourceSet{
+			Logo:   whiteGreenLogoSVG,
+			Left:   whiteGreenLeftSVG,
+			Middle: whiteGreenMiddleSVG,
+			Right:  whiteGreenRightSVG,
+		},
+		PNG: PNGResources{
+			Size16: ResourceSet{
+				Logo:   whiteGreenLogoPNG16,
+				Left:   whiteGreenLeftPNG16,
+				Middle: whiteGreenMiddlePNG16,
+				Right:  whiteGreenRightPNG16,
+			},
+			Size32: ResourceSet{
+				Logo:   whiteGreenLogoPNG32,
+				Left:   whiteGreenLeftPNG32,
+				Middle: whiteGreenMiddlePNG32,
+				Right:  whiteGreenRightPNG32,
+			},
+			Size48: ResourceSet{
+				Logo:   whiteGreenLogoPNG48,
+				Left:   whiteGreenLeftPNG48,
+				Middle: whiteGreenMiddlePNG48,
+				Right:  whiteGreenRightPNG48,
+			},
+			Size64: ResourceSet{
+				Logo:   whiteGreenLogoPNG64,
+				Left:   whiteGreenLeftPNG64,
+				Middle: whiteGreenMiddlePNG64,
+				Right:  whiteGreenRightPNG64,
+			},
+			Size128: ResourceSet{
+				Logo:   whiteGreenLogoPNG128,
+				Left:   whiteGreenLeftPNG128,
+				Middle: whiteGreenMiddlePNG128,
+				Right:  whiteGreenRightPNG128,
+			},
+			Size256: ResourceSet{
+				Logo:   whiteGreenLogoPNG256,
+				Left:   whiteGreenLeftPNG256,
+				Middle: whiteGreenMiddlePNG256,
+				Right:  whiteGreenRightPNG256,
+			},
+			Size512: ResourceSet{
+				Logo:   whiteGreenLogoPNG512,
+				Left:   whiteGreenLeftPNG512,
+				Middle: whiteGreenMiddlePNG512,
+				Right:  whiteGreenRightPNG512,
+			},
+		},
+		ICO: ResourceSet{
+			Logo:   whiteGreenLogoICO,
+			Left:   whiteGreenLeftICO,
+			Middle: whiteGreenMiddleICO,
+			Right:  whiteGreenRightICO,
 		},
 	}
 )

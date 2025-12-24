@@ -19,6 +19,7 @@
           go
           golangci-lint
           go-task
+          gopls
         ];
       };
     };

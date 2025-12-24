@@ -21,6 +21,10 @@ tasks:
     desc: Build the project
     cmd: go build -o ./dist/stt ./cmd/stt/main.go
 
+  gen:logo:
+    desc: Generate logo variants
+    cmd: go run ./cmd/genlogo/main.go
+
   test:
     desc: Run all tests
     cmd: go test ./...

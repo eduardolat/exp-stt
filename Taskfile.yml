@@ -19,7 +19,7 @@ tasks:
 
   build:
     desc: Build the project
-    cmd: go build -o ./dist/stt ./cmd/main.go
+    cmd: go build -o ./dist/stt ./cmd/stt/main.go
 
   test:
     desc: Run all tests

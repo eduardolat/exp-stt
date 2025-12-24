@@ -5,10 +5,10 @@
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <rect width="512" height="512" rx="112.64" fill="black"></rect>
+  <rect width="512" height="512" rx="112.64" fill="#ffffff"></rect>
   <g
     transform="translate(77, 77) scale(14.9)"
-    stroke="white"
+    stroke="#000000"
     stroke-width="1.8"
     stroke-linecap="round"
     stroke-linejoin="round"

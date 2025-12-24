@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -61,30 +62,47 @@ var BarVariants = []BarVariant{
 }
 
 func main() {
-	if err := generateSVGS(); err != nil {
+	if err := os.RemoveAll("./assets/logo"); err != nil {
 		panic(err)
 	}
 
-	if err := generatePNGS(); err != nil {
-		panic(err)
-	}
+	var total int
 
-	if err := generateICOS(); err != nil {
+	qty, err := generateSVGS()
+	if err != nil {
 		panic(err)
 	}
+	total += qty
 
-	if err := generateEmbedGo(); err != nil {
+	qty, err = generatePNGS()
+	if err != nil {
 		panic(err)
 	}
+	total += qty
+
+	qty, err = generateICOS()
+	if err != nil {
+		panic(err)
+	}
+	total += qty
+
+	qty, err = generateEmbedGo()
+	if err != nil {
+		panic(err)
+	}
+	total += qty
+
+	fmt.Printf("Total generated files: %d\n", total)
 }
 
-func generateSVGS() error {
+func generateSVGS() (int, error) {
 	outputDir := "./assets/logo/svg"
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		return err
+		return 0, err
 	}
 
 	bgColors := []Color{ColorBlack, ColorWhite}
+	var count int
 
 	for _, bg := range bgColors {
 		var barColors []Color
@@ -110,29 +128,33 @@ func generateSVGS() error {
 				if err != nil {
 					fmt.Printf("Error writing %s: %v\n", fileName, err)
 				} else {
-					fmt.Printf("Generated SVG: %s\n", fileName)
+					count++
 				}
 			}
 		}
 	}
-	return nil
+	fmt.Printf("SVG files generated: %d\n", count)
+	return count, nil
 }
 
-func generatePNGS() error {
+func generatePNGS() (int, error) {
 	svgDir := "./assets/logo/svg"
 	pngDir := "./assets/logo/png"
 	if err := os.MkdirAll(pngDir, 0755); err != nil {
-		return err
+		return 0, err
 	}
 
 	files, err := os.ReadDir(svgDir)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	sizes := []int{16, 32, 48, 64, 128, 256, 512}
 	g, _ := errgroup.WithContext(context.Background())
 	g.SetLimit(5)
+
+	var count int
+	var mu sync.Mutex
 
 	for _, file := range files {
 		if !strings.HasSuffix(file.Name(), ".svg") {
@@ -151,31 +173,38 @@ func generatePNGS() error {
 				if err := cmd.Run(); err != nil {
 					return fmt.Errorf("error generating png %s: %v", outputPath, err)
 				}
-				fmt.Printf("Generated PNG: %s\n", outputName)
+				mu.Lock()
+				count++
+				mu.Unlock()
 				return nil
 			})
 		}
 	}
 
-	return g.Wait()
+	err = g.Wait()
+	fmt.Printf("PNG files generated: %d\n", count)
+	return count, err
 }
 
-func generateICOS() error {
+func generateICOS() (int, error) {
 	svgDir := "./assets/logo/svg"
 	pngDir := "./assets/logo/png"
 	icoDir := "./assets/logo/ico"
 	if err := os.MkdirAll(icoDir, 0755); err != nil {
-		return err
+		return 0, err
 	}
 
 	files, err := os.ReadDir(svgDir)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	sizes := []int{16, 32, 48, 64, 128, 256, 512}
 	g, _ := errgroup.WithContext(context.Background())
 	g.SetLimit(5)
+
+	var count int
+	var mu sync.Mutex
 
 	for _, file := range files {
 		if !strings.HasSuffix(file.Name(), ".svg") {
@@ -195,15 +224,19 @@ func generateICOS() error {
 			if err := cmd.Run(); err != nil {
 				return fmt.Errorf("error generating ico %s: %v", icoPath, err)
 			}
-			fmt.Printf("Generated ICO: %s.ico\n", baseName)
+			mu.Lock()
+			count++
+			mu.Unlock()
 			return nil
 		})
 	}
 
-	return g.Wait()
+	err = g.Wait()
+	fmt.Printf("ICO files generated: %d\n", count)
+	return count, err
 }
 
-func generateEmbedGo() error {
+func generateEmbedGo() (int, error) {
 	var buf bytes.Buffer
 
 	buf.WriteString(`
@@ -358,8 +391,13 @@ func generateEmbedGo() error {
 	// Format code
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		return fmt.Errorf("Error formatting generated code: %w", err)
+		return 0, fmt.Errorf("Error formatting generated code: %w", err)
 	}
 
-	return os.WriteFile("./assets/logo/embed.go", formatted, 0644)
+	err = os.WriteFile("./assets/logo/embed.go", formatted, 0644)
+	if err != nil {
+		return 0, err
+	}
+	fmt.Printf("Go embed file generated: 1\n")
+	return 1, nil
 }

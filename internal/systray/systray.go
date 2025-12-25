@@ -13,7 +13,8 @@ const animationFrameDuration = time.Millisecond * 100
 type animationPosition int
 
 const (
-	animationPositionMiddle animationPosition = iota
+	animationPositionUnknown animationPosition = iota
+	animationPositionMiddle
 	animationPositionRight
 	animationPositionLeft
 )
@@ -21,7 +22,8 @@ const (
 type status int
 
 const (
-	statusUnloaded status = iota
+	statusUnknown status = iota
+	statusUnloaded
 	statusLoading
 	statusLoaded
 	statusListening
@@ -46,9 +48,7 @@ type Instance struct {
 func New() *Instance {
 	i := &Instance{
 		statusCurr:       statusUnloaded,
-		statusPrev:       statusUnloaded,
 		animationPosCurr: animationPositionMiddle,
-		animationPosPrev: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
 
@@ -100,9 +100,6 @@ func (i *Instance) setNextAnimationPosition() {
 func (i *Instance) SetStatus(newStatus status) {
 	i.statusPrev = i.statusCurr
 	i.statusCurr = newStatus
-
-	i.setTitle()
-	i.setIcon()
 }
 
 // setTitle updates the systray title and tooltip based on the current status.
@@ -133,39 +130,39 @@ func (i *Instance) setIcon() {
 	var left, middle, right []byte
 
 	if i.statusCurr == statusUnloaded {
-		left = logo.LogoBlackGray.PNG.Size512.Left
-		middle = logo.LogoBlackGray.PNG.Size512.Middle
-		right = logo.LogoBlackGray.PNG.Size512.Right
+		left = logo.LogoBlackGray.PNG.Size32.Left
+		middle = logo.LogoBlackGray.PNG.Size32.Middle
+		right = logo.LogoBlackGray.PNG.Size32.Right
 	}
 
 	if i.statusCurr == statusLoading {
-		left = logo.LogoBlackAmber.PNG.Size512.Left
-		middle = logo.LogoBlackAmber.PNG.Size512.Middle
-		right = logo.LogoBlackAmber.PNG.Size512.Right
+		left = logo.LogoBlackAmber.PNG.Size32.Left
+		middle = logo.LogoBlackAmber.PNG.Size32.Middle
+		right = logo.LogoBlackAmber.PNG.Size32.Right
 	}
 
 	if i.statusCurr == statusLoaded {
-		left = logo.LogoBlackWhite.PNG.Size512.Left
-		middle = logo.LogoBlackWhite.PNG.Size512.Middle
-		right = logo.LogoBlackWhite.PNG.Size512.Right
+		left = logo.LogoBlackWhite.PNG.Size32.Left
+		middle = logo.LogoBlackWhite.PNG.Size32.Middle
+		right = logo.LogoBlackWhite.PNG.Size32.Right
 	}
 
 	if i.statusCurr == statusListening {
-		left = logo.LogoBlackPink.PNG.Size512.Left
-		middle = logo.LogoBlackPink.PNG.Size512.Middle
-		right = logo.LogoBlackPink.PNG.Size512.Right
+		left = logo.LogoBlackPink.PNG.Size32.Left
+		middle = logo.LogoBlackPink.PNG.Size32.Middle
+		right = logo.LogoBlackPink.PNG.Size32.Right
 	}
 
 	if i.statusCurr == statusTranscribing {
-		left = logo.LogoBlackBlue.PNG.Size512.Left
-		middle = logo.LogoBlackBlue.PNG.Size512.Middle
-		right = logo.LogoBlackBlue.PNG.Size512.Right
+		left = logo.LogoBlackBlue.PNG.Size32.Left
+		middle = logo.LogoBlackBlue.PNG.Size32.Middle
+		right = logo.LogoBlackBlue.PNG.Size32.Right
 	}
 
 	if i.statusCurr == statusPostProcessing {
-		left = logo.LogoBlackGreen.PNG.Size512.Left
-		middle = logo.LogoBlackGreen.PNG.Size512.Middle
-		right = logo.LogoBlackGreen.PNG.Size512.Right
+		left = logo.LogoBlackGreen.PNG.Size32.Left
+		middle = logo.LogoBlackGreen.PNG.Size32.Middle
+		right = logo.LogoBlackGreen.PNG.Size32.Right
 	}
 
 	switch i.animationPosCurr {

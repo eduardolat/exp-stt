@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/systray"
 	"github.com/eduardolat/exp-stt/assets/logo"
+	"github.com/eduardolat/exp-stt/internal/app"
 	"github.com/eduardolat/exp-stt/internal/config"
 )
 
@@ -19,24 +20,11 @@ const (
 	animationPositionLeft
 )
 
-type status int
-
-const (
-	statusUnknown status = iota
-	statusUnloaded
-	statusLoading
-	statusLoaded
-	statusListening
-	statusTranscribing
-	statusPostProcessing
-)
-
 type Instance struct {
+	app *app.Instance
+
 	systrayStart func()
 	systrayEnd   func()
-
-	statusCurr status
-	statusPrev status
 
 	animationForward bool // True if animation is moving forward, false if backward
 	animationPosCurr animationPosition
@@ -46,9 +34,9 @@ type Instance struct {
 	isShuttingDown bool
 }
 
-func New() *Instance {
+func New(app *app.Instance) *Instance {
 	i := &Instance{
-		statusCurr:       statusUnloaded,
+		app:              app,
 		animationPosCurr: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
@@ -61,7 +49,6 @@ func New() *Instance {
 }
 
 func (i *Instance) onReady() {
-	i.SetStatus(statusUnloaded)
 	i.animate()
 }
 
@@ -82,7 +69,7 @@ func (i *Instance) Shutdown() {
 func (i *Instance) setNextAnimationPosition() {
 	i.animationPosPrev = i.animationPosCurr
 
-	if i.statusCurr == statusUnloaded || i.statusCurr == statusLoaded {
+	if i.app.StatusCurrent == app.StatusUnloaded || i.app.StatusCurrent == app.StatusLoaded {
 		i.animationPosCurr = animationPositionMiddle
 		return
 	}
@@ -104,28 +91,22 @@ func (i *Instance) setNextAnimationPosition() {
 	}
 }
 
-// SetStatus changes the current status of the systray instance.
-func (i *Instance) SetStatus(newStatus status) {
-	i.statusPrev = i.statusCurr
-	i.statusCurr = newStatus
-}
-
 // setTitle updates the systray title and tooltip based on the current status.
 func (i *Instance) setTitle() {
 	title := config.App.AppName
 
-	switch i.statusCurr {
-	case statusUnloaded:
+	switch i.app.StatusCurrent {
+	case app.StatusUnloaded:
 		title += " - Model not loaded"
-	case statusLoading:
+	case app.StatusLoading:
 		title += " - Loading model..."
-	case statusLoaded:
+	case app.StatusLoaded:
 		title += " - Model loaded"
-	case statusListening:
+	case app.StatusListening:
 		title += " - Listening..."
-	case statusTranscribing:
+	case app.StatusTranscribing:
 		title += " - Transcribing..."
-	case statusPostProcessing:
+	case app.StatusPostProcessing:
 		title += " - Post-processing..."
 	}
 
@@ -137,18 +118,18 @@ func (i *Instance) setTitle() {
 func (i *Instance) setIcon() {
 	res := logo.LogoBlackGray.PNG.Size32
 
-	switch i.statusCurr {
-	case statusUnloaded:
+	switch i.app.StatusCurrent {
+	case app.StatusUnloaded:
 		res = logo.LogoBlackGray.PNG.Size32
-	case statusLoading:
+	case app.StatusLoading:
 		res = logo.LogoBlackAmber.PNG.Size32
-	case statusLoaded:
+	case app.StatusLoaded:
 		res = logo.LogoBlackWhite.PNG.Size32
-	case statusListening:
+	case app.StatusListening:
 		res = logo.LogoBlackPink.PNG.Size32
-	case statusTranscribing:
+	case app.StatusTranscribing:
 		res = logo.LogoBlackBlue.PNG.Size32
-	case statusPostProcessing:
+	case app.StatusPostProcessing:
 		res = logo.LogoBlackGreen.PNG.Size32
 	}
 
@@ -170,11 +151,11 @@ func (i *Instance) animate() {
 			return
 		}
 
-		if i.statusPrev != i.statusCurr {
+		if i.app.StatusPrevious != i.app.StatusCurrent {
 			i.setTitle()
 		}
 
-		if i.statusPrev != i.statusCurr || i.animationPosPrev != i.animationPosCurr {
+		if i.app.StatusPrevious != i.app.StatusCurrent || i.animationPosPrev != i.animationPosCurr {
 			i.setIcon()
 		}
 

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/eduardolat/exp-stt/internal/app"
 	"github.com/eduardolat/exp-stt/internal/systray"
 )
 
@@ -21,7 +22,9 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	st := systray.New()
+	a := app.New()
+
+	st := systray.New(a)
 	go st.Start()
 	defer st.Shutdown()
 

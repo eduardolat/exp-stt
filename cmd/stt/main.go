@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/eduardolat/exp-stt/internal/systray"
 )
 
 func main() {
@@ -18,6 +20,10 @@ func main() {
 func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	st := systray.New()
+	go st.Start()
+	defer st.Shutdown()
 
 	<-ctx.Done()
 	stop()

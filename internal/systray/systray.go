@@ -26,10 +26,10 @@ type Instance struct {
 	systrayStart func()
 	systrayEnd   func()
 
-	animationForward bool // True if animation is moving forward, false if backward
-	animationPosCurr animationPosition
-	animationPosPrev animationPosition
-	animationTimer   *time.Timer
+	animationBackward bool // True if animation is moving backward, false if forward
+	animationPosCurr  animationPosition
+	animationPosPrev  animationPosition
+	animationTimer    *time.Timer
 
 	isShuttingDown bool
 }
@@ -77,17 +77,17 @@ func (i *Instance) setNextAnimationPosition() {
 	// Ping-Pong animation between left, middle, and right positions
 	switch i.animationPosCurr {
 	case animationPositionMiddle:
-		if i.animationForward {
-			i.animationPosCurr = animationPositionRight
-		} else {
+		if i.animationBackward {
 			i.animationPosCurr = animationPositionLeft
+		} else {
+			i.animationPosCurr = animationPositionRight
 		}
 	case animationPositionRight:
 		i.animationPosCurr = animationPositionMiddle
-		i.animationForward = false
+		i.animationBackward = true
 	case animationPositionLeft:
 		i.animationPosCurr = animationPositionMiddle
-		i.animationForward = true
+		i.animationBackward = false
 	}
 }
 

@@ -1,6 +1,7 @@
 package systray
 
 import (
+	"runtime"
 	"time"
 
 	"fyne.io/systray"
@@ -116,21 +117,28 @@ func (i *Instance) setTitle() {
 
 // setIcon updates the systray icon based on the current status and animation position.
 func (i *Instance) setIcon() {
-	res := logo.LogoBlackGray.PNG.Size32
+	pngOrIco := func(logoRes logo.LogoResources) logo.ResourceSet {
+		if runtime.GOOS == "windows" {
+			return logoRes.ICO
+		}
+		return logoRes.PNG.Size32
+	}
+
+	res := pngOrIco(logo.LogoBlackGray)
 
 	switch i.app.StatusCurrent {
 	case app.StatusUnloaded:
-		res = logo.LogoBlackGray.PNG.Size32
+		res = pngOrIco(logo.LogoBlackGray)
 	case app.StatusLoading:
-		res = logo.LogoBlackAmber.PNG.Size32
+		res = pngOrIco(logo.LogoBlackAmber)
 	case app.StatusLoaded:
-		res = logo.LogoBlackWhite.PNG.Size32
+		res = pngOrIco(logo.LogoBlackWhite)
 	case app.StatusListening:
-		res = logo.LogoBlackPink.PNG.Size32
+		res = pngOrIco(logo.LogoBlackPink)
 	case app.StatusTranscribing:
-		res = logo.LogoBlackBlue.PNG.Size32
+		res = pngOrIco(logo.LogoBlackBlue)
 	case app.StatusPostProcessing:
-		res = logo.LogoBlackGreen.PNG.Size32
+		res = pngOrIco(logo.LogoBlackGreen)
 	}
 
 	switch i.animationPosCurr {

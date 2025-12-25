@@ -22,6 +22,8 @@
           golangci-lint
           go-task
           git
+          librsvg # To convert SVG Logos to PNG
+          imagemagick # To convert PNG Logos to ICO
         ];
       };
     };

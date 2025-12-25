@@ -393,7 +393,7 @@ func generateEmbedGo() (int, error) {
 	// Format code
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		return 0, fmt.Errorf("Error formatting generated code: %w", err)
+		return 0, fmt.Errorf("error formatting generated code: %w", err)
 	}
 
 	err = os.WriteFile("./assets/logo/embed.go", formatted, 0644)

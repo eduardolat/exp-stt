@@ -8,7 +8,7 @@ import (
 	"github.com/eduardolat/exp-stt/internal/config"
 )
 
-const animationFrameDuration = time.Millisecond * 100
+const animationFrameDuration = time.Millisecond * 200
 
 type animationPosition int
 
@@ -38,6 +38,7 @@ type Instance struct {
 	statusCurr status
 	statusPrev status
 
+	animationForward bool // True if animation is moving forward, false if backward
 	animationPosCurr animationPosition
 	animationPosPrev animationPosition
 	animationTimer   *time.Timer
@@ -86,13 +87,20 @@ func (i *Instance) setNextAnimationPosition() {
 		return
 	}
 
+	// Ping-Pong animation between left, middle, and right positions
 	switch i.animationPosCurr {
 	case animationPositionMiddle:
-		i.animationPosCurr = animationPositionRight
+		if i.animationForward {
+			i.animationPosCurr = animationPositionRight
+		} else {
+			i.animationPosCurr = animationPositionLeft
+		}
 	case animationPositionRight:
-		i.animationPosCurr = animationPositionLeft
+		i.animationPosCurr = animationPositionMiddle
+		i.animationForward = false
 	case animationPositionLeft:
 		i.animationPosCurr = animationPositionMiddle
+		i.animationForward = true
 	}
 }
 
@@ -127,51 +135,30 @@ func (i *Instance) setTitle() {
 
 // setIcon updates the systray icon based on the current status and animation position.
 func (i *Instance) setIcon() {
-	var left, middle, right []byte
+	res := logo.LogoBlackGray.PNG.Size32
 
-	if i.statusCurr == statusUnloaded {
-		left = logo.LogoBlackGray.PNG.Size32.Left
-		middle = logo.LogoBlackGray.PNG.Size32.Middle
-		right = logo.LogoBlackGray.PNG.Size32.Right
-	}
-
-	if i.statusCurr == statusLoading {
-		left = logo.LogoBlackAmber.PNG.Size32.Left
-		middle = logo.LogoBlackAmber.PNG.Size32.Middle
-		right = logo.LogoBlackAmber.PNG.Size32.Right
-	}
-
-	if i.statusCurr == statusLoaded {
-		left = logo.LogoBlackWhite.PNG.Size32.Left
-		middle = logo.LogoBlackWhite.PNG.Size32.Middle
-		right = logo.LogoBlackWhite.PNG.Size32.Right
-	}
-
-	if i.statusCurr == statusListening {
-		left = logo.LogoBlackPink.PNG.Size32.Left
-		middle = logo.LogoBlackPink.PNG.Size32.Middle
-		right = logo.LogoBlackPink.PNG.Size32.Right
-	}
-
-	if i.statusCurr == statusTranscribing {
-		left = logo.LogoBlackBlue.PNG.Size32.Left
-		middle = logo.LogoBlackBlue.PNG.Size32.Middle
-		right = logo.LogoBlackBlue.PNG.Size32.Right
-	}
-
-	if i.statusCurr == statusPostProcessing {
-		left = logo.LogoBlackGreen.PNG.Size32.Left
-		middle = logo.LogoBlackGreen.PNG.Size32.Middle
-		right = logo.LogoBlackGreen.PNG.Size32.Right
+	switch i.statusCurr {
+	case statusUnloaded:
+		res = logo.LogoBlackGray.PNG.Size32
+	case statusLoading:
+		res = logo.LogoBlackAmber.PNG.Size32
+	case statusLoaded:
+		res = logo.LogoBlackWhite.PNG.Size32
+	case statusListening:
+		res = logo.LogoBlackPink.PNG.Size32
+	case statusTranscribing:
+		res = logo.LogoBlackBlue.PNG.Size32
+	case statusPostProcessing:
+		res = logo.LogoBlackGreen.PNG.Size32
 	}
 
 	switch i.animationPosCurr {
 	case animationPositionLeft:
-		systray.SetIcon(left)
+		systray.SetIcon(res.Left)
 	case animationPositionMiddle:
-		systray.SetIcon(middle)
+		systray.SetIcon(res.Middle)
 	case animationPositionRight:
-		systray.SetIcon(right)
+		systray.SetIcon(res.Right)
 	}
 }
 

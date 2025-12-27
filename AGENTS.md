@@ -44,6 +44,8 @@ Source: `cmd/tribar/main.go`
 
 The `main` package is responsible for bootstrapping the entire project, creating and injecting dependencies, and starting all the necessary project services.
 
+Here is the graceful shutdown handled via context cancelation and signal listeners.
+
 #### Logger
 
 Source: `internal/logger`
@@ -72,37 +74,37 @@ Manages the global application state (status, settings) in a thread-safe way, pr
 
 Source: `internal/record`
 
-Handles audio recording and saves the output as WAV files in the designated directory.
+Handles audio recording from the system's input device and saves the output as WAV files in the designated directory for further processing.
 
 #### Transcriber
 
 Source: `internal/transcribe`
 
-Converts audio files into text using the Parakeet model via ONNX Runtime.
+Converts audio files into text using the Parakeet model via ONNX Runtime, handling the inference process and returning the raw transcription.
 
 #### Post-processor
 
 Source: `internal/postprocess`
 
-Refines and enhances transcriptions using LLM-based AI processing.
+Refines and enhances transcriptions using LLM-based AI processing to improve grammar, punctuation, and overall readability (optional and user configurable).
 
 #### Notify
 
 Source: `internal/notify`
 
-Sends desktop notifications to inform the user about important application events.
+Sends desktop notifications to inform the user about important application events, such as when a transcription starts or finishes.
 
 #### Writer
 
 Source: `internal/write`
 
-Responsible for outputting the transcription by writing to the clipboard or simulating keyboard input.
+Responsible for outputting the final transcription by writing it to the system clipboard or simulating keyboard input to paste it directly into other applications.
 
 #### Sound
 
 Source: `internal/sound`
 
-Plays audio cues to provide acoustic feedback for application events.
+Plays audio cues to provide acoustic feedback for application events, helping the user know the app's status without looking at the screen.
 
 #### Engine
 
@@ -110,14 +112,20 @@ Source: `internal/engine`
 
 The central orchestrator that connects all components and manages the workflow using dependency injection.
 
+It is the only package allowed to modify the application state and receives all other functional packages as dependencies (except visualization layers like Systray or Server).
+
 #### Systray
 
 Source: `internal/systray`
 
-A system tray interface that displays app status and provides quick controls, reacting to state changes.
+A system tray interface that displays app status and provides quick controls.
+
+It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).
 
 #### Server
 
 Source: `internal/server`
 
-Provides an HTTP API and a SvelteKit web UI to control the application and monitor its status.
+Provides an HTTP API and a SvelteKit web UI to control and monitor the application.
+
+It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).

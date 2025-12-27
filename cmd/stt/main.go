@@ -5,22 +5,41 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/eduardolat/exp-stt/internal/app"
+	"github.com/eduardolat/exp-stt/internal/config"
+	"github.com/eduardolat/exp-stt/internal/logger"
+	"github.com/eduardolat/exp-stt/internal/onnx"
 	"github.com/eduardolat/exp-stt/internal/systray"
 )
 
 func main() {
-	if err := run(); err != nil {
-		fmt.Printf("error while running the app: %s\n", err.Error())
+	logger := logger.NewSlogLogger(false)
+	if err := run(logger); err != nil {
+		logger.Error(context.Background(), "error while running the app", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(logger logger.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	logger.Debug(
+		ctx, "operating system info",
+		"os", runtime.GOOS,
+		"arch", runtime.GOARCH,
+	)
+
+	if err := config.EnsureDirectories(logger); err != nil {
+		return fmt.Errorf("error ensuring app directories: %w", err)
+	}
+
+	if err := onnx.EnsureSharedLibrary(logger); err != nil {
+		return fmt.Errorf("error ensuring ONNX Runtime shared library: %w", err)
+	}
 
 	a := app.New()
 

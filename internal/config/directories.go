@@ -12,6 +12,7 @@ const dirAppName = "stt"
 var (
 	DirectoryConfig         = ""
 	DirectoryData           = ""
+	DirectoryOnnxRuntime    = ""
 	DirectoryModels         = ""
 	DirectoryModelsParakeet = ""
 )
@@ -30,11 +31,12 @@ func EnsureDirectories() error {
 
 	DirectoryConfig = configDir
 	DirectoryData = dataDir
+	DirectoryOnnxRuntime = filepath.Join(DirectoryData, "onnxruntime")
 	DirectoryModels = filepath.Join(DirectoryData, "models")
 	DirectoryModelsParakeet = filepath.Join(DirectoryModels, "parakeet")
 
 	// We only have to create the deepest directories, as os.MkdirAll will create all necessary parents.
-	ensureDirs := []string{DirectoryConfig, DirectoryModelsParakeet}
+	ensureDirs := []string{DirectoryConfig, DirectoryOnnxRuntime, DirectoryModelsParakeet}
 	for _, dir := range ensureDirs {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			panic(fmt.Errorf("failed to create application directory %s: %w", dir, err))

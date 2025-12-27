@@ -26,6 +26,7 @@
           librsvg # To convert SVG Logos to PNG
           imagemagick # To convert PNG Logos to ICO
           uutils-coreutils-noprefix # For sha256sum
+          xdotool # For simulating keyboard input (paste from clipboard)
         ];
       };
     };

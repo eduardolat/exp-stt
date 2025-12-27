@@ -94,11 +94,11 @@ Source: `internal/notify`
 
 Sends desktop notifications to inform the user about important application events. By default, it only alerts on errors, but users can enable notifications for transcription start and completion.
 
-#### Writer
+#### Clipboard
 
-Source: `internal/write`
+Source: `internal/clipboard`
 
-Responsible for outputting the final transcription. Users can choose to only copy to the clipboard, copy and paste, or simulate keyboard input to write directly into other applications.
+Responsible for outputting the final transcription. Supports three modes: `copy_only` (copies text to clipboard), `copy_paste` (copies and triggers paste), and `ghost_paste` (pastes without modifying clipboard by temporarily storing existing content).
 
 #### Sound
 

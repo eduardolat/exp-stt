@@ -1,9 +1,6 @@
 package config
 
-type AppConfig struct {
-	AppName string
-}
-
-var App = AppConfig{
-	AppName: "STT",
-}
+const (
+	AppName    = "STT"
+	AppVersion = "0.0.1"
+)

@@ -66,26 +66,58 @@ The `onnx` package, like the `config` package, is vital to the program, and if i
 
 Source: `internal/state`
 
+Manages the global application state (status, settings) in a thread-safe way, providing access to other packages.
+
 #### Recorder
 
 Source: `internal/record`
+
+Handles audio recording and saves the output as WAV files in the designated directory.
 
 #### Transcriber
 
 Source: `internal/transcribe`
 
+Converts audio files into text using the Parakeet model via ONNX Runtime.
+
 #### Post-processor
 
 Source: `internal/postprocess`
+
+Refines and enhances transcriptions using LLM-based AI processing.
+
+#### Notify
+
+Source: `internal/notify`
+
+Sends desktop notifications to inform the user about important application events.
+
+#### Writer
+
+Source: `internal/write`
+
+Responsible for outputting the transcription by writing to the clipboard or simulating keyboard input.
+
+#### Sound
+
+Source: `internal/sound`
+
+Plays audio cues to provide acoustic feedback for application events.
 
 #### Engine
 
 Source: `internal/engine`
 
+The central orchestrator that connects all components and manages the workflow using dependency injection.
+
 #### Systray
 
 Source: `internal/systray`
 
+A system tray interface that displays app status and provides quick controls, reacting to state changes.
+
 #### Server
 
 Source: `internal/server`
+
+Provides an HTTP API and a SvelteKit web UI to control the application and monitor its status.

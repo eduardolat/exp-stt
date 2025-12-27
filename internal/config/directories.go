@@ -18,6 +18,7 @@ var (
 	DirectoryOnnxRuntime    = ""
 	DirectoryModels         = ""
 	DirectoryModelsParakeet = ""
+	DirectoryRecordings     = ""
 )
 
 // EnsureDirectories creates all necessary directories if they don't exist.
@@ -37,9 +38,15 @@ func EnsureDirectories(logger logger.Logger) error {
 	DirectoryOnnxRuntime = filepath.Join(DirectoryData, "onnxruntime")
 	DirectoryModels = filepath.Join(DirectoryData, "models")
 	DirectoryModelsParakeet = filepath.Join(DirectoryModels, "parakeet")
+	DirectoryRecordings = filepath.Join(DirectoryData, "recordings")
 
 	// We only have to create the deepest directories, as os.MkdirAll will create all necessary parents.
-	ensureDirs := []string{DirectoryConfig, DirectoryOnnxRuntime, DirectoryModelsParakeet}
+	ensureDirs := []string{
+		DirectoryConfig,
+		DirectoryOnnxRuntime,
+		DirectoryModelsParakeet,
+		DirectoryRecordings,
+	}
 	for _, dir := range ensureDirs {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			panic(fmt.Errorf("failed to create application directory %s: %w", dir, err))
@@ -53,6 +60,7 @@ func EnsureDirectories(logger logger.Logger) error {
 		"directory_onnx_runtime", DirectoryOnnxRuntime,
 		"directory_models", DirectoryModels,
 		"directory_parakeet_models", DirectoryModelsParakeet,
+		"directory_recordings", DirectoryRecordings,
 	)
 
 	return nil

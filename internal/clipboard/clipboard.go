@@ -8,69 +8,34 @@ import (
 	"time"
 
 	atclip "github.com/atotto/clipboard"
+	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/logger"
 )
 
-// OutputMode defines how transcription results are delivered.
-type OutputMode int
-
-const (
-	// OutputModeCopyOnly copies text to clipboard only (no paste).
-	OutputModeCopyOnly OutputMode = iota
-	// OutputModeCopyPaste copies and pastes, keeping the text in clipboard.
-	OutputModeCopyPaste
-	// OutputModeGhostPaste copies and pastes, then restores original clipboard content.
-	OutputModeGhostPaste
-)
-
-// Settings configures the write behavior.
-type Settings struct {
-	Mode OutputMode
-}
-
-// DefaultSettings returns the default write settings.
-func DefaultSettings() Settings {
-	return Settings{
-		Mode: OutputModeCopyPaste,
-	}
-}
-
 // Instance handles output of transcription results.
 type Instance struct {
-	logger   logger.Logger
-	settings Settings
+	logger logger.Logger
 }
 
-// New creates a new write instance.
-func New(logger logger.Logger, settings Settings) *Instance {
+// New creates a new clipboard instance.
+func New(logger logger.Logger) *Instance {
 	return &Instance{
-		logger:   logger,
-		settings: settings,
+		logger: logger,
 	}
-}
-
-// UpdateSettings updates the write settings.
-func (w *Instance) UpdateSettings(settings Settings) {
-	w.settings = settings
-}
-
-// GetSettings returns the current write settings.
-func (w *Instance) GetSettings() Settings {
-	return w.settings
 }
 
 // Write outputs the transcription result based on the configured mode.
-func (w *Instance) Write(ctx context.Context, text string) error {
+func (w *Instance) Write(ctx context.Context, mode config.OutputMode, text string) error {
 	if text == "" {
 		return nil
 	}
 
-	switch w.settings.Mode {
-	case OutputModeCopyOnly:
+	switch mode {
+	case config.OutputModeCopyOnly:
 		return w.copyToClipboard(ctx, text)
-	case OutputModeCopyPaste:
+	case config.OutputModeCopyPaste:
 		return w.pasteWorkflow(ctx, text, false)
-	case OutputModeGhostPaste:
+	case config.OutputModeGhostPaste:
 		return w.pasteWorkflow(ctx, text, true)
 	default:
 		return w.copyToClipboard(ctx, text)

@@ -27,3 +27,65 @@ This repository contains a Speech To Text application named Tribar Voice. It wor
 - Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp.
 
 - Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task.
+
+## Backend architecture
+
+The backend is divided into several packages inside `internal` which are orchestrated in the main process (`cmd/tribar/main.go`).
+
+### Backend layers
+
+The dependencies between packages follow an order and some must be created before others since they are received as parameters using dependency injection to maintain the order and testability of the project.
+
+Below I list the main packages; this order must be respected because the first ones are injected into the following ones:
+
+#### Main package
+
+Source: `cmd/tribar/main.go`
+
+The `main` package is responsible for bootstrapping the entire project, creating and injecting dependencies, and starting all the necessary project services.
+
+#### Logger
+
+Source: `internal/logger`
+
+The `logger` package is a utility for printing important data to STDOUT in a structured way; it must be created right after starting the program to allow capturing logs of absolutely everything else in the program.
+
+#### Config
+
+Source: `internal/config`
+
+The `config` package contains global and general program settings such as name, version, etc. However, it also has a function that allows you to define and ensure the existence of all the directories in the file system that will be used throughout the program's lifecycle. It is vital to have these directories created and accessible, so this is the first thing that is checked; otherwise, the program cannot continue.
+
+#### Onnx Runtime
+
+Source: `internal/onnx`
+
+The `onnx` package, like the `config` package, is vital to the program, and if it fails, the program cannot continue. The function of this package is to place the shared libraries of the onnx runtime within the program's directories so that subsequent packages can use the onnx runtime without problems. These shared libraries are embedded in the program using `go embed` and extracted into its directory using this package.
+
+#### App State
+
+Source: `internal/state`
+
+#### Recorder
+
+Source: `internal/record`
+
+#### Transcriber
+
+Source: `internal/transcribe`
+
+#### Post-processor
+
+Source: `internal/postprocess`
+
+#### Engine
+
+Source: `internal/engine`
+
+#### Systray
+
+Source: `internal/systray`
+
+#### Server
+
+Source: `internal/server`

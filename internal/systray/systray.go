@@ -94,7 +94,7 @@ func (i *Instance) setNextAnimationPosition() {
 
 // setTitle updates the systray title and tooltip based on the current status.
 func (i *Instance) setTitle() {
-	title := config.App.AppName
+	title := config.AppName
 
 	switch i.app.StatusCurrent {
 	case app.StatusUnloaded:

@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/varavelio/tribar/internal/app"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/onnx"
+	"github.com/varavelio/tribar/internal/state"
 	"github.com/varavelio/tribar/internal/systray"
 )
 
@@ -47,11 +47,11 @@ func run(logger logger.Logger) error {
 		return fmt.Errorf("error ensuring ONNX Runtime shared library: %w", err)
 	}
 
-	a := app.New()
+	appState := state.New()
 
-	st := systray.New(a)
-	go st.Start()
-	defer st.Shutdown()
+	stray := systray.New(appState)
+	go stray.Start()
+	defer stray.Shutdown()
 
 	<-ctx.Done()
 	stop()

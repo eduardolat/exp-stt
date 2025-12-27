@@ -6,8 +6,8 @@ import (
 
 	"fyne.io/systray"
 	"github.com/varavelio/tribar/assets/logo"
-	"github.com/varavelio/tribar/internal/app"
 	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/state"
 )
 
 const animationFrameDuration = time.Millisecond * 200
@@ -22,7 +22,7 @@ const (
 )
 
 type Instance struct {
-	app *app.Instance
+	appState *state.Instance
 
 	systrayStart func()
 	systrayEnd   func()
@@ -35,9 +35,9 @@ type Instance struct {
 	isShuttingDown bool
 }
 
-func New(app *app.Instance) *Instance {
+func New(appState *state.Instance) *Instance {
 	i := &Instance{
-		app:              app,
+		appState:         appState,
 		animationPosCurr: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
@@ -68,9 +68,10 @@ func (i *Instance) Shutdown() {
 // For unloaded and loaded statuses, the animation position is always set to middle, for
 // other statuses, it cycles through middle, right, and left positions.
 func (i *Instance) setNextAnimationPosition() {
+	statusCurrent, _ := i.appState.GetStatus()
 	i.animationPosPrev = i.animationPosCurr
 
-	if i.app.StatusCurrent == app.StatusUnloaded || i.app.StatusCurrent == app.StatusLoaded {
+	if statusCurrent == state.StatusUnloaded || statusCurrent == state.StatusLoaded {
 		i.animationPosCurr = animationPositionMiddle
 		return
 	}
@@ -94,20 +95,21 @@ func (i *Instance) setNextAnimationPosition() {
 
 // setTitle updates the systray title and tooltip based on the current status.
 func (i *Instance) setTitle() {
+	statusCurrent, _ := i.appState.GetStatus()
 	title := config.AppName
 
-	switch i.app.StatusCurrent {
-	case app.StatusUnloaded:
+	switch statusCurrent {
+	case state.StatusUnloaded:
 		title += " - Model not loaded"
-	case app.StatusLoading:
+	case state.StatusLoading:
 		title += " - Loading model..."
-	case app.StatusLoaded:
+	case state.StatusLoaded:
 		title += " - Model loaded"
-	case app.StatusListening:
+	case state.StatusListening:
 		title += " - Listening..."
-	case app.StatusTranscribing:
+	case state.StatusTranscribing:
 		title += " - Transcribing..."
-	case app.StatusPostProcessing:
+	case state.StatusPostProcessing:
 		title += " - Post-processing..."
 	}
 
@@ -125,19 +127,20 @@ func (i *Instance) setIcon() {
 	}
 
 	res := pngOrIco(logo.LogoBlackGray)
+	statusCurrent, _ := i.appState.GetStatus()
 
-	switch i.app.StatusCurrent {
-	case app.StatusUnloaded:
+	switch statusCurrent {
+	case state.StatusUnloaded:
 		res = pngOrIco(logo.LogoBlackGray)
-	case app.StatusLoading:
+	case state.StatusLoading:
 		res = pngOrIco(logo.LogoBlackAmber)
-	case app.StatusLoaded:
+	case state.StatusLoaded:
 		res = pngOrIco(logo.LogoBlackWhite)
-	case app.StatusListening:
+	case state.StatusListening:
 		res = pngOrIco(logo.LogoBlackPink)
-	case app.StatusTranscribing:
+	case state.StatusTranscribing:
 		res = pngOrIco(logo.LogoBlackBlue)
-	case app.StatusPostProcessing:
+	case state.StatusPostProcessing:
 		res = pngOrIco(logo.LogoBlackGreen)
 	}
 
@@ -159,11 +162,13 @@ func (i *Instance) animate() {
 			return
 		}
 
-		if i.app.StatusPrevious != i.app.StatusCurrent {
+		statusCurrent, statusPrevious := i.appState.GetStatus()
+
+		if statusPrevious != statusCurrent {
 			i.setTitle()
 		}
 
-		if i.app.StatusPrevious != i.app.StatusCurrent || i.animationPosPrev != i.animationPosCurr {
+		if statusPrevious != statusCurrent || i.animationPosPrev != i.animationPosCurr {
 			i.setIcon()
 		}
 

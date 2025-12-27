@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	fyne.io/systray v1.12.0
+	github.com/gen2brain/malgo v0.11.24
 	github.com/go-audio/wav v1.1.0
 	github.com/yalue/onnxruntime_go v1.25.0
 	golang.org/x/sync v0.19.0

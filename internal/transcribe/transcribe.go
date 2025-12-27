@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/eduardolat/exp-stt/internal/onnx"
 	"github.com/go-audio/wav"
+	"github.com/varavelio/tribar/internal/onnx"
 	ort "github.com/yalue/onnxruntime_go"
 )
 

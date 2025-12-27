@@ -9,11 +9,11 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/eduardolat/exp-stt/internal/app"
-	"github.com/eduardolat/exp-stt/internal/config"
-	"github.com/eduardolat/exp-stt/internal/logger"
-	"github.com/eduardolat/exp-stt/internal/onnx"
-	"github.com/eduardolat/exp-stt/internal/systray"
+	"github.com/varavelio/tribar/internal/app"
+	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/logger"
+	"github.com/varavelio/tribar/internal/onnx"
+	"github.com/varavelio/tribar/internal/systray"
 )
 
 type cliFlags struct {

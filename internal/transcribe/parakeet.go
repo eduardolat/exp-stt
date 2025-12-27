@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/eduardolat/exp-stt/internal/config"
+	"github.com/varavelio/tribar/internal/config"
 	ort "github.com/yalue/onnxruntime_go"
 )
 

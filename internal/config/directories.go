@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/eduardolat/exp-stt/internal/logger"
+	"github.com/varavelio/tribar/internal/logger"
 )
 
 const dirAppName = "tribar"

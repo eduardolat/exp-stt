@@ -1,4 +1,4 @@
-module github.com/eduardolat/exp-stt
+module github.com/varavelio/tribar
 
 go 1.25.4
 

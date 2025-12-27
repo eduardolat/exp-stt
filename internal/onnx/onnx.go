@@ -14,8 +14,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/eduardolat/exp-stt/internal/config"
-	"github.com/eduardolat/exp-stt/internal/logger"
+	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/logger"
 )
 
 // SharedLibraryPath holds the absolute path to the extracted ONNX Runtime shared library.

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"fyne.io/systray"
-	"github.com/eduardolat/exp-stt/assets/logo"
-	"github.com/eduardolat/exp-stt/internal/app"
-	"github.com/eduardolat/exp-stt/internal/config"
+	"github.com/varavelio/tribar/assets/logo"
+	"github.com/varavelio/tribar/internal/app"
+	"github.com/varavelio/tribar/internal/config"
 )
 
 const animationFrameDuration = time.Millisecond * 200

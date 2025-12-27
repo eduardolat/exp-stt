@@ -8,6 +8,9 @@ var (
 	//go:embed onnxruntime-linux-x64-1.23.2.tgz
 	CompressedLib []byte
 
-	IsZip = false
-	IsTgz = true
+	isZip           = false
+	isTgz           = true
+	runtimeVersion  = "1.23.2"
+	runtimePlatform = "linux-amd64"
+	sharedLibName   = "libonnxruntime.so.1.23.2"
 )

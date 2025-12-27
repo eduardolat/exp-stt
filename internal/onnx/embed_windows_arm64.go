@@ -8,6 +8,9 @@ var (
 	//go:embed onnxruntime-win-arm64-1.23.2.zip
 	CompressedLib []byte
 
-	IsZip = true
-	IsTgz = false
+	isZip           = true
+	isTgz           = false
+	runtimeVersion  = "1.23.2"
+	runtimePlatform = "windows-arm64"
+	sharedLibName   = "onnxruntime.dll"
 )

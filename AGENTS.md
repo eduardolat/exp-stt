@@ -2,7 +2,7 @@
 
 ## Summary
 
-This repository contains a Speech To Text application. It works by executing a machine learning model called Parakeet using the Onnx Runtime port with Golang. It also have a webapp built with SvelteKit to control the application.
+This repository contains a Speech To Text application named Tribar Voice. It works by executing a machine learning model called Parakeet using the Onnx Runtime port with Golang. It also have a webapp built with SvelteKit to control the application.
 
 ## General instructions
 

@@ -56,7 +56,7 @@ The `logger` package is a utility for printing important data to STDOUT in a str
 
 Source: `internal/config`
 
-The `config` package contains global and general program settings such as name, version, etc. However, it also has a function that allows you to define and ensure the existence of all the directories in the file system that will be used throughout the program's lifecycle. It is vital to have these directories created and accessible, so this is the first thing that is checked; otherwise, the program cannot continue.
+The `config` package contains global and general program settings such as name, version, etc. It ensures the existence of all required directories and manages a JSON configuration file that persists user preferences (notifications, sounds, AI settings, history limits), which can be updated via the Web UI.
 
 #### Onnx Runtime
 
@@ -68,7 +68,7 @@ The `onnx` package, like the `config` package, is vital to the program, and if i
 
 Source: `internal/state`
 
-Manages the global application state (status, settings) in a thread-safe way, providing access to other packages.
+Manages the global application state (status, settings) in a thread-safe way, providing access to other packages. It also handles a configurable history of transcriptions and their corresponding audio files.
 
 #### Recorder
 
@@ -86,25 +86,25 @@ Converts audio files into text using the Parakeet model via ONNX Runtime, handli
 
 Source: `internal/postprocess`
 
-Refines and enhances transcriptions using LLM-based AI processing to improve grammar, punctuation, and overall readability (optional and user configurable).
+Refines and enhances transcriptions using LLM-based AI processing to improve grammar, punctuation, and overall readability. It is disabled by default and supports OpenAI-compatible APIs with a prompt manager for predefined or custom enhancements.
 
 #### Notify
 
 Source: `internal/notify`
 
-Sends desktop notifications to inform the user about important application events, such as when a transcription starts or finishes.
+Sends desktop notifications to inform the user about important application events. By default, it only alerts on errors, but users can enable notifications for transcription start and completion.
 
 #### Writer
 
 Source: `internal/write`
 
-Responsible for outputting the final transcription by writing it to the system clipboard or simulating keyboard input to paste it directly into other applications.
+Responsible for outputting the final transcription. Users can choose to only copy to the clipboard, copy and paste, or simulate keyboard input to write directly into other applications.
 
 #### Sound
 
 Source: `internal/sound`
 
-Plays audio cues to provide acoustic feedback for application events, helping the user know the app's status without looking at the screen.
+Plays audio cues to provide acoustic feedback for application events, helping the user know the app's status without looking at the screen. Cues for starting and finishing transcriptions are enabled by default but can be disabled by the user.
 
 #### Engine
 
@@ -126,6 +126,6 @@ It receives the state to react to changes (read-only) and the Engine to perform 
 
 Source: `internal/server`
 
-Provides an HTTP API and a SvelteKit web UI to control and monitor the application.
+Provides an HTTP API and a SvelteKit web UI to control and monitor the application. The Web UI includes a configuration manager to update user preferences, which are persisted via the `config` package.
 
 It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).

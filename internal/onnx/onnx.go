@@ -8,12 +8,14 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/eduardolat/exp-stt/internal/config"
+	"github.com/eduardolat/exp-stt/internal/logger"
 )
 
 // SharedLibraryPath holds the absolute path to the extracted ONNX Runtime shared library.
@@ -22,11 +24,17 @@ var SharedLibraryPath = ""
 
 // EnsureSharedLibrary extracts the ONNX Runtime shared library from the embedded archive
 // if it doesn't already exist. It sets SharedLibraryPath to the location of the extracted library.
-func EnsureSharedLibrary() error {
+func EnsureSharedLibrary(logger logger.Logger) error {
 	extractDir := filepath.Join(config.DirectoryOnnxRuntime, runtimeVersion, runtimePlatform)
 	SharedLibraryPath = filepath.Join(extractDir, "lib", sharedLibName)
 
+	logger.Debug(
+		context.Background(), "ensuring ONNX Runtime shared library",
+		"shared_library_path", SharedLibraryPath,
+	)
+
 	if fileExists(SharedLibraryPath) {
+		logger.Debug(context.Background(), "ONNX Runtime shared library already exists, skipping extraction")
 		return nil
 	}
 
@@ -38,6 +46,7 @@ func EnsureSharedLibrary() error {
 		if err := extractTgz(CompressedLib, extractDir); err != nil {
 			return fmt.Errorf("extracting tgz archive: %w", err)
 		}
+		logger.Debug(context.Background(), "ONNX Runtime shared library extracted from tgz archive")
 		return nil
 	}
 
@@ -45,6 +54,7 @@ func EnsureSharedLibrary() error {
 		if err := extractZip(CompressedLib, extractDir); err != nil {
 			return fmt.Errorf("extracting zip archive: %w", err)
 		}
+		logger.Debug(context.Background(), "ONNX Runtime shared library extracted from zip archive")
 		return nil
 	}
 

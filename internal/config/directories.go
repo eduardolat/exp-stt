@@ -1,10 +1,13 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/eduardolat/exp-stt/internal/logger"
 )
 
 const dirAppName = "stt"
@@ -18,7 +21,7 @@ var (
 )
 
 // EnsureDirectories creates all necessary directories if they don't exist.
-func EnsureDirectories() error {
+func EnsureDirectories(logger logger.Logger) error {
 	configDir, err := calculateConfigDir()
 	if err != nil {
 		return fmt.Errorf("could not determine config directory: %w", err)
@@ -42,6 +45,15 @@ func EnsureDirectories() error {
 			panic(fmt.Errorf("failed to create application directory %s: %w", dir, err))
 		}
 	}
+
+	logger.Debug(
+		context.Background(), "application directories ensured",
+		"directory_config", DirectoryConfig,
+		"directory_data", DirectoryData,
+		"directory_onnx_runtime", DirectoryOnnxRuntime,
+		"directory_models", DirectoryModels,
+		"directory_parakeet_models", DirectoryModelsParakeet,
+	)
 
 	return nil
 }

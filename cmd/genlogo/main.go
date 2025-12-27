@@ -1,4 +1,4 @@
-// This program generates the logo assets for the STT application.
+// This program generates the logo assets for the Tribar Voice application.
 // It creates SVG files from a template, converts them to PNG in multiple sizes
 // using rsvg-convert, and bundles them into ICO files using ImageMagick.
 // Finally, it generates a Go file with embed directives to expose all assets

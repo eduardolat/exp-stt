@@ -1,6 +1,6 @@
 package config
 
 const (
-	AppName    = "STT"
+	AppName    = "Tribar Voice"
 	AppVersion = "0.0.1"
 )

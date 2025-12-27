@@ -1,5 +1,5 @@
 {
-  description = "STT Flake";
+  description = "Tribar Voice DevShell";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";

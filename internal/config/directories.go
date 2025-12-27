@@ -10,7 +10,7 @@ import (
 	"github.com/eduardolat/exp-stt/internal/logger"
 )
 
-const dirAppName = "stt"
+const dirAppName = "tribar"
 
 var (
 	DirectoryConfig         = ""

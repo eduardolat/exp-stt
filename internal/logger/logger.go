@@ -27,7 +27,12 @@ type slogLogger struct {
 
 // NewStdLogger creates a new text Logger that writes to the standard output.
 func NewSlogLogger(enableDebug bool) Logger {
-	slogger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{}))
+	handlerOptions := &slog.HandlerOptions{}
+	if enableDebug {
+		handlerOptions.Level = slog.LevelDebug
+	}
+
+	slogger := slog.New(slog.NewTextHandler(os.Stdout, handlerOptions))
 
 	return &slogLogger{
 		slogger:     slogger,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -15,8 +16,13 @@ import (
 	"github.com/eduardolat/exp-stt/internal/systray"
 )
 
+type cliFlags struct {
+	Debug bool
+}
+
 func main() {
-	logger := logger.NewSlogLogger(false)
+	flags := parseFlags()
+	logger := logger.NewSlogLogger(flags.Debug)
 	if err := run(logger); err != nil {
 		logger.Error(context.Background(), "error while running the app", "err", err)
 		os.Exit(1)
@@ -50,4 +56,13 @@ func run(logger logger.Logger) error {
 	<-ctx.Done()
 	stop()
 	return nil
+}
+
+func parseFlags() cliFlags {
+	debugPtr := flag.Bool("debug", false, "enable debug mode")
+	flag.Parse()
+
+	return cliFlags{
+		Debug: *debugPtr,
+	}
 }

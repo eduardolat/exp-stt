@@ -15,7 +15,7 @@ tasks:
     desc: Build and run the project
     deps:
       - build
-    cmd: ./dist/stt
+    cmd: ./dist/stt --debug
 
   build:
     desc: Build the project

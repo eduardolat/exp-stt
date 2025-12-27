@@ -8,6 +8,8 @@ import (
 
 // Logger is a simple logging interface that supports different log levels.
 type Logger interface {
+	// SetDebug enables or disables debug level logging.
+	SetDebug(enabled bool)
 	// Info logs an informational message.
 	Info(ctx context.Context, msg string, keysAndValues ...any)
 	// Warn logs a warning message.
@@ -31,6 +33,10 @@ func NewSlogLogger(enableDebug bool) Logger {
 		slogger:     slogger,
 		enableDebug: enableDebug,
 	}
+}
+
+func (l *slogLogger) SetDebug(enabled bool) {
+	l.enableDebug = enabled
 }
 
 func (l *slogLogger) Info(ctx context.Context, msg string, keysAndValues ...any) {

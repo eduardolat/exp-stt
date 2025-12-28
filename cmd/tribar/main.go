@@ -58,9 +58,8 @@ func run(logger logger.Logger) error {
 	if err != nil {
 		return fmt.Errorf("error loading settings: %w", err)
 	}
-	settings := settingsManager.Get()
 
-	appState := state.New(settings.HistoryLimit)
+	appState := state.New(settingsManager)
 
 	recorder, err := record.NewRecorder()
 	if err != nil {

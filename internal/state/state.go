@@ -3,6 +3,8 @@ package state
 import (
 	"sync"
 	"time"
+
+	"github.com/varavelio/tribar/internal/config"
 )
 
 type Status int
@@ -28,26 +30,27 @@ type HistoryEntry struct {
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
+	settingsManager *config.SettingsManager
+
 	statusMu       sync.RWMutex
 	statusPrevious Status
 	statusCurrent  Status
 
-	historyMu    sync.RWMutex
-	history      []HistoryEntry
-	historyLimit int
-	nextID       int
+	historyMu sync.RWMutex
+	history   []HistoryEntry
+	nextID    int
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
-func New(historyLimit int) *Instance {
+func New(settingsManager *config.SettingsManager) *Instance {
 	return &Instance{
-		statusMu:       sync.RWMutex{},
-		statusPrevious: StatusUnknown,
-		statusCurrent:  StatusUnloaded,
-		historyMu:      sync.RWMutex{},
-		history:        make([]HistoryEntry, 0),
-		historyLimit:   historyLimit,
-		nextID:         1,
+		settingsManager: settingsManager,
+		statusMu:        sync.RWMutex{},
+		statusPrevious:  StatusUnknown,
+		statusCurrent:   StatusUnloaded,
+		historyMu:       sync.RWMutex{},
+		history:         make([]HistoryEntry, 0),
+		nextID:          1,
 	}
 }
 
@@ -82,8 +85,9 @@ func (i *Instance) AddHistoryEntry(text, audioPath string) {
 
 	i.history = append([]HistoryEntry{entry}, i.history...)
 
-	if len(i.history) > i.historyLimit {
-		i.history = i.history[:i.historyLimit]
+	limit := i.settingsManager.Get().HistoryLimit
+	if len(i.history) > limit {
+		i.history = i.history[:limit]
 	}
 }
 
@@ -115,15 +119,4 @@ func (i *Instance) ClearHistory() {
 	i.historyMu.Lock()
 	defer i.historyMu.Unlock()
 	i.history = make([]HistoryEntry, 0)
-}
-
-// SetHistoryLimit updates the maximum number of history entries.
-func (i *Instance) SetHistoryLimit(limit int) {
-	i.historyMu.Lock()
-	defer i.historyMu.Unlock()
-
-	i.historyLimit = limit
-	if len(i.history) > limit {
-		i.history = i.history[:limit]
-	}
 }

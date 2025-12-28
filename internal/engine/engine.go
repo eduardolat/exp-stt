@@ -118,7 +118,7 @@ func (e *Engine) startRecording() {
 	}
 
 	e.state.SetStatus(state.StatusListening)
-	e.sound.TranscriptionStarted(e.ctx)
+	e.sound.RecordingStarted(e.ctx)
 	e.notifier.TranscriptionStarted(e.ctx)
 	e.logger.Info(e.ctx, "recording started")
 }
@@ -126,6 +126,7 @@ func (e *Engine) startRecording() {
 // stopRecording stops audio capture and processes the recording.
 func (e *Engine) stopRecording() {
 	e.recorder.Stop()
+	e.sound.RecordingStopped(e.ctx)
 	e.logger.Info(e.ctx, "recording stopped, processing...")
 
 	go e.processRecording()
@@ -186,7 +187,7 @@ func (e *Engine) processRecording() {
 		e.logger.Error(e.ctx, "failed to save history entry", "err", err)
 	}
 
-	e.sound.TranscriptionFinished(e.ctx)
+	e.sound.TranscriptionSuccess(e.ctx)
 	e.notifier.TranscriptionFinished(e.ctx, text)
 	e.state.SetStatus(state.StatusLoaded)
 
@@ -204,9 +205,10 @@ func calculateDurationMs(dataSize int) int64 {
 	return int64(dataSize) * 1000 / int64(bytesPerSecond)
 }
 
-// handleError logs the error, notifies the user, and resets state.
+// handleError logs the error, notifies the user, plays error sound, and resets state.
 func (e *Engine) handleError(message string, err error) {
 	e.logger.Error(e.ctx, message, "err", err)
+	e.sound.TranscriptionError(e.ctx)
 	e.notifier.Error(e.ctx, config.AppName, fmt.Sprintf("%s: %v", message, err))
 	e.state.SetStatus(state.StatusLoaded)
 }

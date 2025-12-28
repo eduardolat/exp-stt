@@ -54,6 +54,37 @@ var ErrorSounds = []ErrorSound{
 	{ID: "8", Sound: error8},
 }
 
+// Lookup maps for ID-based access
+var (
+	InOutSoundsMap   = buildInOutSoundsMap()
+	SuccessSoundsMap = buildSuccessSoundsMap()
+	ErrorSoundsMap   = buildErrorSoundsMap()
+)
+
+func buildInOutSoundsMap() map[string]InOutSound {
+	m := make(map[string]InOutSound, len(InOutSounds))
+	for _, s := range InOutSounds {
+		m[s.ID] = s
+	}
+	return m
+}
+
+func buildSuccessSoundsMap() map[string]SuccessSound {
+	m := make(map[string]SuccessSound, len(SuccessSounds))
+	for _, s := range SuccessSounds {
+		m[s.ID] = s
+	}
+	return m
+}
+
+func buildErrorSoundsMap() map[string]ErrorSound {
+	m := make(map[string]ErrorSound, len(ErrorSounds))
+	for _, s := range ErrorSounds {
+		m[s.ID] = s
+	}
+	return m
+}
+
 var (
 	//go:embed in_1.wav
 	in1 []byte

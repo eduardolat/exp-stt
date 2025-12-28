@@ -1,11 +1,10 @@
 // Package sound provides audio feedback functionality for application events.
-// It plays embedded WAV files when transcription starts and finishes.
+// It plays embedded WAV files for recording start/stop, success, and error events.
 package sound
 
 import (
 	"bytes"
 	"context"
-	"strconv"
 	"sync"
 
 	"github.com/gopxl/beep/v2"
@@ -34,40 +33,68 @@ func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instanc
 	}
 }
 
-// TranscriptionStarted plays a sound when transcription starts.
-func (s *Instance) TranscriptionStarted(ctx context.Context) {
+// RecordingStarted plays a sound when recording starts.
+func (s *Instance) RecordingStarted(ctx context.Context) {
 	settings := s.settingsManager.Get()
 	if !settings.SoundFeedbackEnable {
 		return
 	}
 
-	go s.playSound(ctx, true)
+	sound, ok := sounds.InOutSoundsMap[settings.SoundFeedbackRecordID]
+	if !ok {
+		sound = sounds.InOutSounds[0]
+	}
+
+	go s.playSound(ctx, sound.Input)
 }
 
-// TranscriptionFinished plays a sound when transcription completes.
-func (s *Instance) TranscriptionFinished(ctx context.Context) {
+// RecordingStopped plays a sound when recording stops.
+func (s *Instance) RecordingStopped(ctx context.Context) {
 	settings := s.settingsManager.Get()
 	if !settings.SoundFeedbackEnable {
 		return
 	}
 
-	go s.playSound(ctx, false)
-}
-
-// playSound plays the appropriate sound based on the current settings.
-func (s *Instance) playSound(ctx context.Context, isInput bool) {
-	settings := s.settingsManager.Get()
-
-	idx := s.parseSoundID(settings.SoundFeedbackID)
-	sound := sounds.Sounds[idx]
-
-	var data []byte
-	if isInput {
-		data = sound.Input
-	} else {
-		data = sound.Output
+	sound, ok := sounds.InOutSoundsMap[settings.SoundFeedbackRecordID]
+	if !ok {
+		sound = sounds.InOutSounds[0]
 	}
 
+	go s.playSound(ctx, sound.Output)
+}
+
+// TranscriptionSuccess plays a sound when transcription completes successfully.
+func (s *Instance) TranscriptionSuccess(ctx context.Context) {
+	settings := s.settingsManager.Get()
+	if !settings.SoundFeedbackEnable {
+		return
+	}
+
+	sound, ok := sounds.SuccessSoundsMap[settings.SoundFeedbackSuccessID]
+	if !ok {
+		sound = sounds.SuccessSounds[0]
+	}
+
+	go s.playSound(ctx, sound.Sound)
+}
+
+// TranscriptionError plays a sound when transcription fails.
+func (s *Instance) TranscriptionError(ctx context.Context) {
+	settings := s.settingsManager.Get()
+	if !settings.SoundFeedbackEnable {
+		return
+	}
+
+	sound, ok := sounds.ErrorSoundsMap[settings.SoundFeedbackErrorID]
+	if !ok {
+		sound = sounds.ErrorSounds[0]
+	}
+
+	go s.playSound(ctx, sound.Sound)
+}
+
+// playSound plays the provided WAV data through the speaker.
+func (s *Instance) playSound(ctx context.Context, data []byte) {
 	streamer, format, err := wav.Decode(bytes.NewReader(data))
 	if err != nil {
 		s.logger.Error(ctx, "failed to decode WAV", "error", err)
@@ -100,15 +127,6 @@ func (s *Instance) playSound(ctx context.Context, isInput bool) {
 	case <-done:
 	case <-ctx.Done():
 	}
-}
-
-// parseSoundID converts the sound ID string to a valid array index (0-8).
-func (s *Instance) parseSoundID(id string) int {
-	n, err := strconv.Atoi(id)
-	if err != nil || n < 1 || n > 9 {
-		return 0 // Default to first sound
-	}
-	return n - 1
 }
 
 // Shutdown is a no-op for this implementation.

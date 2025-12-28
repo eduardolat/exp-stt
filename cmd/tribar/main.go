@@ -99,7 +99,11 @@ func run(logger logger.Logger) error {
 	})
 	defer eng.Shutdown()
 
-	go loadModelsAsync(ctx, logger, eng)
+	go func() {
+		if err := eng.EnsureModelsDownloaded(); err != nil {
+			logger.Error(ctx, "failed to download models", "err", err)
+		}
+	}()
 
 	stray := systray.New(appState, eng, stop)
 	go stray.Start()
@@ -109,19 +113,6 @@ func run(logger logger.Logger) error {
 	stop()
 	logger.Info(ctx, "shutting down gracefully...")
 	return nil
-}
-
-func loadModelsAsync(ctx context.Context, logger logger.Logger, eng *engine.Engine) {
-	progressCallback := func(filename string, downloaded, total int64, percent float64) {
-		logger.Info(ctx, "downloading model",
-			"file", filename,
-			"progress", fmt.Sprintf("%.1f%%", percent),
-		)
-	}
-
-	if err := eng.LoadModels(progressCallback); err != nil {
-		logger.Error(ctx, "failed to load models", "err", err)
-	}
 }
 
 func parseFlags() cliFlags {

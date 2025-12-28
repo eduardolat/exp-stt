@@ -54,6 +54,8 @@ type Engine struct {
 
 	lastActivityMu   sync.RWMutex
 	lastActivityTime time.Time
+
+	unloadTickerStarted bool
 }
 
 // New creates a new Engine instance with all dependencies.
@@ -76,19 +78,38 @@ func New(deps Dependencies) *Engine {
 	}
 }
 
-// LoadModels loads the transcription models with progress reporting.
-func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback) error {
+// EnsureModelsDownloaded downloads models if they don't exist.
+// This should be called at startup - it only downloads, does not load into memory.
+func (e *Engine) EnsureModelsDownloaded() error {
 	allExist, _ := e.transcriber.CheckModels()
-	if !allExist {
-		e.state.SetStatus(state.StatusDownloading)
-		e.logger.Info(e.ctx, "downloading missing models...")
-		if err := e.transcriber.DownloadModels(progressCallback); err != nil {
-			e.state.SetStatus(state.StatusUnloaded)
-			e.notifier.Error(e.ctx, "Model Download Failed", err.Error())
-			return fmt.Errorf("failed to download models: %w", err)
-		}
+	if allExist {
+		e.logger.Info(e.ctx, "models already downloaded")
+		return nil
 	}
 
+	e.state.SetStatus(state.StatusDownloading)
+	e.logger.Info(e.ctx, "downloading missing models...")
+
+	progressCallback := func(filename string, downloaded, total int64, percent float64) {
+		e.state.SetDownloadProgress(filename, downloaded, total, percent)
+	}
+
+	if err := e.transcriber.DownloadModels(progressCallback); err != nil {
+		e.state.SetStatus(state.StatusUnloaded)
+		e.state.ClearDownloadProgress()
+		e.notifier.Error(e.ctx, "Model Download Failed", err.Error())
+		return fmt.Errorf("failed to download models: %w", err)
+	}
+
+	e.state.ClearDownloadProgress()
+	e.state.SetStatus(state.StatusUnloaded)
+	e.logger.Info(e.ctx, "models downloaded successfully")
+	return nil
+}
+
+// loadModels loads the transcription models into memory.
+// This is called lazily on first recording.
+func (e *Engine) loadModels() error {
 	e.state.SetStatus(state.StatusLoading)
 
 	if err := e.transcriber.LoadModels(); err != nil {
@@ -98,12 +119,15 @@ func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback
 	}
 
 	e.state.SetStatus(state.StatusLoaded)
-	e.logger.Info(e.ctx, "models loaded successfully")
+	e.logger.Info(e.ctx, "models loaded into memory")
 
-	// Record activity and start unload ticker
+	// Start unload ticker if not already started
+	if !e.unloadTickerStarted {
+		e.unloadTickerStarted = true
+		go e.unloadTicker()
+	}
+
 	e.recordActivity()
-	go e.unloadTicker()
-
 	return nil
 }
 
@@ -175,7 +199,7 @@ func (e *Engine) ToggleRecording() {
 	case state.StatusLoaded:
 		e.startRecording()
 	case state.StatusUnloaded:
-		e.logger.Warn(e.ctx, "cannot start recording, models not loaded")
+		go e.loadAndStartRecording()
 	case state.StatusDownloading:
 		e.logger.Warn(e.ctx, "cannot start recording, models are being downloaded")
 	case state.StatusLoading:
@@ -183,9 +207,17 @@ func (e *Engine) ToggleRecording() {
 	}
 }
 
-// StartRecording begins audio capture.
+// loadAndStartRecording loads models and then starts recording.
+func (e *Engine) loadAndStartRecording() {
+	if err := e.loadModels(); err != nil {
+		e.logger.Error(e.ctx, "failed to load models", "err", err)
+		return
+	}
+	e.startRecording()
+}
+
+// startRecording begins audio capture.
 func (e *Engine) startRecording() {
-	// Record activity on use
 	e.recordActivity()
 
 	if err := e.recorder.Start(); err != nil {

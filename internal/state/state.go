@@ -22,6 +22,14 @@ const (
 	StatusPostProcessing
 )
 
+// DownloadProgress represents the current download progress.
+type DownloadProgress struct {
+	FileName   string  `json:"file_name"`
+	Downloaded int64   `json:"downloaded"`
+	Total      int64   `json:"total"`
+	Percent    float64 `json:"percent"`
+}
+
 // AudioDevice represents an available audio device.
 type AudioDevice struct {
 	ID        string `json:"id"`
@@ -43,6 +51,9 @@ type Instance struct {
 	statusMu       sync.RWMutex
 	statusPrevious Status
 	statusCurrent  Status
+
+	downloadMu       sync.RWMutex
+	downloadProgress DownloadProgress
 
 	audioCtx *malgo.AllocatedContext
 }
@@ -74,6 +85,32 @@ func (i *Instance) GetStatus() (current Status, previous Status) {
 	i.statusMu.RLock()
 	defer i.statusMu.RUnlock()
 	return i.statusCurrent, i.statusPrevious
+}
+
+// SetDownloadProgress updates the current download progress.
+func (i *Instance) SetDownloadProgress(fileName string, downloaded, total int64, percent float64) {
+	i.downloadMu.Lock()
+	defer i.downloadMu.Unlock()
+	i.downloadProgress = DownloadProgress{
+		FileName:   fileName,
+		Downloaded: downloaded,
+		Total:      total,
+		Percent:    percent,
+	}
+}
+
+// GetDownloadProgress returns the current download progress.
+func (i *Instance) GetDownloadProgress() DownloadProgress {
+	i.downloadMu.RLock()
+	defer i.downloadMu.RUnlock()
+	return i.downloadProgress
+}
+
+// ClearDownloadProgress clears the download progress.
+func (i *Instance) ClearDownloadProgress() {
+	i.downloadMu.Lock()
+	defer i.downloadMu.Unlock()
+	i.downloadProgress = DownloadProgress{}
 }
 
 // GetAvailableDevices returns lists of available input and output audio devices.

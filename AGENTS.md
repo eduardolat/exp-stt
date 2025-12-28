@@ -64,11 +64,17 @@ Source: `internal/onnx`
 
 The `onnx` package, like the `config` package, is vital to the program, and if it fails, the program cannot continue. The function of this package is to place the shared libraries of the onnx runtime within the program's directories so that subsequent packages can use the onnx runtime without problems. These shared libraries are embedded in the program using `go embed` and extracted into its directory using this package.
 
+#### History
+
+Source: `internal/history`
+
+The `history` package implements a minimalist flat-file database system for transcriptions. It uses UUIDv7 for K-sortable unique identifiers and stores each entry as a pair of files (`.json` for metadata and `.wav` for audio). It handles atomic writes, automatic pruning based on user settings, and provides a thread-safe in-memory cache that is populated asynchronously at startup.
+
 #### App State
 
 Source: `internal/state`
 
-Manages the global application state (status, settings) in a thread-safe way, providing access to other packages. It also handles a configurable history of transcriptions and their corresponding audio files.
+Manages the global application state (status) in a thread-safe way, providing access to other packages. It also acts as a bridge to the `history` package, allowing other components to query and manage past transcriptions.
 
 #### Recorder
 

@@ -2,21 +2,34 @@ package sounds
 
 import _ "embed"
 
-type Sound struct {
+type InOutSound struct {
+	ID     string
 	Input  []byte
 	Output []byte
 }
 
-var Sounds = []Sound{
-	{Input: in1, Output: out1},
-	{Input: in2, Output: out2},
-	{Input: in3, Output: out3},
-	{Input: in4, Output: out4},
-	{Input: in5, Output: out5},
-	{Input: in6, Output: out6},
-	{Input: in7, Output: out7},
-	{Input: in8, Output: out8},
-	{Input: in9, Output: out9},
+var InOutSounds = []InOutSound{
+	{ID: "1", Input: in1, Output: out1},
+	{ID: "2", Input: in2, Output: out2},
+	{ID: "3", Input: in3, Output: out3},
+	{ID: "4", Input: in4, Output: out4},
+	{ID: "5", Input: in5, Output: out5},
+	{ID: "6", Input: in6, Output: out6},
+	{ID: "7", Input: in7, Output: out7},
+	{ID: "8", Input: in8, Output: out8},
+	{ID: "9", Input: in9, Output: out9},
+}
+
+type SuccessSound struct {
+	ID    string
+	Sound []byte
+}
+
+var SuccessSounds = []SuccessSound{
+	{ID: "1", Sound: success1},
+	{ID: "2", Sound: success2},
+	{ID: "3", Sound: success3},
+	{ID: "4", Sound: success4},
 }
 
 var (
@@ -57,4 +70,13 @@ var (
 	out8 []byte
 	//go:embed out_9.wav
 	out9 []byte
+
+	//go:embed success_1.wav
+	success1 []byte
+	//go:embed success_2.wav
+	success2 []byte
+	//go:embed success_3.wav
+	success3 []byte
+	//go:embed success_4.wav
+	success4 []byte
 )

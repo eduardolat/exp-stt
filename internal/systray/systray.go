@@ -77,7 +77,7 @@ func (i *Instance) onReady() {
 	i.menuDownload.Disable()
 	i.menuDownload.Hide()
 
-	i.menuRecord = systray.AddMenuItem("Toggle Recording", "Start or stop recording")
+	i.menuRecord = systray.AddMenuItem("Toggle recording", "Start or stop recording")
 	systray.AddSeparator()
 	i.menuQuit = systray.AddMenuItem("Quit", "Exit the application")
 

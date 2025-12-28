@@ -2,6 +2,8 @@ package transcribe
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,23 +15,46 @@ import (
 	ort "github.com/yalue/onnxruntime_go"
 )
 
-// TODO: Upload these models to other hosting to avoid abuse of HuggingFace bandwidth.
+// parakeetFile defines a model file with all required download information.
+type parakeetFile struct {
+	Name        string // Display name for progress
+	FileName    string // Local file name
+	CDNURL      string // Primary download URL (CDN)
+	FallbackURL string // Fallback download URL (HuggingFace)
+	SHA256      string // Expected SHA256 checksum
+}
 
-// Parakeet model URLs from HuggingFace
-const (
-	ParakeetVocabURL   = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/vocab.txt?download=true"
-	ParakeetNemoURL    = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/nemo128.onnx?download=true"
-	ParakeetEncoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/encoder-model.int8.onnx?download=true"
-	ParakeetDecoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/decoder_joint-model.int8.onnx?download=true"
-)
-
-// Parakeet model file names
-const (
-	ParakeetVocabFile   = "vocab.txt"
-	ParakeetNemoFile    = "nemo128.onnx"
-	ParakeetEncoderFile = "encoder-model.int8.onnx"
-	ParakeetDecoderFile = "decoder-model.int8.onnx"
-)
+// Parakeet V3 model files configuration
+var parakeetFiles = []parakeetFile{
+	{
+		Name:        "Vocabulary",
+		FileName:    "vocab.txt",
+		CDNURL:      "https://cdn.varavel.com/tribar/models/parakeet-v3/abd2878/vocab.txt",
+		FallbackURL: "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/vocab.txt?download=true",
+		SHA256:      "d58544679ea4bc6ac563d1f545eb7d474bd6cfa467f0a6e2c1dc1c7d37e3c35d",
+	},
+	{
+		Name:        "Preprocessor",
+		FileName:    "nemo128.onnx",
+		CDNURL:      "https://cdn.varavel.com/tribar/models/parakeet-v3/abd2878/nemo128.onnx",
+		FallbackURL: "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/nemo128.onnx?download=true",
+		SHA256:      "a9fde1486ebfcc08f328d75ad4610c67835fea58c73ba57e3209a6f6cf019e9f",
+	},
+	{
+		Name:        "Encoder",
+		FileName:    "encoder-model.int8.onnx",
+		CDNURL:      "https://cdn.varavel.com/tribar/models/parakeet-v3/abd2878/encoder-model.int8.onnx",
+		FallbackURL: "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/encoder-model.int8.onnx?download=true",
+		SHA256:      "6139d2fa7e1b086097b277c7149725edbab89cc7c7ae64b23c741be4055aff09",
+	},
+	{
+		Name:        "Decoder",
+		FileName:    "decoder_joint-model.int8.onnx",
+		CDNURL:      "https://cdn.varavel.com/tribar/models/parakeet-v3/abd2878/decoder_joint-model.int8.onnx",
+		FallbackURL: "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/decoder_joint-model.int8.onnx?download=true",
+		SHA256:      "eea7483ee3d1a30375daedc8ed83e3960c91b098812127a0d99d1c8977667a70",
+	},
+}
 
 // Parakeet model constants
 const (
@@ -46,51 +71,57 @@ type ParakeetModel struct {
 	vocab    []string
 	blankIdx int32
 
-	vocabPath   string
-	nemoPath    string
-	encoderPath string
-	decoderPath string
+	vocabPath        string
+	preprocessorPath string
+	encoderPath      string
+	decoderPath      string
 }
 
 // NewParakeetModel creates a new ParakeetModel instance.
 func NewParakeetModel() (*ParakeetModel, error) {
 	parakeetDir := config.DirectoryModelsParakeetV3
-	vocabPath := path.Join(parakeetDir, ParakeetVocabFile)
-	nemoPath := path.Join(parakeetDir, ParakeetNemoFile)
-	encoderPath := path.Join(parakeetDir, ParakeetEncoderFile)
-	decoderPath := path.Join(parakeetDir, ParakeetDecoderFile)
 
 	return &ParakeetModel{
-		vocabPath:   vocabPath,
-		nemoPath:    nemoPath,
-		encoderPath: encoderPath,
-		decoderPath: decoderPath,
+		vocabPath:        path.Join(parakeetDir, parakeetFiles[0].FileName),
+		preprocessorPath: path.Join(parakeetDir, parakeetFiles[1].FileName),
+		encoderPath:      path.Join(parakeetDir, parakeetFiles[2].FileName),
+		decoderPath:      path.Join(parakeetDir, parakeetFiles[3].FileName),
 	}, nil
 }
 
-// ModelFile represents a model file with its URL and local path.
+// ModelFile represents a model file with its URLs, path, and checksum.
 type ModelFile struct {
-	Name string
-	URL  string
-	Path string
+	Name        string
+	CDNURL      string
+	FallbackURL string
+	Path        string
+	SHA256      string
 }
 
-// GetModelFiles returns all model files with their URLs and paths.
+// GetModelFiles returns all model files with their URLs, paths, and checksums.
 func (p *ParakeetModel) GetModelFiles() []ModelFile {
-	return []ModelFile{
-		{Name: "Vocabulary", URL: ParakeetVocabURL, Path: p.vocabPath},
-		{Name: "Preprocessor (nemo128)", URL: ParakeetNemoURL, Path: p.nemoPath},
-		{Name: "Encoder", URL: ParakeetEncoderURL, Path: p.encoderPath},
-		{Name: "Decoder", URL: ParakeetDecoderURL, Path: p.decoderPath},
+	paths := []string{p.vocabPath, p.preprocessorPath, p.encoderPath, p.decoderPath}
+	files := make([]ModelFile, len(parakeetFiles))
+
+	for i, pf := range parakeetFiles {
+		files[i] = ModelFile{
+			Name:        pf.Name,
+			CDNURL:      pf.CDNURL,
+			FallbackURL: pf.FallbackURL,
+			Path:        paths[i],
+			SHA256:      pf.SHA256,
+		}
 	}
+
+	return files
 }
 
-// CheckModelsExist checks if all required model files exist.
+// CheckModelsExist checks if all required model files exist with valid checksums.
 func (p *ParakeetModel) CheckModelsExist() (bool, []ModelFile) {
 	var missing []ModelFile
 
 	for _, file := range p.GetModelFiles() {
-		if _, err := os.Stat(file.Path); os.IsNotExist(err) {
+		if !isFileValidWithChecksum(file.Path, file.SHA256) {
 			missing = append(missing, file)
 		}
 	}
@@ -98,53 +129,84 @@ func (p *ParakeetModel) CheckModelsExist() (bool, []ModelFile) {
 	return len(missing) == 0, missing
 }
 
+// isFileValidWithChecksum checks if a file exists and has a valid SHA256 checksum.
+func isFileValidWithChecksum(filepath, expectedSHA256 string) bool {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = file.Close() }()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return false
+	}
+
+	actualSHA256 := hex.EncodeToString(hash.Sum(nil))
+	return actualSHA256 == expectedSHA256
+}
+
 // DownloadProgressCallback is called during download with progress information.
 type DownloadProgressCallback func(filename string, downloaded, total int64, percent float64)
 
-// DownloadModels downloads all missing model files.
+// DownloadModels downloads all missing or invalid model files.
 func (p *ParakeetModel) DownloadModels(progressCallback DownloadProgressCallback) error {
 	_, missing := p.CheckModelsExist()
 	if len(missing) == 0 {
-		return nil // All models already exist
+		return nil
 	}
 
 	for _, file := range missing {
-		if err := downloadFile(file.Path, file.URL, file.Name, progressCallback); err != nil {
+		// Delete any existing file (could be corrupt/partial)
+		_ = os.Remove(file.Path)
+
+		// Try CDN first
+		err := downloadFileWithProgress(file.Path, file.CDNURL, file.Name, progressCallback)
+		if err == nil && isFileValidWithChecksum(file.Path, file.SHA256) {
+			continue
+		}
+
+		// CDN failed or checksum invalid - try fallback
+		_ = os.Remove(file.Path)
+		err = downloadFileWithProgress(file.Path, file.FallbackURL, file.Name, progressCallback)
+		if err != nil {
+			_ = os.Remove(file.Path)
 			return fmt.Errorf("failed to download %s: %w", file.Name, err)
+		}
+
+		// Verify fallback download checksum
+		if !isFileValidWithChecksum(file.Path, file.SHA256) {
+			_ = os.Remove(file.Path)
+			return fmt.Errorf("checksum verification failed for %s", file.Name)
 		}
 	}
 
 	return nil
 }
 
-// downloadFile downloads a file from URL to the specified path with progress tracking.
-func downloadFile(filepath, url, name string, progressCallback DownloadProgressCallback) error {
-	// Create the file
+// downloadFileWithProgress downloads a file from URL to the specified path with progress tracking.
+func downloadFileWithProgress(filepath, url, name string, progressCallback DownloadProgressCallback) error {
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = out.Close() }()
 
-	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
-		_ = os.Remove(filepath) // Clean up on error
+		_ = os.Remove(filepath)
 		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		_ = os.Remove(filepath) // Clean up on error
+		_ = os.Remove(filepath)
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
-	// Get content length for progress
 	contentLength := resp.ContentLength
-
-	// Create progress writer
 	var written int64
-	buf := make([]byte, 32*1024) // 32KB buffer
+	buf := make([]byte, 32*1024)
 
 	for {
 		nr, readErr := resp.Body.Read(buf)
@@ -162,7 +224,6 @@ func downloadFile(filepath, url, name string, progressCallback DownloadProgressC
 				return io.ErrShortWrite
 			}
 
-			// Report progress
 			if progressCallback != nil && contentLength > 0 {
 				percent := float64(written) / float64(contentLength) * 100
 				progressCallback(name, written, contentLength, percent)
@@ -231,19 +292,16 @@ func (p *ParakeetModel) Transcribe(samples []float32) (string, error) {
 		return "", fmt.Errorf("vocabulary not loaded, call LoadVocabulary first")
 	}
 
-	// Run preprocessor
 	features, featuresLen, err := p.runPreprocessor(samples)
 	if err != nil {
 		return "", fmt.Errorf("preprocessor error: %w", err)
 	}
 
-	// Run encoder
 	encoderOut, encoderLen, err := p.runEncoder(features, featuresLen)
 	if err != nil {
 		return "", fmt.Errorf("encoder error: %w", err)
 	}
 
-	// Run decoder
 	text, err := p.runDecoder(encoderOut, encoderLen)
 	if err != nil {
 		return "", fmt.Errorf("decoder error: %w", err)
@@ -286,7 +344,7 @@ func (p *ParakeetModel) runPreprocessor(samples []float32) ([]float32, int64, er
 
 	// Create and run session
 	session, err := ort.NewAdvancedSession(
-		p.nemoPath,
+		p.preprocessorPath,
 		[]string{"waveforms", "waveforms_lens"},
 		[]string{"features", "features_lens"},
 		[]ort.ArbitraryTensor{waveformsTensor, waveformsLensTensor},

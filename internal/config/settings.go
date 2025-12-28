@@ -43,8 +43,7 @@ type Settings struct {
 	SoundFeedbackVolume    int    `json:"sound_feedback_volume"`
 
 	// Audio device settings
-	InputDevice  string `json:"input_device"`
-	OutputDevice string `json:"output_device"`
+	InputDevice string `json:"input_device"`
 
 	// Output settings
 	OutputMode          OutputMode `json:"output_mode"`
@@ -160,8 +159,7 @@ var defaultSettings = Settings{
 	SoundFeedbackErrorID:   "1",
 	SoundFeedbackVolume:    100,
 
-	InputDevice:  "default",
-	OutputDevice: "default",
+	InputDevice: "default",
 
 	OutputMode:          OutputModeCopyPaste,
 	OutputTrailingSpace: false,

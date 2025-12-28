@@ -40,9 +40,15 @@ type Settings struct {
 	SoundFeedbackRecordID  string `json:"sound_feedback_record_id"`
 	SoundFeedbackSuccessID string `json:"sound_feedback_success_id"`
 	SoundFeedbackErrorID   string `json:"sound_feedback_error_id"`
+	SoundFeedbackVolume    int    `json:"sound_feedback_volume"`
+
+	// Audio device settings
+	InputDevice  string `json:"input_device"`
+	OutputDevice string `json:"output_device"`
 
 	// Output settings
-	OutputMode OutputMode `json:"output_mode"`
+	OutputMode          OutputMode `json:"output_mode"`
+	OutputTrailingSpace bool       `json:"output_trailing_space"`
 
 	// Post-processing settings
 	PostProcessEnabled  bool   `json:"postprocess_enabled"`
@@ -56,6 +62,10 @@ type Settings struct {
 
 	// History settings
 	HistoryLimit int `json:"history_limit"`
+
+	// Model auto-unload settings
+	ModelUnloadEnable  bool `json:"model_unload_enable"`
+	ModelUnloadSeconds int  `json:"model_unload_seconds"`
 }
 
 // defaultPrompts returns the predefined prompts for post-processing.
@@ -148,8 +158,13 @@ var defaultSettings = Settings{
 	SoundFeedbackRecordID:  "1",
 	SoundFeedbackSuccessID: "1",
 	SoundFeedbackErrorID:   "1",
+	SoundFeedbackVolume:    100,
 
-	OutputMode: OutputModeCopyPaste,
+	InputDevice:  "default",
+	OutputDevice: "default",
+
+	OutputMode:          OutputModeCopyPaste,
+	OutputTrailingSpace: false,
 
 	PostProcessEnabled:  false,
 	PostProcessBaseURL:  "https://api.openai.com/v1",
@@ -160,6 +175,9 @@ var defaultSettings = Settings{
 	Prompts: defaultPrompts,
 
 	HistoryLimit: 10,
+
+	ModelUnloadEnable:  true,
+	ModelUnloadSeconds: 300,
 }
 
 // SettingsManager handles loading and saving of user settings.

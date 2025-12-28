@@ -65,7 +65,7 @@ func run(logger logger.Logger) error {
 
 	appState := state.New(historyManager)
 
-	recorder, err := record.NewRecorder()
+	recorder, err := record.NewRecorder(settingsManager)
 	if err != nil {
 		return fmt.Errorf("error creating recorder: %w", err)
 	}

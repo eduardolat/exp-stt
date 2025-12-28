@@ -1,9 +1,11 @@
+// Package state manages the global application state in a thread-safe way.
 package state
 
 import (
 	"context"
 	"sync"
 
+	"github.com/gen2brain/malgo"
 	"github.com/varavelio/tribar/internal/history"
 )
 
@@ -19,6 +21,19 @@ const (
 	StatusPostProcessing
 )
 
+// AudioDevice represents an available audio device.
+type AudioDevice struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	IsDefault bool   `json:"is_default"`
+}
+
+// AvailableDevices holds lists of input/output devices.
+type AvailableDevices struct {
+	InputDevices  []AudioDevice `json:"input_devices"`
+	OutputDevices []AudioDevice `json:"output_devices"`
+}
+
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
@@ -27,15 +42,20 @@ type Instance struct {
 	statusMu       sync.RWMutex
 	statusPrevious Status
 	statusCurrent  Status
+
+	audioCtx *malgo.AllocatedContext
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
 func New(historyManager *history.Manager) *Instance {
+	audioCtx, _ := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+
 	return &Instance{
 		historyManager: historyManager,
 		statusMu:       sync.RWMutex{},
 		statusPrevious: StatusUnknown,
 		statusCurrent:  StatusUnloaded,
+		audioCtx:       audioCtx,
 	}
 }
 
@@ -53,6 +73,44 @@ func (i *Instance) GetStatus() (current Status, previous Status) {
 	i.statusMu.RLock()
 	defer i.statusMu.RUnlock()
 	return i.statusCurrent, i.statusPrevious
+}
+
+// GetAvailableDevices returns lists of available input and output audio devices.
+func (i *Instance) GetAvailableDevices() AvailableDevices {
+	result := AvailableDevices{
+		InputDevices:  []AudioDevice{},
+		OutputDevices: []AudioDevice{},
+	}
+
+	if i.audioCtx == nil {
+		return result
+	}
+
+	// Get capture (input) devices
+	captureDevices, err := i.audioCtx.Devices(malgo.Capture)
+	if err == nil {
+		for idx, dev := range captureDevices {
+			result.InputDevices = append(result.InputDevices, AudioDevice{
+				ID:        dev.ID.String(),
+				Name:      dev.Name(),
+				IsDefault: idx == 0,
+			})
+		}
+	}
+
+	// Get playback (output) devices
+	playbackDevices, err := i.audioCtx.Devices(malgo.Playback)
+	if err == nil {
+		for idx, dev := range playbackDevices {
+			result.OutputDevices = append(result.OutputDevices, AudioDevice{
+				ID:        dev.ID.String(),
+				Name:      dev.Name(),
+				IsDefault: idx == 0,
+			})
+		}
+	}
+
+	return result
 }
 
 // GetHistory returns a copy of the transcription history.

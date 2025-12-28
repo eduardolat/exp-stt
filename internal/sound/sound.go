@@ -5,9 +5,11 @@ package sound
 import (
 	"bytes"
 	"context"
+	"math"
 	"sync"
 
 	"github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/effects"
 	"github.com/gopxl/beep/v2/speaker"
 	"github.com/gopxl/beep/v2/wav"
 	"github.com/varavelio/tribar/assets/sounds"
@@ -95,6 +97,8 @@ func (s *Instance) TranscriptionError(ctx context.Context) {
 
 // playSound plays the provided WAV data through the speaker.
 func (s *Instance) playSound(ctx context.Context, data []byte) {
+	settings := s.settingsManager.Get()
+
 	streamer, format, err := wav.Decode(bytes.NewReader(data))
 	if err != nil {
 		s.logger.Error(ctx, "failed to decode WAV", "error", err)
@@ -116,6 +120,28 @@ func (s *Instance) playSound(ctx context.Context, data []byte) {
 	var toPlay beep.Streamer = streamer
 	if format.SampleRate != s.sampleRate {
 		toPlay = beep.Resample(4, format.SampleRate, s.sampleRate, streamer)
+	}
+
+	// Apply volume setting (0-100 scale converted to dB-like behavior)
+	volume := min(max(settings.SoundFeedbackVolume, 0), 100)
+
+	if volume < 100 {
+		// Convert 0-100 to a logarithmic volume scale
+		// 100 = 0 dB (no change), 0 = -infinity (silence)
+		// We use a range of about -40 dB to 0 dB for practical volume control
+		var volumeDB float64
+		if volume == 0 {
+			volumeDB = -100 // Effectively silent
+		} else {
+			// Map 1-100 to -40dB to 0dB using logarithmic scale
+			volumeDB = 20 * math.Log10(float64(volume)/100)
+		}
+		toPlay = &effects.Volume{
+			Streamer: toPlay,
+			Base:     2,
+			Volume:   volumeDB / 10, // Convert to beep's volume scale (base 2)
+			Silent:   volume == 0,
+		}
 	}
 
 	done := make(chan struct{})

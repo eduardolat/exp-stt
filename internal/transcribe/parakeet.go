@@ -224,6 +224,12 @@ func (p *ParakeetModel) LoadVocabulary() error {
 	return nil
 }
 
+// UnloadVocabulary clears the loaded vocabulary to free memory.
+func (p *ParakeetModel) UnloadVocabulary() {
+	p.vocab = nil
+	p.blankIdx = 0
+}
+
 // Transcribe performs speech-to-text on audio samples.
 // samples should be 16kHz mono float32 audio normalized to [-1, 1].
 func (p *ParakeetModel) Transcribe(samples []float32) (string, error) {

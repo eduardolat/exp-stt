@@ -73,6 +73,12 @@ func (i *Instance) LoadModels() error {
 	return nil
 }
 
+// UnloadModels clears the loaded vocabulary to free memory.
+// The models can be reloaded later by calling LoadModels again.
+func (i *Instance) UnloadModels() {
+	i.parakeet.UnloadVocabulary()
+}
+
 // TranscribeWAV transcribes audio from WAV bytes.
 // The WAV must be 16kHz mono PCM format (as produced by the recorder).
 func (i *Instance) TranscribeWAV(wavData []byte) (string, error) {

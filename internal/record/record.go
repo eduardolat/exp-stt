@@ -2,10 +2,12 @@ package record
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"sync"
 
 	"github.com/gen2brain/malgo"
+	"github.com/varavelio/tribar/internal/config"
 )
 
 var (
@@ -13,19 +15,23 @@ var (
 )
 
 type Recorder struct {
-	device      *malgo.Device
-	ctx         *malgo.AllocatedContext
-	isRecording bool
-	data        []byte
-	mu          sync.Mutex
+	device          *malgo.Device
+	ctx             *malgo.AllocatedContext
+	settingsManager *config.SettingsManager
+	isRecording     bool
+	data            []byte
+	mu              sync.Mutex
 }
 
-func NewRecorder() (*Recorder, error) {
+func NewRecorder(settingsManager *config.SettingsManager) (*Recorder, error) {
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &Recorder{ctx: ctx}, nil
+	return &Recorder{
+		ctx:             ctx,
+		settingsManager: settingsManager,
+	}, nil
 }
 
 // Start begins the recording process. It cleans the buffer and starts capturing audio data.
@@ -44,6 +50,15 @@ func (r *Recorder) Start() error {
 	deviceConfig.Capture.Format = malgo.FormatS16
 	deviceConfig.Capture.Channels = 1
 	deviceConfig.SampleRate = 16000
+
+	// Set specific device if configured
+	settings := r.settingsManager.Get()
+	if settings.InputDevice != "" && settings.InputDevice != "default" {
+		deviceID := parseDeviceID(settings.InputDevice)
+		if deviceID != nil {
+			deviceConfig.Capture.DeviceID = deviceID.Pointer()
+		}
+	}
 
 	onData := func(pOutput, pInput []byte, frameCount uint32) {
 		r.mu.Lock()
@@ -90,6 +105,21 @@ func (r *Recorder) BuildWAV() []byte {
 	defer r.mu.Unlock()
 
 	return buildWavBytes(r.data, 16000, 1)
+}
+
+// parseDeviceID parses a hex string device ID back to malgo.DeviceID.
+func parseDeviceID(hexStr string) *malgo.DeviceID {
+	data, err := hex.DecodeString(hexStr)
+	if err != nil {
+		return nil
+	}
+
+	var id malgo.DeviceID
+	if len(data) > len(id) {
+		data = data[:len(id)]
+	}
+	copy(id[:], data)
+	return &id
 }
 
 // buildWavBytes creates a WAV file as bytes from raw PCM data.

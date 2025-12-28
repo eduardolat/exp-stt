@@ -5,6 +5,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/varavelio/tribar/internal/clipboard"
@@ -48,6 +49,9 @@ type Engine struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	unloadMu    sync.Mutex
+	unloadTimer *time.Timer
 }
 
 // New creates a new Engine instance with all dependencies.
@@ -92,7 +96,58 @@ func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback
 
 	e.state.SetStatus(state.StatusLoaded)
 	e.logger.Info(e.ctx, "models loaded successfully")
+
+	// Start auto-unload timer after models are loaded
+	e.resetUnloadTimer()
+
 	return nil
+}
+
+// UnloadModels unloads the transcription models to free resources.
+func (e *Engine) UnloadModels() {
+	status, _ := e.state.GetStatus()
+	if status != state.StatusLoaded {
+		return
+	}
+
+	e.transcriber.UnloadModels()
+	e.state.SetStatus(state.StatusUnloaded)
+	e.logger.Info(e.ctx, "models unloaded due to inactivity")
+}
+
+// resetUnloadTimer resets or starts the auto-unload timer based on settings.
+func (e *Engine) resetUnloadTimer() {
+	settings := e.settingsManager.Get()
+	if !settings.ModelUnloadEnable {
+		e.stopUnloadTimer()
+		return
+	}
+
+	e.unloadMu.Lock()
+	defer e.unloadMu.Unlock()
+
+	duration := time.Duration(settings.ModelUnloadSeconds) * time.Second
+
+	if e.unloadTimer != nil {
+		e.unloadTimer.Stop()
+	}
+
+	e.unloadTimer = time.AfterFunc(duration, func() {
+		e.UnloadModels()
+	})
+
+	e.logger.Debug(e.ctx, "auto-unload timer reset", "seconds", settings.ModelUnloadSeconds)
+}
+
+// stopUnloadTimer stops the auto-unload timer if it's running.
+func (e *Engine) stopUnloadTimer() {
+	e.unloadMu.Lock()
+	defer e.unloadMu.Unlock()
+
+	if e.unloadTimer != nil {
+		e.unloadTimer.Stop()
+		e.unloadTimer = nil
+	}
 }
 
 // ToggleRecording starts or stops the recording based on current state.
@@ -111,6 +166,9 @@ func (e *Engine) ToggleRecording() {
 
 // StartRecording begins audio capture.
 func (e *Engine) startRecording() {
+	// Reset unload timer on activity
+	e.resetUnloadTimer()
+
 	if err := e.recorder.Start(); err != nil {
 		e.logger.Error(e.ctx, "failed to start recording", "err", err)
 		e.notifier.Error(e.ctx, "Recording Failed", err.Error())
@@ -167,7 +225,13 @@ func (e *Engine) processRecording() {
 		}
 	}
 
-	if err := e.writer.Write(e.ctx, settings.OutputMode, text); err != nil {
+	// Apply trailing space if enabled
+	outputText := text
+	if settings.OutputTrailingSpace && outputText != "" {
+		outputText = outputText + " "
+	}
+
+	if err := e.writer.Write(e.ctx, settings.OutputMode, outputText); err != nil {
 		e.logger.Error(e.ctx, "failed to write output", "err", err)
 	}
 
@@ -190,6 +254,9 @@ func (e *Engine) processRecording() {
 	e.sound.TranscriptionSuccess(e.ctx)
 	e.notifier.TranscriptionFinished(e.ctx, text)
 	e.state.SetStatus(state.StatusLoaded)
+
+	// Reset unload timer after processing completes
+	e.resetUnloadTimer()
 
 	e.logger.Info(e.ctx, "transcription complete", "length", len(text))
 }
@@ -221,6 +288,7 @@ func (e *Engine) GetState() *state.Instance {
 // Shutdown gracefully stops the engine and releases resources.
 func (e *Engine) Shutdown() {
 	e.cancel()
+	e.stopUnloadTimer()
 
 	status, _ := e.state.GetStatus()
 	if status == state.StatusListening {

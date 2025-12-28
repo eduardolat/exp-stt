@@ -1,10 +1,10 @@
 package state
 
 import (
+	"context"
 	"sync"
-	"time"
 
-	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/history"
 )
 
 type Status int
@@ -19,38 +19,23 @@ const (
 	StatusPostProcessing
 )
 
-// HistoryEntry represents a single transcription record.
-type HistoryEntry struct {
-	ID        int       `json:"id"`
-	Text      string    `json:"text"`
-	AudioPath string    `json:"audio_path"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
-	settingsManager *config.SettingsManager
+	historyManager *history.Manager
 
 	statusMu       sync.RWMutex
 	statusPrevious Status
 	statusCurrent  Status
-
-	historyMu sync.RWMutex
-	history   []HistoryEntry
-	nextID    int
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
-func New(settingsManager *config.SettingsManager) *Instance {
+func New(historyManager *history.Manager) *Instance {
 	return &Instance{
-		settingsManager: settingsManager,
-		statusMu:        sync.RWMutex{},
-		statusPrevious:  StatusUnknown,
-		statusCurrent:   StatusUnloaded,
-		historyMu:       sync.RWMutex{},
-		history:         make([]HistoryEntry, 0),
-		nextID:          1,
+		historyManager: historyManager,
+		statusMu:       sync.RWMutex{},
+		statusPrevious: StatusUnknown,
+		statusCurrent:  StatusUnloaded,
 	}
 }
 
@@ -70,53 +55,33 @@ func (i *Instance) GetStatus() (current Status, previous Status) {
 	return i.statusCurrent, i.statusPrevious
 }
 
-// AddHistoryEntry adds a new transcription to the history.
-func (i *Instance) AddHistoryEntry(text, audioPath string) {
-	i.historyMu.Lock()
-	defer i.historyMu.Unlock()
-
-	entry := HistoryEntry{
-		ID:        i.nextID,
-		Text:      text,
-		AudioPath: audioPath,
-		Timestamp: time.Now(),
-	}
-	i.nextID++
-
-	i.history = append([]HistoryEntry{entry}, i.history...)
-
-	limit := i.settingsManager.Get().HistoryLimit
-	if len(i.history) > limit {
-		i.history = i.history[:limit]
-	}
-}
-
 // GetHistory returns a copy of the transcription history.
-func (i *Instance) GetHistory() []HistoryEntry {
-	i.historyMu.RLock()
-	defer i.historyMu.RUnlock()
-
-	result := make([]HistoryEntry, len(i.history))
-	copy(result, i.history)
-	return result
+// This refreshes the cache from disk to ensure data is up-to-date.
+func (i *Instance) GetHistory(ctx context.Context) []history.Entry {
+	return i.historyManager.GetAll(ctx)
 }
 
 // GetHistoryEntry retrieves a specific history entry by ID.
-func (i *Instance) GetHistoryEntry(id int) (HistoryEntry, bool) {
-	i.historyMu.RLock()
-	defer i.historyMu.RUnlock()
+func (i *Instance) GetHistoryEntry(id string) (history.Entry, bool) {
+	return i.historyManager.GetByID(id)
+}
 
-	for _, entry := range i.history {
-		if entry.ID == id {
-			return entry, true
-		}
-	}
-	return HistoryEntry{}, false
+// GetHistoryAudioPath returns the full path to the audio file for an entry.
+func (i *Instance) GetHistoryAudioPath(id string) string {
+	return i.historyManager.GetAudioPath(id)
+}
+
+// DeleteHistoryEntry removes a history entry by ID.
+func (i *Instance) DeleteHistoryEntry(ctx context.Context, id string) error {
+	return i.historyManager.Delete(ctx, id)
 }
 
 // ClearHistory removes all entries from the history.
-func (i *Instance) ClearHistory() {
-	i.historyMu.Lock()
-	defer i.historyMu.Unlock()
-	i.history = make([]HistoryEntry, 0)
+func (i *Instance) ClearHistory(ctx context.Context) error {
+	return i.historyManager.Clear(ctx)
+}
+
+// HistoryCount returns the number of entries in the history.
+func (i *Instance) HistoryCount() int {
+	return i.historyManager.Count()
 }

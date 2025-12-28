@@ -5,12 +5,11 @@ package engine
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/varavelio/tribar/internal/clipboard"
 	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/history"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/notify"
 	"github.com/varavelio/tribar/internal/postprocess"
@@ -24,6 +23,7 @@ import (
 type Dependencies struct {
 	Logger          logger.Logger
 	SettingsManager *config.SettingsManager
+	HistoryManager  *history.Manager
 	State           *state.Instance
 	Recorder        *record.Recorder
 	Transcriber     *transcribe.Instance
@@ -37,6 +37,7 @@ type Dependencies struct {
 type Engine struct {
 	logger          logger.Logger
 	settingsManager *config.SettingsManager
+	historyManager  *history.Manager
 	state           *state.Instance
 	recorder        *record.Recorder
 	transcriber     *transcribe.Instance
@@ -56,6 +57,7 @@ func New(deps Dependencies) *Engine {
 	return &Engine{
 		logger:          deps.Logger,
 		settingsManager: deps.SettingsManager,
+		historyManager:  deps.HistoryManager,
 		state:           deps.State,
 		recorder:        deps.Recorder,
 		transcriber:     deps.Transcriber,
@@ -134,17 +136,13 @@ func (e *Engine) processRecording() {
 	settings := e.settingsManager.Get()
 	e.state.SetStatus(state.StatusTranscribing)
 
-	audioPath := e.generateAudioPath()
-	if err := e.recorder.SaveWAV(audioPath); err != nil {
-		e.handleError("failed to save audio", err)
-		return
-	}
+	startedAt := time.Now()
 
-	wavData, err := os.ReadFile(audioPath)
-	if err != nil {
-		e.handleError("failed to read audio file", err)
-		return
-	}
+	// Get the raw audio data from the recorder
+	audioData := e.recorder.GetData()
+	recordingDurationMs := calculateDurationMs(len(audioData))
+
+	wavData := e.recorder.BuildWAV()
 
 	text, err := e.transcriber.TranscribeWAV(wavData)
 	if err != nil {
@@ -154,6 +152,9 @@ func (e *Engine) processRecording() {
 
 	e.logger.Debug(e.ctx, "transcription complete", "text", text)
 
+	rawText := text
+	postProcessed := false
+
 	if e.postprocess.IsEnabled() {
 		e.state.SetStatus(state.StatusPostProcessing)
 		processed, err := e.postprocess.Process(e.ctx, text)
@@ -161,6 +162,7 @@ func (e *Engine) processRecording() {
 			e.logger.Warn(e.ctx, "post-processing failed, using raw transcription", "err", err)
 		} else {
 			text = processed
+			postProcessed = true
 		}
 	}
 
@@ -168,7 +170,22 @@ func (e *Engine) processRecording() {
 		e.logger.Error(e.ctx, "failed to write output", "err", err)
 	}
 
-	e.state.AddHistoryEntry(text, audioPath)
+	finishedAt := time.Now()
+
+	// Write to history using the new history manager
+	_, err = e.historyManager.Write(e.ctx, history.WriteRequest{
+		StartedAt:           startedAt,
+		FinishedAt:          finishedAt,
+		RecordingDurationMs: recordingDurationMs,
+		TranscriptionRaw:    rawText,
+		TranscriptionFinal:  text,
+		PostProcessed:       postProcessed,
+		AudioData:           wavData,
+	})
+	if err != nil {
+		e.logger.Error(e.ctx, "failed to save history entry", "err", err)
+	}
+
 	e.sound.TranscriptionFinished(e.ctx)
 	e.notifier.TranscriptionFinished(e.ctx, text)
 	e.state.SetStatus(state.StatusLoaded)
@@ -176,18 +193,22 @@ func (e *Engine) processRecording() {
 	e.logger.Info(e.ctx, "transcription complete", "length", len(text))
 }
 
+// calculateDurationMs calculates audio duration in milliseconds from raw PCM data.
+// Assumes 16-bit mono audio at 16kHz sample rate.
+func calculateDurationMs(dataSize int) int64 {
+	// 16-bit = 2 bytes per sample, mono = 1 channel, 16kHz sample rate
+	bytesPerSecond := 16000 * 2 * 1
+	if bytesPerSecond == 0 {
+		return 0
+	}
+	return int64(dataSize) * 1000 / int64(bytesPerSecond)
+}
+
 // handleError logs the error, notifies the user, and resets state.
 func (e *Engine) handleError(message string, err error) {
 	e.logger.Error(e.ctx, message, "err", err)
 	e.notifier.Error(e.ctx, config.AppName, fmt.Sprintf("%s: %v", message, err))
 	e.state.SetStatus(state.StatusLoaded)
-}
-
-// generateAudioPath creates a unique path for the audio file.
-func (e *Engine) generateAudioPath() string {
-	timestamp := time.Now().Format("20060102-150405")
-	filename := fmt.Sprintf("recording-%s.wav", timestamp)
-	return filepath.Join(config.DirectoryRecordings, filename)
 }
 
 // GetState returns the current application state (read-only access for UI).

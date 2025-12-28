@@ -12,6 +12,7 @@ import (
 	"github.com/varavelio/tribar/internal/clipboard"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/engine"
+	"github.com/varavelio/tribar/internal/history"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/notify"
 	"github.com/varavelio/tribar/internal/onnx"
@@ -59,7 +60,10 @@ func run(logger logger.Logger) error {
 		return fmt.Errorf("error loading settings: %w", err)
 	}
 
-	appState := state.New(settingsManager)
+	historyManager := history.NewManager(logger, settingsManager)
+	historyManager.LoadAsync(ctx)
+
+	appState := state.New(historyManager)
 
 	recorder, err := record.NewRecorder()
 	if err != nil {
@@ -84,6 +88,7 @@ func run(logger logger.Logger) error {
 	eng := engine.New(engine.Dependencies{
 		Logger:          logger,
 		SettingsManager: settingsManager,
+		HistoryManager:  historyManager,
 		State:           appState,
 		Recorder:        recorder,
 		Transcriber:     transcriber,

@@ -3,7 +3,6 @@ package record
 import (
 	"encoding/binary"
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/gen2brain/malgo"
@@ -75,36 +74,53 @@ func (r *Recorder) Stop() {
 	}
 }
 
-// SaveWAV saves the recorded audio data to a WAV file at the specified path.
-func (r *Recorder) SaveWAV(path string) error {
+// GetData returns a copy of the raw PCM audio data.
+func (r *Recorder) GetData() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = f.Close() }()
-
-	// Write WAV header manually (44 bytes)
-	writeWavHeader(f, len(r.data), 16000, 1)
-	_, err = f.Write(r.data)
-	return err
+	result := make([]byte, len(r.data))
+	copy(result, r.data)
+	return result
 }
 
-// writeWavHeader is a helper function to create the standard WAV header.
-func writeWavHeader(f *os.File, dataSize, sampleRate, channels int) {
-	_ = binary.Write(f, binary.LittleEndian, []byte("RIFF"))
-	_ = binary.Write(f, binary.LittleEndian, int32(36+dataSize))
-	_ = binary.Write(f, binary.LittleEndian, []byte("WAVE"))
-	_ = binary.Write(f, binary.LittleEndian, []byte("fmt "))
-	_ = binary.Write(f, binary.LittleEndian, int32(16))
-	_ = binary.Write(f, binary.LittleEndian, int16(1)) // Audio format (PCM)
-	_ = binary.Write(f, binary.LittleEndian, int16(channels))
-	_ = binary.Write(f, binary.LittleEndian, int32(sampleRate))
-	_ = binary.Write(f, binary.LittleEndian, int32(sampleRate*channels*2))
-	_ = binary.Write(f, binary.LittleEndian, int16(channels*2))
-	_ = binary.Write(f, binary.LittleEndian, int16(16)) // Bits por sample
-	_ = binary.Write(f, binary.LittleEndian, []byte("data"))
-	_ = binary.Write(f, binary.LittleEndian, int32(dataSize))
+// BuildWAV returns the recorded audio as a complete WAV file in memory.
+func (r *Recorder) BuildWAV() []byte {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return buildWavBytes(r.data, 16000, 1)
+}
+
+// buildWavBytes creates a WAV file as bytes from raw PCM data.
+func buildWavBytes(data []byte, sampleRate, channels int) []byte {
+	dataSize := len(data)
+	headerSize := 44
+	totalSize := headerSize + dataSize
+
+	buf := make([]byte, totalSize)
+
+	// RIFF header
+	copy(buf[0:4], "RIFF")
+	binary.LittleEndian.PutUint32(buf[4:8], uint32(36+dataSize))
+	copy(buf[8:12], "WAVE")
+
+	// fmt subchunk
+	copy(buf[12:16], "fmt ")
+	binary.LittleEndian.PutUint32(buf[16:20], 16) // Subchunk1Size
+	binary.LittleEndian.PutUint16(buf[20:22], 1)  // AudioFormat (PCM)
+	binary.LittleEndian.PutUint16(buf[22:24], uint16(channels))
+	binary.LittleEndian.PutUint32(buf[24:28], uint32(sampleRate))
+	binary.LittleEndian.PutUint32(buf[28:32], uint32(sampleRate*channels*2)) // ByteRate
+	binary.LittleEndian.PutUint16(buf[32:34], uint16(channels*2))            // BlockAlign
+	binary.LittleEndian.PutUint16(buf[34:36], 16)                            // BitsPerSample
+
+	// data subchunk
+	copy(buf[36:40], "data")
+	binary.LittleEndian.PutUint32(buf[40:44], uint32(dataSize))
+
+	// Audio data
+	copy(buf[44:], data)
+
+	return buf
 }

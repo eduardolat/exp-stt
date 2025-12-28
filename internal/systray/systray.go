@@ -1,6 +1,7 @@
 package systray
 
 import (
+	"fmt"
 	"runtime"
 	"time"
 
@@ -41,8 +42,11 @@ type Instance struct {
 
 	isShuttingDown bool
 
-	menuRecord *systray.MenuItem
-	menuQuit   *systray.MenuItem
+	menuDownload *systray.MenuItem
+	menuRecord   *systray.MenuItem
+	menuQuit     *systray.MenuItem
+
+	lastDownloadPercent float64
 }
 
 func New(appState *state.Instance, engine Engine, onQuit func()) *Instance {
@@ -68,6 +72,10 @@ func (i *Instance) onReady() {
 	versionItem := systray.AddMenuItem(config.AppName+" v"+config.AppVersion, "")
 	versionItem.Disable()
 	systray.AddSeparator()
+
+	i.menuDownload = systray.AddMenuItem("", "")
+	i.menuDownload.Disable()
+	i.menuDownload.Hide()
 
 	i.menuRecord = systray.AddMenuItem("Toggle Recording", "Start or stop recording")
 	systray.AddSeparator()
@@ -210,6 +218,30 @@ func (i *Instance) setIcon() {
 	}
 }
 
+// updateDownloadProgress updates the download menu item based on current progress.
+func (i *Instance) updateDownloadProgress() {
+	if i.isShuttingDown {
+		return
+	}
+
+	statusCurrent, _ := i.appState.GetStatus()
+	progress := i.appState.GetDownloadProgress()
+
+	if statusCurrent == state.StatusDownloading && progress.Total > 0 {
+		// Only update if percent changed significantly (avoid too many updates)
+		if progress.Percent != i.lastDownloadPercent {
+			i.lastDownloadPercent = progress.Percent
+			i.menuDownload.SetTitle(fmt.Sprintf("Downloading %.0f%%", progress.Percent))
+			i.menuDownload.Show()
+		}
+	} else {
+		if i.lastDownloadPercent != 0 {
+			i.lastDownloadPercent = 0
+			i.menuDownload.Hide()
+		}
+	}
+}
+
 // animate runs the animation loop, updating the systray icon and title based on the current status
 // and animation position at regular intervals defined by animationFrameDuration.
 func (i *Instance) animate() {
@@ -228,6 +260,9 @@ func (i *Instance) animate() {
 		if statusPrevious != statusCurrent {
 			i.setTitle()
 		}
+
+		// Update download progress menu
+		i.updateDownloadProgress()
 
 		// Check again before icon update
 		if i.isShuttingDown {

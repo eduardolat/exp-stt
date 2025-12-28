@@ -8,6 +8,7 @@ require (
 	github.com/gen2brain/beeep v0.11.1
 	github.com/gen2brain/malgo v0.11.24
 	github.com/go-audio/wav v1.1.0
+	github.com/google/uuid v1.6.0
 	github.com/yalue/onnxruntime_go v1.25.0
 	golang.org/x/sync v0.19.0
 )

@@ -29,6 +29,7 @@ type Engine interface {
 type Instance struct {
 	appState *state.Instance
 	engine   Engine
+	onQuit   func()
 
 	systrayStart func()
 	systrayEnd   func()
@@ -44,10 +45,11 @@ type Instance struct {
 	menuQuit   *systray.MenuItem
 }
 
-func New(appState *state.Instance, engine Engine) *Instance {
+func New(appState *state.Instance, engine Engine, onQuit func()) *Instance {
 	i := &Instance{
 		appState:         appState,
 		engine:           engine,
+		onQuit:           onQuit,
 		animationPosCurr: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
@@ -62,6 +64,10 @@ func New(appState *state.Instance, engine Engine) *Instance {
 func (i *Instance) onReady() {
 	i.setIcon()
 	i.setTitle()
+
+	versionItem := systray.AddMenuItem(config.AppName+" v"+config.AppVersion, "")
+	versionItem.Disable()
+	systray.AddSeparator()
 
 	i.menuRecord = systray.AddMenuItem("Toggle Recording", "Start or stop recording")
 	systray.AddSeparator()
@@ -79,7 +85,9 @@ func (i *Instance) handleMenuClicks() {
 				i.engine.ToggleRecording()
 			}
 		case <-i.menuQuit.ClickedCh:
-			systray.Quit()
+			if i.onQuit != nil {
+				i.onQuit()
+			}
 			return
 		}
 	}

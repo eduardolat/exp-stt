@@ -104,7 +104,7 @@ func run(logger logger.Logger) error {
 
 	go loadModelsAsync(ctx, logger, eng)
 
-	stray := systray.New(appState, eng)
+	stray := systray.New(appState, eng, stop)
 	go stray.Start()
 	defer stray.Shutdown()
 

@@ -73,7 +73,7 @@ func (s *Instance) playSound(ctx context.Context, isInput bool) {
 		s.logger.Error(ctx, "failed to decode WAV", "error", err)
 		return
 	}
-	defer streamer.Close()
+	defer func() { _ = streamer.Close() }()
 
 	s.speakerOnce.Do(func() {
 		s.sampleRate = format.SampleRate

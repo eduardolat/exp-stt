@@ -17,10 +17,10 @@ import (
 
 // Parakeet model URLs from HuggingFace
 const (
-	ParakeetVocabURL   = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/vocab.txt?download=true"
-	ParakeetNemoURL    = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/nemo128.onnx?download=true"
-	ParakeetEncoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/encoder-model.int8.onnx?download=true"
-	ParakeetDecoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/decoder_joint-model.int8.onnx?download=true"
+	ParakeetVocabURL   = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/vocab.txt?download=true"
+	ParakeetNemoURL    = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/nemo128.onnx?download=true"
+	ParakeetEncoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/encoder-model.int8.onnx?download=true"
+	ParakeetDecoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/abd2878d52a678ce380088ef9d9b1d9664404565/decoder_joint-model.int8.onnx?download=true"
 )
 
 // Parakeet model file names

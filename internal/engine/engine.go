@@ -78,10 +78,9 @@ func New(deps Dependencies) *Engine {
 
 // LoadModels loads the transcription models with progress reporting.
 func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback) error {
-	e.state.SetStatus(state.StatusLoading)
-
 	allExist, _ := e.transcriber.CheckModels()
 	if !allExist {
+		e.state.SetStatus(state.StatusDownloading)
 		e.logger.Info(e.ctx, "downloading missing models...")
 		if err := e.transcriber.DownloadModels(progressCallback); err != nil {
 			e.state.SetStatus(state.StatusUnloaded)
@@ -89,6 +88,8 @@ func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback
 			return fmt.Errorf("failed to download models: %w", err)
 		}
 	}
+
+	e.state.SetStatus(state.StatusLoading)
 
 	if err := e.transcriber.LoadModels(); err != nil {
 		e.state.SetStatus(state.StatusUnloaded)
@@ -175,6 +176,10 @@ func (e *Engine) ToggleRecording() {
 		e.startRecording()
 	case state.StatusUnloaded:
 		e.logger.Warn(e.ctx, "cannot start recording, models not loaded")
+	case state.StatusDownloading:
+		e.logger.Warn(e.ctx, "cannot start recording, models are being downloaded")
+	case state.StatusLoading:
+		e.logger.Warn(e.ctx, "cannot start recording, models are being loaded")
 	}
 }
 

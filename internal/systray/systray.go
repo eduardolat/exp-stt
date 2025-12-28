@@ -149,6 +149,8 @@ func (i *Instance) setTitle() {
 	switch statusCurrent {
 	case state.StatusUnloaded:
 		title += " - Model not loaded"
+	case state.StatusDownloading:
+		title += " - Downloading model..."
 	case state.StatusLoading:
 		title += " - Loading model..."
 	case state.StatusLoaded:
@@ -184,6 +186,8 @@ func (i *Instance) setIcon() {
 	switch statusCurrent {
 	case state.StatusUnloaded:
 		res = pngOrIco(logo.LogoBlackGray)
+	case state.StatusDownloading:
+		res = pngOrIco(logo.LogoBlackAmber)
 	case state.StatusLoading:
 		res = pngOrIco(logo.LogoBlackAmber)
 	case state.StatusLoaded:

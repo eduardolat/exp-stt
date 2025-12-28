@@ -14,6 +14,7 @@ type Status int
 const (
 	StatusUnknown Status = iota
 	StatusUnloaded
+	StatusDownloading
 	StatusLoading
 	StatusLoaded
 	StatusListening

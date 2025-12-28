@@ -70,7 +70,7 @@ func (r *Recorder) Stop() {
 	r.mu.Unlock()
 
 	if r.device != nil {
-		r.device.Stop()
+		_ = r.device.Stop()
 		r.device.Uninit()
 	}
 }
@@ -84,7 +84,7 @@ func (r *Recorder) SaveWAV(path string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Write WAV header manually (44 bytes)
 	writeWavHeader(f, len(r.data), 16000, 1)
@@ -92,19 +92,19 @@ func (r *Recorder) SaveWAV(path string) error {
 	return err
 }
 
-// writeWavHeader is a helper function to create the standard WAV header
+// writeWavHeader is a helper function to create the standard WAV header.
 func writeWavHeader(f *os.File, dataSize, sampleRate, channels int) {
-	binary.Write(f, binary.LittleEndian, []byte("RIFF"))
-	binary.Write(f, binary.LittleEndian, int32(36+dataSize))
-	binary.Write(f, binary.LittleEndian, []byte("WAVE"))
-	binary.Write(f, binary.LittleEndian, []byte("fmt "))
-	binary.Write(f, binary.LittleEndian, int32(16))
-	binary.Write(f, binary.LittleEndian, int16(1)) // Audio format (PCM)
-	binary.Write(f, binary.LittleEndian, int16(channels))
-	binary.Write(f, binary.LittleEndian, int32(sampleRate))
-	binary.Write(f, binary.LittleEndian, int32(sampleRate*channels*2))
-	binary.Write(f, binary.LittleEndian, int16(channels*2))
-	binary.Write(f, binary.LittleEndian, int16(16)) // Bits por sample
-	binary.Write(f, binary.LittleEndian, []byte("data"))
-	binary.Write(f, binary.LittleEndian, int32(dataSize))
+	_ = binary.Write(f, binary.LittleEndian, []byte("RIFF"))
+	_ = binary.Write(f, binary.LittleEndian, int32(36+dataSize))
+	_ = binary.Write(f, binary.LittleEndian, []byte("WAVE"))
+	_ = binary.Write(f, binary.LittleEndian, []byte("fmt "))
+	_ = binary.Write(f, binary.LittleEndian, int32(16))
+	_ = binary.Write(f, binary.LittleEndian, int16(1)) // Audio format (PCM)
+	_ = binary.Write(f, binary.LittleEndian, int16(channels))
+	_ = binary.Write(f, binary.LittleEndian, int32(sampleRate))
+	_ = binary.Write(f, binary.LittleEndian, int32(sampleRate*channels*2))
+	_ = binary.Write(f, binary.LittleEndian, int16(channels*2))
+	_ = binary.Write(f, binary.LittleEndian, int16(16)) // Bits por sample
+	_ = binary.Write(f, binary.LittleEndian, []byte("data"))
+	_ = binary.Write(f, binary.LittleEndian, int32(dataSize))
 }

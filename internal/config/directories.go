@@ -13,12 +13,12 @@ import (
 const dirAppName = "tribar"
 
 var (
-	DirectoryConfig         = ""
-	DirectoryData           = ""
-	DirectoryOnnxRuntime    = ""
-	DirectoryModels         = ""
-	DirectoryModelsParakeet = ""
-	DirectoryRecordings     = ""
+	DirectoryConfig           = ""
+	DirectoryData             = ""
+	DirectoryOnnxRuntime      = ""
+	DirectoryModels           = ""
+	DirectoryModelsParakeetV3 = ""
+	DirectoryRecordings       = ""
 )
 
 // EnsureDirectories creates all necessary directories if they don't exist.
@@ -37,14 +37,14 @@ func EnsureDirectories(logger logger.Logger) error {
 	DirectoryData = dataDir
 	DirectoryOnnxRuntime = filepath.Join(DirectoryData, "onnxruntime")
 	DirectoryModels = filepath.Join(DirectoryData, "models")
-	DirectoryModelsParakeet = filepath.Join(DirectoryModels, "parakeet")
+	DirectoryModelsParakeetV3 = filepath.Join(DirectoryModels, "parakeet-v3")
 	DirectoryRecordings = filepath.Join(DirectoryData, "recordings")
 
 	// We only have to create the deepest directories, as os.MkdirAll will create all necessary parents.
 	ensureDirs := []string{
 		DirectoryConfig,
 		DirectoryOnnxRuntime,
-		DirectoryModelsParakeet,
+		DirectoryModelsParakeetV3,
 		DirectoryRecordings,
 	}
 	for _, dir := range ensureDirs {
@@ -59,7 +59,7 @@ func EnsureDirectories(logger logger.Logger) error {
 		"directory_data", DirectoryData,
 		"directory_onnx_runtime", DirectoryOnnxRuntime,
 		"directory_models", DirectoryModels,
-		"directory_parakeet_models", DirectoryModelsParakeet,
+		"directory_models_parakeet_v3", DirectoryModelsParakeetV3,
 		"directory_recordings", DirectoryRecordings,
 	)
 

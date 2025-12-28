@@ -57,7 +57,7 @@ type ParakeetModel struct {
 
 // NewParakeetModel creates a new ParakeetModel instance.
 func NewParakeetModel() (*ParakeetModel, error) {
-	parakeetDir := config.DirectoryModelsParakeet
+	parakeetDir := config.DirectoryModelsParakeetV3
 	vocabPath := path.Join(parakeetDir, ParakeetVocabFile)
 	nemoPath := path.Join(parakeetDir, ParakeetNemoFile)
 	encoderPath := path.Join(parakeetDir, ParakeetEncoderFile)

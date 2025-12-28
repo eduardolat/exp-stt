@@ -28,7 +28,7 @@ func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instanc
 // TranscriptionStarted plays a sound when transcription starts.
 func (s *Instance) TranscriptionStarted(ctx context.Context) {
 	settings := s.settingsManager.Get()
-	if !settings.SoundOnStart {
+	if !settings.SoundFeedbackEnable {
 		return
 	}
 
@@ -38,7 +38,7 @@ func (s *Instance) TranscriptionStarted(ctx context.Context) {
 // TranscriptionFinished plays a sound when transcription completes.
 func (s *Instance) TranscriptionFinished(ctx context.Context) {
 	settings := s.settingsManager.Get()
-	if !settings.SoundOnFinish {
+	if !settings.SoundFeedbackEnable {
 		return
 	}
 

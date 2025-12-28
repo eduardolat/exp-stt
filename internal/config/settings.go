@@ -35,9 +35,9 @@ type Settings struct {
 	NotifyOnStart  bool `json:"notify_on_start"`
 	NotifyOnFinish bool `json:"notify_on_finish"`
 
-	// Sound settings
-	SoundOnStart  bool `json:"sound_on_start"`
-	SoundOnFinish bool `json:"sound_on_finish"`
+	// Sound feedback settings
+	SoundFeedbackEnable bool   `json:"sound_feedback_enable"`
+	SoundFeedbackID     string `json:"sound_feedback_id"`
 
 	// Output settings
 	OutputMode OutputMode `json:"output_mode"`
@@ -142,8 +142,8 @@ var defaultSettings = Settings{
 	NotifyOnStart:  false,
 	NotifyOnFinish: false,
 
-	SoundOnStart:  true,
-	SoundOnFinish: true,
+	SoundFeedbackEnable: true,
+	SoundFeedbackID:     "1",
 
 	OutputMode: OutputModeCopyPaste,
 

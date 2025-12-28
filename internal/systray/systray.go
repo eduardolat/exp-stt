@@ -21,8 +21,14 @@ const (
 	animationPositionLeft
 )
 
+// Engine defines the interface for engine actions that systray can trigger.
+type Engine interface {
+	ToggleRecording()
+}
+
 type Instance struct {
 	appState *state.Instance
+	engine   Engine
 
 	systrayStart func()
 	systrayEnd   func()
@@ -33,11 +39,15 @@ type Instance struct {
 	animationTimer    *time.Timer
 
 	isShuttingDown bool
+
+	menuRecord *systray.MenuItem
+	menuQuit   *systray.MenuItem
 }
 
-func New(appState *state.Instance) *Instance {
+func New(appState *state.Instance, engine Engine) *Instance {
 	i := &Instance{
 		appState:         appState,
+		engine:           engine,
 		animationPosCurr: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
@@ -50,7 +60,29 @@ func New(appState *state.Instance) *Instance {
 }
 
 func (i *Instance) onReady() {
-	i.animate()
+	i.setIcon()
+	i.setTitle()
+
+	i.menuRecord = systray.AddMenuItem("Toggle Recording", "Start or stop recording")
+	systray.AddSeparator()
+	i.menuQuit = systray.AddMenuItem("Quit", "Exit the application")
+
+	go i.handleMenuClicks()
+	go i.animate()
+}
+
+func (i *Instance) handleMenuClicks() {
+	for {
+		select {
+		case <-i.menuRecord.ClickedCh:
+			if i.engine != nil {
+				i.engine.ToggleRecording()
+			}
+		case <-i.menuQuit.ClickedCh:
+			systray.Quit()
+			return
+		}
+	}
 }
 
 func (i *Instance) Start() {

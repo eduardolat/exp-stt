@@ -108,6 +108,10 @@ func (i *Instance) Shutdown() {
 // For unloaded and loaded statuses, the animation position is always set to middle, for
 // other statuses, it cycles through middle, right, and left positions.
 func (i *Instance) setNextAnimationPosition() {
+	if i.isShuttingDown {
+		return
+	}
+
 	statusCurrent, _ := i.appState.GetStatus()
 	i.animationPosPrev = i.animationPosCurr
 
@@ -135,6 +139,10 @@ func (i *Instance) setNextAnimationPosition() {
 
 // setTitle updates the systray title and tooltip based on the current status.
 func (i *Instance) setTitle() {
+	if i.isShuttingDown {
+		return
+	}
+
 	statusCurrent, _ := i.appState.GetStatus()
 	title := config.AppName
 
@@ -159,6 +167,10 @@ func (i *Instance) setTitle() {
 
 // setIcon updates the systray icon based on the current status and animation position.
 func (i *Instance) setIcon() {
+	if i.isShuttingDown {
+		return
+	}
+
 	pngOrIco := func(logoRes logo.LogoResources) logo.ResourceSet {
 		if runtime.GOOS == "windows" {
 			return logoRes.ICO
@@ -204,8 +216,18 @@ func (i *Instance) animate() {
 
 		statusCurrent, statusPrevious := i.appState.GetStatus()
 
+		// Check again after potentially blocking operations
+		if i.isShuttingDown {
+			return
+		}
+
 		if statusPrevious != statusCurrent {
 			i.setTitle()
+		}
+
+		// Check again before icon update
+		if i.isShuttingDown {
+			return
 		}
 
 		if statusPrevious != statusCurrent || i.animationPosPrev != i.animationPosCurr {

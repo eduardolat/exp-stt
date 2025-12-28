@@ -56,6 +56,8 @@ type Engine struct {
 	lastActivityTime time.Time
 
 	unloadTickerStarted bool
+	modelsLoaded        bool
+	modelsLoadedMu      sync.RWMutex
 }
 
 // New creates a new Engine instance with all dependencies.
@@ -107,18 +109,33 @@ func (e *Engine) EnsureModelsDownloaded() error {
 	return nil
 }
 
-// loadModels loads the transcription models into memory.
-// This is called lazily on first recording.
-func (e *Engine) loadModels() error {
+// ensureModelsLoaded loads the transcription models into memory if not already loaded.
+// Returns true if models are ready, false if there was an error.
+func (e *Engine) ensureModelsLoaded() bool {
+	e.modelsLoadedMu.RLock()
+	if e.modelsLoaded {
+		e.modelsLoadedMu.RUnlock()
+		return true
+	}
+	e.modelsLoadedMu.RUnlock()
+
+	e.modelsLoadedMu.Lock()
+	defer e.modelsLoadedMu.Unlock()
+
+	// Double-check after acquiring write lock
+	if e.modelsLoaded {
+		return true
+	}
+
 	e.state.SetStatus(state.StatusLoading)
 
 	if err := e.transcriber.LoadModels(); err != nil {
-		e.state.SetStatus(state.StatusUnloaded)
 		e.notifier.Error(e.ctx, "Model Load Failed", err.Error())
-		return fmt.Errorf("failed to load models: %w", err)
+		e.logger.Error(e.ctx, "failed to load models", "err", err)
+		return false
 	}
 
-	e.state.SetStatus(state.StatusLoaded)
+	e.modelsLoaded = true
 	e.logger.Info(e.ctx, "models loaded into memory")
 
 	// Start unload ticker if not already started
@@ -127,18 +144,20 @@ func (e *Engine) loadModels() error {
 		go e.unloadTicker()
 	}
 
-	e.recordActivity()
-	return nil
+	return true
 }
 
 // UnloadModels unloads the transcription models to free resources.
 func (e *Engine) UnloadModels() {
-	status, _ := e.state.GetStatus()
-	if status != state.StatusLoaded {
+	e.modelsLoadedMu.Lock()
+	defer e.modelsLoadedMu.Unlock()
+
+	if !e.modelsLoaded {
 		return
 	}
 
 	e.transcriber.UnloadModels()
+	e.modelsLoaded = false
 	e.state.SetStatus(state.StatusUnloaded)
 	e.logger.Info(e.ctx, "models unloaded due to inactivity")
 }
@@ -173,7 +192,18 @@ func (e *Engine) checkAndUnload() {
 	}
 
 	status, _ := e.state.GetStatus()
-	if status != state.StatusLoaded {
+	if status != state.StatusUnloaded {
+		// Only unload when idle (not listening, transcribing, etc.)
+		if status != state.StatusLoaded {
+			return
+		}
+	}
+
+	e.modelsLoadedMu.RLock()
+	loaded := e.modelsLoaded
+	e.modelsLoadedMu.RUnlock()
+
+	if !loaded {
 		return
 	}
 
@@ -196,10 +226,8 @@ func (e *Engine) ToggleRecording() {
 	switch status {
 	case state.StatusListening:
 		e.stopRecording()
-	case state.StatusLoaded:
+	case state.StatusLoaded, state.StatusUnloaded:
 		e.startRecording()
-	case state.StatusUnloaded:
-		go e.loadAndStartRecording()
 	case state.StatusDownloading:
 		e.logger.Warn(e.ctx, "cannot start recording, models are being downloaded")
 	case state.StatusLoading:
@@ -207,16 +235,7 @@ func (e *Engine) ToggleRecording() {
 	}
 }
 
-// loadAndStartRecording loads models and then starts recording.
-func (e *Engine) loadAndStartRecording() {
-	if err := e.loadModels(); err != nil {
-		e.logger.Error(e.ctx, "failed to load models", "err", err)
-		return
-	}
-	e.startRecording()
-}
-
-// startRecording begins audio capture.
+// startRecording begins audio capture immediately.
 func (e *Engine) startRecording() {
 	e.recordActivity()
 
@@ -244,15 +263,22 @@ func (e *Engine) stopRecording() {
 // processRecording handles the transcription pipeline in a goroutine.
 func (e *Engine) processRecording() {
 	settings := e.settingsManager.Get()
-	e.state.SetStatus(state.StatusTranscribing)
-
 	startedAt := time.Now()
 
 	// Get the raw audio data from the recorder
 	audioData := e.recorder.GetData()
 	recordingDurationMs := calculateDurationMs(len(audioData))
-
 	wavData := e.recorder.BuildWAV()
+
+	// Ensure models are loaded before transcription
+	if !e.ensureModelsLoaded() {
+		e.sound.TranscriptionError(e.ctx)
+		e.notifier.Error(e.ctx, config.AppName, "Failed to load models for transcription")
+		e.state.SetStatus(state.StatusUnloaded)
+		return
+	}
+
+	e.state.SetStatus(state.StatusTranscribing)
 
 	text, err := e.transcriber.TranscribeWAV(wavData)
 	if err != nil {
@@ -288,7 +314,7 @@ func (e *Engine) processRecording() {
 
 	finishedAt := time.Now()
 
-	// Write to history using the new history manager
+	// Write to history
 	_, err = e.historyManager.Write(e.ctx, history.WriteRequest{
 		StartedAt:           startedAt,
 		FinishedAt:          finishedAt,

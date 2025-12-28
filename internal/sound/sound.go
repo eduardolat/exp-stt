@@ -6,61 +6,29 @@ import (
 	"context"
 	"os/exec"
 	"runtime"
-	"sync"
 
+	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/logger"
 )
 
-// Settings configures sound behavior.
-type Settings struct {
-	SoundOnStart  bool // Play sound when transcription starts (default: true)
-	SoundOnFinish bool // Play sound when transcription completes (default: true)
-}
-
-// DefaultSettings returns the default sound settings.
-func DefaultSettings() Settings {
-	return Settings{
-		SoundOnStart:  true,
-		SoundOnFinish: true,
-	}
-}
-
 // Instance handles audio feedback.
 type Instance struct {
-	logger   logger.Logger
-	settings Settings
-	mu       sync.Mutex
+	logger          logger.Logger
+	settingsManager *config.SettingsManager
 }
 
 // New creates a new sound instance.
-func New(logger logger.Logger, settings Settings) *Instance {
+func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instance {
 	return &Instance{
-		logger:   logger,
-		settings: settings,
+		logger:          logger,
+		settingsManager: settingsManager,
 	}
-}
-
-// UpdateSettings updates the sound settings.
-func (s *Instance) UpdateSettings(settings Settings) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.settings = settings
-}
-
-// GetSettings returns the current sound settings.
-func (s *Instance) GetSettings() Settings {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.settings
 }
 
 // TranscriptionStarted plays a sound when transcription starts.
 func (s *Instance) TranscriptionStarted(ctx context.Context) {
-	s.mu.Lock()
-	enabled := s.settings.SoundOnStart
-	s.mu.Unlock()
-
-	if !enabled {
+	settings := s.settingsManager.Get()
+	if !settings.SoundOnStart {
 		return
 	}
 
@@ -69,11 +37,8 @@ func (s *Instance) TranscriptionStarted(ctx context.Context) {
 
 // TranscriptionFinished plays a sound when transcription completes.
 func (s *Instance) TranscriptionFinished(ctx context.Context) {
-	s.mu.Lock()
-	enabled := s.settings.SoundOnFinish
-	s.mu.Unlock()
-
-	if !enabled {
+	settings := s.settingsManager.Get()
+	if !settings.SoundOnFinish {
 		return
 	}
 

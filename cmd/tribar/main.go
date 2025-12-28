@@ -73,16 +73,9 @@ func run(logger logger.Logger) error {
 	}
 	defer func() { _ = transcriber.Shutdown() }()
 
-	notifier := notify.New(logger, notify.Settings{
-		NotifyOnError:  settings.NotifyOnError,
-		NotifyOnStart:  settings.NotifyOnStart,
-		NotifyOnFinish: settings.NotifyOnFinish,
-	})
+	notifier := notify.New(logger, settingsManager)
 
-	soundPlayer := sound.New(logger, sound.Settings{
-		SoundOnStart:  settings.SoundOnStart,
-		SoundOnFinish: settings.SoundOnFinish,
-	})
+	soundPlayer := sound.New(logger, settingsManager)
 	defer soundPlayer.Shutdown()
 
 	cpb := clipboard.New(logger)

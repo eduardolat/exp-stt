@@ -10,49 +10,24 @@ import (
 	"github.com/varavelio/tribar/internal/logger"
 )
 
-// Settings configures notification behavior.
-type Settings struct {
-	NotifyOnError  bool // Always notify on errors (default: true)
-	NotifyOnStart  bool // Notify when transcription starts
-	NotifyOnFinish bool // Notify when transcription completes
-}
-
-// DefaultSettings returns the default notification settings.
-func DefaultSettings() Settings {
-	return Settings{
-		NotifyOnError:  true,
-		NotifyOnStart:  false,
-		NotifyOnFinish: false,
-	}
-}
-
 // Instance handles desktop notifications.
 type Instance struct {
-	logger   logger.Logger
-	settings Settings
+	logger          logger.Logger
+	settingsManager *config.SettingsManager
 }
 
 // New creates a new notification instance.
-func New(logger logger.Logger, settings Settings) *Instance {
+func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instance {
 	return &Instance{
-		logger:   logger,
-		settings: settings,
+		logger:          logger,
+		settingsManager: settingsManager,
 	}
-}
-
-// UpdateSettings updates the notification settings.
-func (n *Instance) UpdateSettings(settings Settings) {
-	n.settings = settings
-}
-
-// GetSettings returns the current notification settings.
-func (n *Instance) GetSettings() Settings {
-	return n.settings
 }
 
 // Error displays an error notification if error notifications are enabled.
 func (n *Instance) Error(ctx context.Context, title, message string) {
-	if !n.settings.NotifyOnError {
+	settings := n.settingsManager.Get()
+	if !settings.NotifyOnError {
 		return
 	}
 
@@ -61,7 +36,8 @@ func (n *Instance) Error(ctx context.Context, title, message string) {
 
 // TranscriptionStarted displays a notification when transcription starts.
 func (n *Instance) TranscriptionStarted(ctx context.Context) {
-	if !n.settings.NotifyOnStart {
+	settings := n.settingsManager.Get()
+	if !settings.NotifyOnStart {
 		return
 	}
 
@@ -70,7 +46,8 @@ func (n *Instance) TranscriptionStarted(ctx context.Context) {
 
 // TranscriptionFinished displays a notification when transcription completes.
 func (n *Instance) TranscriptionFinished(ctx context.Context, text string) {
-	if !n.settings.NotifyOnFinish {
+	settings := n.settingsManager.Get()
+	if !settings.NotifyOnFinish {
 		return
 	}
 

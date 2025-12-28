@@ -4,10 +4,7 @@ package notify
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/gen2brain/beeep"
-	"github.com/varavelio/tribar/assets/logo"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/logger"
 )
@@ -20,8 +17,6 @@ type Instance struct {
 
 // New creates a new notification instance.
 func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instance {
-	beeep.AppName = fmt.Sprintf("%s v%s", config.AppName, config.AppVersion)
-
 	return &Instance{
 		logger:          logger,
 		settingsManager: settingsManager,
@@ -61,15 +56,4 @@ func (n *Instance) TranscriptionFinished(ctx context.Context, text string) {
 	}
 
 	n.send(ctx, "Transcription completed", message)
-}
-
-// send dispatches a notification to the desktop.
-func (n *Instance) send(ctx context.Context, title, message string) {
-	if err := beeep.Notify(title, message, logo.LogoBlackWhite.PNG.Size128.Logo); err != nil {
-		n.logger.Error(ctx, "failed to send desktop notification",
-			"title", title,
-			"message", message,
-			"err", err,
-		)
-	}
 }

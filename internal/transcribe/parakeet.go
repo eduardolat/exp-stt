@@ -130,18 +130,18 @@ func downloadFile(filepath, url, name string, progressCallback DownloadProgressC
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
-		os.Remove(filepath) // Clean up on error
+		_ = os.Remove(filepath) // Clean up on error
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		os.Remove(filepath) // Clean up on error
+		_ = os.Remove(filepath) // Clean up on error
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
@@ -160,11 +160,11 @@ func downloadFile(filepath, url, name string, progressCallback DownloadProgressC
 				written += int64(nw)
 			}
 			if writeErr != nil {
-				os.Remove(filepath)
+				_ = os.Remove(filepath)
 				return writeErr
 			}
 			if nr != nw {
-				os.Remove(filepath)
+				_ = os.Remove(filepath)
 				return io.ErrShortWrite
 			}
 
@@ -178,7 +178,7 @@ func downloadFile(filepath, url, name string, progressCallback DownloadProgressC
 			if readErr == io.EOF {
 				break
 			}
-			os.Remove(filepath)
+			_ = os.Remove(filepath)
 			return readErr
 		}
 	}
@@ -192,7 +192,7 @@ func (p *ParakeetModel) LoadVocabulary() error {
 	if err != nil {
 		return fmt.Errorf("error opening vocab file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	var vocab []string
 	var blankIdx int32 = -1
@@ -260,13 +260,13 @@ func (p *ParakeetModel) runPreprocessor(samples []float32) ([]float32, int64, er
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating waveforms tensor: %w", err)
 	}
-	defer waveformsTensor.Destroy()
+	defer func() { _ = waveformsTensor.Destroy() }()
 
 	waveformsLensTensor, err := ort.NewTensor(ort.NewShape(1), []int64{samplesLen})
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating waveforms_lens tensor: %w", err)
 	}
-	defer waveformsLensTensor.Destroy()
+	defer func() { _ = waveformsLensTensor.Destroy() }()
 
 	// Output tensors - calculate expected size
 	expectedTimeSteps := (samplesLen / parakeetHopLength) + 1
@@ -276,13 +276,13 @@ func (p *ParakeetModel) runPreprocessor(samples []float32) ([]float32, int64, er
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating features tensor: %w", err)
 	}
-	defer featTensor.Destroy()
+	defer func() { _ = featTensor.Destroy() }()
 
 	featLensTensor, err := ort.NewEmptyTensor[int64](ort.NewShape(1))
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating features_lens tensor: %w", err)
 	}
-	defer featLensTensor.Destroy()
+	defer func() { _ = featLensTensor.Destroy() }()
 
 	// Create and run session
 	session, err := ort.NewAdvancedSession(
@@ -296,7 +296,7 @@ func (p *ParakeetModel) runPreprocessor(samples []float32) ([]float32, int64, er
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating preprocessor session: %w", err)
 	}
-	defer session.Destroy()
+	defer func() { _ = session.Destroy() }()
 
 	if err := session.Run(); err != nil {
 		return nil, 0, fmt.Errorf("error running preprocessor: %w", err)
@@ -317,13 +317,13 @@ func (p *ParakeetModel) runEncoder(features []float32, featuresLen int64) ([]flo
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating audio_signal tensor: %w", err)
 	}
-	defer audioSignalTensor.Destroy()
+	defer func() { _ = audioSignalTensor.Destroy() }()
 
 	lengthTensor, err := ort.NewTensor(ort.NewShape(1), []int64{featuresLen})
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating length tensor: %w", err)
 	}
-	defer lengthTensor.Destroy()
+	defer func() { _ = lengthTensor.Destroy() }()
 
 	// Output tensors
 	encoderTimeSteps := (featuresLen + parakeetSubsamplingFactor - 1) / parakeetSubsamplingFactor
@@ -333,13 +333,13 @@ func (p *ParakeetModel) runEncoder(features []float32, featuresLen int64) ([]flo
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating encoder output tensor: %w", err)
 	}
-	defer encOutTensor.Destroy()
+	defer func() { _ = encOutTensor.Destroy() }()
 
 	encLensTensor, err := ort.NewEmptyTensor[int64](ort.NewShape(1))
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating encoder lengths tensor: %w", err)
 	}
-	defer encLensTensor.Destroy()
+	defer func() { _ = encLensTensor.Destroy() }()
 
 	// Create and run session
 	session, err := ort.NewAdvancedSession(
@@ -353,7 +353,7 @@ func (p *ParakeetModel) runEncoder(features []float32, featuresLen int64) ([]flo
 	if err != nil {
 		return nil, 0, fmt.Errorf("error creating encoder session: %w", err)
 	}
-	defer session.Destroy()
+	defer func() { _ = session.Destroy() }()
 
 	if err := session.Run(); err != nil {
 		return nil, 0, fmt.Errorf("error running encoder: %w", err)
@@ -423,31 +423,31 @@ func (p *ParakeetModel) decoderStep(encoderStep []float32, targetToken int32, st
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating encoder_outputs tensor: %w", err)
 	}
-	defer encOutTensor.Destroy()
+	defer func() { _ = encOutTensor.Destroy() }()
 
 	targetsTensor, err := ort.NewTensor(ort.NewShape(1, 1), []int32{targetToken})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating targets tensor: %w", err)
 	}
-	defer targetsTensor.Destroy()
+	defer func() { _ = targetsTensor.Destroy() }()
 
 	targetLenTensor, err := ort.NewTensor(ort.NewShape(1), []int32{1})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating target_length tensor: %w", err)
 	}
-	defer targetLenTensor.Destroy()
+	defer func() { _ = targetLenTensor.Destroy() }()
 
 	state1Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state1)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating input_states_1 tensor: %w", err)
 	}
-	defer state1Tensor.Destroy()
+	defer func() { _ = state1Tensor.Destroy() }()
 
 	state2Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state2)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating input_states_2 tensor: %w", err)
 	}
-	defer state2Tensor.Destroy()
+	defer func() { _ = state2Tensor.Destroy() }()
 
 	// Output tensors
 	outputSize := int64(len(p.vocab) + parakeetNumDurations)
@@ -455,19 +455,19 @@ func (p *ParakeetModel) decoderStep(encoderStep []float32, targetToken int32, st
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating outputs tensor: %w", err)
 	}
-	defer logitsTensor.Destroy()
+	defer func() { _ = logitsTensor.Destroy() }()
 
 	outState1Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating output_states_1 tensor: %w", err)
 	}
-	defer outState1Tensor.Destroy()
+	defer func() { _ = outState1Tensor.Destroy() }()
 
 	outState2Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating output_states_2 tensor: %w", err)
 	}
-	defer outState2Tensor.Destroy()
+	defer func() { _ = outState2Tensor.Destroy() }()
 
 	// Create and run session
 	session, err := ort.NewAdvancedSession(
@@ -481,7 +481,7 @@ func (p *ParakeetModel) decoderStep(encoderStep []float32, targetToken int32, st
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error creating decoder session: %w", err)
 	}
-	defer session.Destroy()
+	defer func() { _ = session.Destroy() }()
 
 	if err := session.Run(); err != nil {
 		return nil, nil, nil, fmt.Errorf("error running decoder: %w", err)

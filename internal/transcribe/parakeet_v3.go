@@ -75,6 +75,11 @@ type ParakeetModel struct {
 	preprocessorPath string
 	encoderPath      string
 	decoderPath      string
+
+	// ONNX sessions (kept in memory for faster inference)
+	preprocessorSession *ort.DynamicAdvancedSession
+	encoderSession      *ort.DynamicAdvancedSession
+	decoderSession      *ort.DynamicAdvancedSession
 }
 
 // NewParakeetModel creates a new ParakeetModel instance.
@@ -254,8 +259,9 @@ func downloadFileWithProgress(filepath, url, name string, progressCallback Downl
 	return nil
 }
 
-// LoadVocabulary loads the vocabulary file.
-func (p *ParakeetModel) LoadVocabulary() error {
+// LoadModel loads vocabulary and ONNX sessions into memory for transcription.
+func (p *ParakeetModel) LoadModel() error {
+	// Load vocabulary
 	file, err := os.Open(p.vocabPath)
 	if err != nil {
 		return fmt.Errorf("error opening vocab file: %w", err)
@@ -289,11 +295,60 @@ func (p *ParakeetModel) LoadVocabulary() error {
 	p.vocab = vocab
 	p.blankIdx = blankIdx
 
+	// Create ONNX sessions
+	p.preprocessorSession, err = ort.NewDynamicAdvancedSession(
+		p.preprocessorPath,
+		[]string{"waveforms", "waveforms_lens"},
+		[]string{"features", "features_lens"},
+		nil,
+	)
+	if err != nil {
+		p.UnloadModel()
+		return fmt.Errorf("error creating preprocessor session: %w", err)
+	}
+
+	p.encoderSession, err = ort.NewDynamicAdvancedSession(
+		p.encoderPath,
+		[]string{"audio_signal", "length"},
+		[]string{"outputs", "encoded_lengths"},
+		nil,
+	)
+	if err != nil {
+		p.UnloadModel()
+		return fmt.Errorf("error creating encoder session: %w", err)
+	}
+
+	p.decoderSession, err = ort.NewDynamicAdvancedSession(
+		p.decoderPath,
+		[]string{"encoder_outputs", "targets", "target_length", "input_states_1", "input_states_2"},
+		[]string{"outputs", "output_states_1", "output_states_2"},
+		nil,
+	)
+	if err != nil {
+		p.UnloadModel()
+		return fmt.Errorf("error creating decoder session: %w", err)
+	}
+
 	return nil
 }
 
-// UnloadVocabulary clears the loaded vocabulary to free memory.
-func (p *ParakeetModel) UnloadVocabulary() {
+// UnloadModel clears vocabulary and destroys ONNX sessions to free memory.
+func (p *ParakeetModel) UnloadModel() {
+	// Destroy ONNX sessions
+	if p.preprocessorSession != nil {
+		_ = p.preprocessorSession.Destroy()
+		p.preprocessorSession = nil
+	}
+	if p.encoderSession != nil {
+		_ = p.encoderSession.Destroy()
+		p.encoderSession = nil
+	}
+	if p.decoderSession != nil {
+		_ = p.decoderSession.Destroy()
+		p.decoderSession = nil
+	}
+
+	// Clear vocabulary
 	p.vocab = nil
 	p.blankIdx = 0
 }
@@ -302,7 +357,7 @@ func (p *ParakeetModel) UnloadVocabulary() {
 // samples should be 16kHz mono float32 audio normalized to [-1, 1].
 func (p *ParakeetModel) Transcribe(samples []float32) (string, error) {
 	if len(p.vocab) == 0 {
-		return "", fmt.Errorf("vocabulary not loaded, call LoadVocabulary first")
+		return "", fmt.Errorf("model not loaded, call LoadModel first")
 	}
 
 	features, featuresLen, err := p.runPreprocessor(samples)
@@ -355,21 +410,11 @@ func (p *ParakeetModel) runPreprocessor(samples []float32) ([]float32, int64, er
 	}
 	defer func() { _ = featLensTensor.Destroy() }()
 
-	// Create and run session
-	session, err := ort.NewAdvancedSession(
-		p.preprocessorPath,
-		[]string{"waveforms", "waveforms_lens"},
-		[]string{"features", "features_lens"},
+	// Run using persistent session
+	if err := p.preprocessorSession.Run(
 		[]ort.ArbitraryTensor{waveformsTensor, waveformsLensTensor},
 		[]ort.ArbitraryTensor{featTensor, featLensTensor},
-		nil,
-	)
-	if err != nil {
-		return nil, 0, fmt.Errorf("error creating preprocessor session: %w", err)
-	}
-	defer func() { _ = session.Destroy() }()
-
-	if err := session.Run(); err != nil {
+	); err != nil {
 		return nil, 0, fmt.Errorf("error running preprocessor: %w", err)
 	}
 
@@ -412,21 +457,11 @@ func (p *ParakeetModel) runEncoder(features []float32, featuresLen int64) ([]flo
 	}
 	defer func() { _ = encLensTensor.Destroy() }()
 
-	// Create and run session
-	session, err := ort.NewAdvancedSession(
-		p.encoderPath,
-		[]string{"audio_signal", "length"},
-		[]string{"outputs", "encoded_lengths"},
+	// Run using persistent session
+	if err := p.encoderSession.Run(
 		[]ort.ArbitraryTensor{audioSignalTensor, lengthTensor},
 		[]ort.ArbitraryTensor{encOutTensor, encLensTensor},
-		nil,
-	)
-	if err != nil {
-		return nil, 0, fmt.Errorf("error creating encoder session: %w", err)
-	}
-	defer func() { _ = session.Destroy() }()
-
-	if err := session.Run(); err != nil {
+	); err != nil {
 		return nil, 0, fmt.Errorf("error running encoder: %w", err)
 	}
 
@@ -540,21 +575,11 @@ func (p *ParakeetModel) decoderStep(encoderStep []float32, targetToken int32, st
 	}
 	defer func() { _ = outState2Tensor.Destroy() }()
 
-	// Create and run session
-	session, err := ort.NewAdvancedSession(
-		p.decoderPath,
-		[]string{"encoder_outputs", "targets", "target_length", "input_states_1", "input_states_2"},
-		[]string{"outputs", "output_states_1", "output_states_2"},
+	// Run using persistent session
+	if err := p.decoderSession.Run(
 		[]ort.ArbitraryTensor{encOutTensor, targetsTensor, targetLenTensor, state1Tensor, state2Tensor},
 		[]ort.ArbitraryTensor{logitsTensor, outState1Tensor, outState2Tensor},
-		nil,
-	)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating decoder session: %w", err)
-	}
-	defer func() { _ = session.Destroy() }()
-
-	if err := session.Run(); err != nil {
+	); err != nil {
 		return nil, nil, nil, fmt.Errorf("error running decoder: %w", err)
 	}
 

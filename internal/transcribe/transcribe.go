@@ -69,12 +69,11 @@ func (i *Instance) DownloadModels(progressCallback DownloadProgressCallback) err
 	return nil
 }
 
-// LoadModels loads the vocabulary and prepares the model for transcription.
+// LoadModels loads the model into memory for transcription.
 func (i *Instance) LoadModels() error {
 	// Use quick check if integrity was already verified, otherwise do full check
 	if i.integrityVerified {
 		if !i.CheckModelsQuick() {
-			// Files disappeared, need to re-download
 			i.integrityVerified = false
 			return errors.New("missing model files, please restart the application")
 		}
@@ -84,18 +83,17 @@ func (i *Instance) LoadModels() error {
 		}
 	}
 
-	// Load vocabulary
-	if err := i.parakeet.LoadVocabulary(); err != nil {
-		return fmt.Errorf("error loading vocabulary: %w", err)
+	if err := i.parakeet.LoadModel(); err != nil {
+		return fmt.Errorf("error loading model: %w", err)
 	}
 
 	return nil
 }
 
-// UnloadModels clears the loaded vocabulary to free memory.
-// The models can be reloaded later by calling LoadModels again.
+// UnloadModels clears the loaded model to free memory.
+// The model can be reloaded later by calling LoadModels again.
 func (i *Instance) UnloadModels() {
-	i.parakeet.UnloadVocabulary()
+	i.parakeet.UnloadModel()
 }
 
 // TranscribeWAV transcribes audio from WAV bytes.

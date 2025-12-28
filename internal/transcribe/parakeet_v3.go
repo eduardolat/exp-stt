@@ -129,6 +129,17 @@ func (p *ParakeetModel) CheckModelsExist() (bool, []ModelFile) {
 	return len(missing) == 0, missing
 }
 
+// CheckModelsExistQuick checks if all required model files exist (no checksum verification).
+// This is faster than CheckModelsExist and should be used when integrity was already verified.
+func (p *ParakeetModel) CheckModelsExistQuick() bool {
+	for _, file := range p.GetModelFiles() {
+		if _, err := os.Stat(file.Path); os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
 // isFileValidWithChecksum checks if a file exists and has a valid SHA256 checksum.
 func isFileValidWithChecksum(filepath, expectedSHA256 string) bool {
 	file, err := os.Open(filepath)

@@ -13,7 +13,8 @@ import (
 
 // Instance represents a transcription engine instance.
 type Instance struct {
-	parakeet *ParakeetModel
+	parakeet          *ParakeetModel
+	integrityVerified bool
 }
 
 // New creates a new transcription instance.
@@ -42,27 +43,45 @@ func (i *Instance) Shutdown() error {
 	return nil
 }
 
-// CheckModels checks if all required models exist.
-// Returns true if all models exist, false otherwise with the list of missing models.
+// CheckModels checks if all required models exist with full SHA256 verification.
+// After successful verification, marks integrity as verified to skip checksums on reload.
 func (i *Instance) CheckModels() (bool, []ModelFile) {
-	return i.parakeet.CheckModelsExist()
+	allExist, missing := i.parakeet.CheckModelsExist()
+	if allExist {
+		i.integrityVerified = true
+	}
+	return allExist, missing
+}
+
+// CheckModelsQuick checks if all required model files exist (no checksum verification).
+// Used after integrity has already been verified to avoid 1-2 second lag on reload.
+func (i *Instance) CheckModelsQuick() bool {
+	return i.parakeet.CheckModelsExistQuick()
 }
 
 // DownloadModels downloads all missing model files.
+// After successful download, marks integrity as verified.
 func (i *Instance) DownloadModels(progressCallback DownloadProgressCallback) error {
-	return i.parakeet.DownloadModels(progressCallback)
+	if err := i.parakeet.DownloadModels(progressCallback); err != nil {
+		return err
+	}
+	i.integrityVerified = true
+	return nil
 }
 
 // LoadModels loads the vocabulary and prepares the model for transcription.
 func (i *Instance) LoadModels() error {
-	// Check if models exist
-	allExist, missing := i.CheckModels()
-	if !allExist {
-		var missingNames []string
-		for _, m := range missing {
-			missingNames = append(missingNames, m.Name)
+	// Use quick check if integrity was already verified, otherwise do full check
+	if i.integrityVerified {
+		if !i.CheckModelsQuick() {
+			// Files disappeared, need to re-download
+			i.integrityVerified = false
+			return errors.New("missing model files, please restart the application")
 		}
-		return fmt.Errorf("missing model files: %v. Call DownloadModels first", missingNames)
+	} else {
+		if allExist, _ := i.CheckModels(); !allExist {
+			return errors.New("missing model files, please restart the application")
+		}
 	}
 
 	// Load vocabulary

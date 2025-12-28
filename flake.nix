@@ -29,6 +29,7 @@
           xdotool # For simulating keyboard input (paste from clipboard)
           pkg-config # Required for oto audio library build
           alsa-lib.dev # ALSA headers for audio playback
+          libnotify # For desktop notifications
         ];
       };
     };

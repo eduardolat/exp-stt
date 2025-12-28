@@ -17,20 +17,18 @@ import (
 
 // Parakeet model URLs from HuggingFace
 const (
-	ParakeetVocabURL       = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/vocab.txt?download=true"
-	ParakeetNemoURL        = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/nemo128.onnx?download=true"
-	ParakeetEncoderURL     = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/encoder-model.int8.onnx?download=true"
-	ParakeetEncoderDataURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/encoder-model.onnx.data?download=true"
-	ParakeetDecoderURL     = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/decoder_joint-model.int8.onnx?download=true"
+	ParakeetVocabURL   = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/vocab.txt?download=true"
+	ParakeetNemoURL    = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/nemo128.onnx?download=true"
+	ParakeetEncoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/encoder-model.int8.onnx?download=true"
+	ParakeetDecoderURL = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v2-onnx/resolve/d808c3be882f47cf6a15a42c0eb9ee751b99a379/decoder_joint-model.int8.onnx?download=true"
 )
 
 // Parakeet model file names
 const (
-	ParakeetVocabFile       = "vocab.txt"
-	ParakeetNemoFile        = "nemo128.onnx"
-	ParakeetEncoderFile     = "encoder-model.int8.onnx"
-	ParakeetEncoderDataFile = "encoder-model.onnx.data"
-	ParakeetDecoderFile     = "decoder-model.int8.onnx"
+	ParakeetVocabFile   = "vocab.txt"
+	ParakeetNemoFile    = "nemo128.onnx"
+	ParakeetEncoderFile = "encoder-model.int8.onnx"
+	ParakeetDecoderFile = "decoder-model.int8.onnx"
 )
 
 // Parakeet model constants
@@ -48,11 +46,10 @@ type ParakeetModel struct {
 	vocab    []string
 	blankIdx int32
 
-	vocabPath       string
-	nemoPath        string
-	encoderPath     string
-	encoderDataPath string
-	decoderPath     string
+	vocabPath   string
+	nemoPath    string
+	encoderPath string
+	decoderPath string
 }
 
 // NewParakeetModel creates a new ParakeetModel instance.
@@ -62,14 +59,12 @@ func NewParakeetModel() (*ParakeetModel, error) {
 	nemoPath := path.Join(parakeetDir, ParakeetNemoFile)
 	encoderPath := path.Join(parakeetDir, ParakeetEncoderFile)
 	decoderPath := path.Join(parakeetDir, ParakeetDecoderFile)
-	encoderDataPath := path.Join(parakeetDir, ParakeetEncoderDataFile)
 
 	return &ParakeetModel{
-		vocabPath:       vocabPath,
-		nemoPath:        nemoPath,
-		encoderPath:     encoderPath,
-		encoderDataPath: encoderDataPath,
-		decoderPath:     decoderPath,
+		vocabPath:   vocabPath,
+		nemoPath:    nemoPath,
+		encoderPath: encoderPath,
+		decoderPath: decoderPath,
 	}, nil
 }
 
@@ -86,7 +81,6 @@ func (p *ParakeetModel) GetModelFiles() []ModelFile {
 		{Name: "Vocabulary", URL: ParakeetVocabURL, Path: p.vocabPath},
 		{Name: "Preprocessor (nemo128)", URL: ParakeetNemoURL, Path: p.nemoPath},
 		{Name: "Encoder", URL: ParakeetEncoderURL, Path: p.encoderPath},
-		{Name: "Encoder Data", URL: ParakeetEncoderDataURL, Path: p.encoderDataPath},
 		{Name: "Decoder", URL: ParakeetDecoderURL, Path: p.decoderPath},
 	}
 }

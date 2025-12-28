@@ -20,6 +20,8 @@ import (
 	"github.com/varavelio/tribar/internal/transcribe"
 )
 
+const unloadTickerInterval = 10 * time.Second
+
 // Dependencies contains all required dependencies for the engine.
 type Dependencies struct {
 	Logger          logger.Logger
@@ -50,8 +52,8 @@ type Engine struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	unloadMu    sync.Mutex
-	unloadTimer *time.Timer
+	lastActivityMu   sync.RWMutex
+	lastActivityTime time.Time
 }
 
 // New creates a new Engine instance with all dependencies.
@@ -97,8 +99,9 @@ func (e *Engine) LoadModels(progressCallback transcribe.DownloadProgressCallback
 	e.state.SetStatus(state.StatusLoaded)
 	e.logger.Info(e.ctx, "models loaded successfully")
 
-	// Start auto-unload timer after models are loaded
-	e.resetUnloadTimer()
+	// Record activity and start unload ticker
+	e.recordActivity()
+	go e.unloadTicker()
 
 	return nil
 }
@@ -115,38 +118,49 @@ func (e *Engine) UnloadModels() {
 	e.logger.Info(e.ctx, "models unloaded due to inactivity")
 }
 
-// resetUnloadTimer resets or starts the auto-unload timer based on settings.
-func (e *Engine) resetUnloadTimer() {
+// recordActivity updates the last activity timestamp.
+func (e *Engine) recordActivity() {
+	e.lastActivityMu.Lock()
+	defer e.lastActivityMu.Unlock()
+	e.lastActivityTime = time.Now()
+}
+
+// unloadTicker runs a background ticker that checks for inactivity and unloads models.
+func (e *Engine) unloadTicker() {
+	ticker := time.NewTicker(unloadTickerInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-e.ctx.Done():
+			return
+		case <-ticker.C:
+			e.checkAndUnload()
+		}
+	}
+}
+
+// checkAndUnload checks if the model should be unloaded based on settings and last activity.
+func (e *Engine) checkAndUnload() {
 	settings := e.settingsManager.Get()
 	if !settings.ModelUnloadEnable {
-		e.stopUnloadTimer()
 		return
 	}
 
-	e.unloadMu.Lock()
-	defer e.unloadMu.Unlock()
-
-	duration := time.Duration(settings.ModelUnloadSeconds) * time.Second
-
-	if e.unloadTimer != nil {
-		e.unloadTimer.Stop()
+	status, _ := e.state.GetStatus()
+	if status != state.StatusLoaded {
+		return
 	}
 
-	e.unloadTimer = time.AfterFunc(duration, func() {
+	e.lastActivityMu.RLock()
+	lastActivity := e.lastActivityTime
+	e.lastActivityMu.RUnlock()
+
+	elapsed := time.Since(lastActivity)
+	timeout := time.Duration(settings.ModelUnloadSeconds) * time.Second
+
+	if elapsed >= timeout {
 		e.UnloadModels()
-	})
-
-	e.logger.Debug(e.ctx, "auto-unload timer reset", "seconds", settings.ModelUnloadSeconds)
-}
-
-// stopUnloadTimer stops the auto-unload timer if it's running.
-func (e *Engine) stopUnloadTimer() {
-	e.unloadMu.Lock()
-	defer e.unloadMu.Unlock()
-
-	if e.unloadTimer != nil {
-		e.unloadTimer.Stop()
-		e.unloadTimer = nil
 	}
 }
 
@@ -166,8 +180,8 @@ func (e *Engine) ToggleRecording() {
 
 // StartRecording begins audio capture.
 func (e *Engine) startRecording() {
-	// Reset unload timer on activity
-	e.resetUnloadTimer()
+	// Record activity on use
+	e.recordActivity()
 
 	if err := e.recorder.Start(); err != nil {
 		e.logger.Error(e.ctx, "failed to start recording", "err", err)
@@ -255,8 +269,8 @@ func (e *Engine) processRecording() {
 	e.notifier.TranscriptionFinished(e.ctx, text)
 	e.state.SetStatus(state.StatusLoaded)
 
-	// Reset unload timer after processing completes
-	e.resetUnloadTimer()
+	// Record activity after processing completes
+	e.recordActivity()
 
 	e.logger.Info(e.ctx, "transcription complete", "length", len(text))
 }
@@ -288,7 +302,6 @@ func (e *Engine) GetState() *state.Instance {
 // Shutdown gracefully stops the engine and releases resources.
 func (e *Engine) Shutdown() {
 	e.cancel()
-	e.stopUnloadTimer()
 
 	status, _ := e.state.GetStatus()
 	if status == state.StatusListening {

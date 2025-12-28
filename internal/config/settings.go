@@ -223,7 +223,8 @@ func (sm *SettingsManager) Update(settings Settings) error {
 	return sm.saveUnsafe()
 }
 
-// Load reads settings from the config file.
+// Load reads settings from the config file, merging with defaults.
+// This ensures new settings get their default values when upgrading.
 func (sm *SettingsManager) Load() error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
@@ -233,13 +234,17 @@ func (sm *SettingsManager) Load() error {
 		return err
 	}
 
-	var settings Settings
-	if err := json.Unmarshal(data, &settings); err != nil {
+	// Start with defaults, then unmarshal file contents on top
+	// This preserves default values for any new fields not in the file
+	merged := defaultSettings
+	if err := json.Unmarshal(data, &merged); err != nil {
 		return fmt.Errorf("failed to parse settings: %w", err)
 	}
 
-	sm.settings = settings
-	return nil
+	sm.settings = merged
+
+	// Re-save to persist any new default fields to the file
+	return sm.saveUnsafe()
 }
 
 // Save writes the current settings to the config file.

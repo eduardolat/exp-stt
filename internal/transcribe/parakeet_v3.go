@@ -203,7 +203,9 @@ func downloadFileWithProgress(filepath, url, name string, progressCallback Downl
 	}
 	defer func() { _ = out.Close() }()
 
-	resp, err := http.Get(url)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", config.UserAgent)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		_ = os.Remove(filepath)
 		return err

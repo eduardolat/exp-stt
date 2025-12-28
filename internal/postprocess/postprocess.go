@@ -122,9 +122,9 @@ func (p *Instance) callAPI(ctx context.Context, text string) (string, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+settings.PostProcessAPIKey)
-	req.Header.Set("User-Agent", "Tribar/"+config.AppVersion)
+	req.Header.Set("User-Agent", config.UserAgent)
 	req.Header.Set("X-Title", config.AppName)
-	req.Header.Set("HTTP-Referer", "https://github.com/varavel/tribar")
+	req.Header.Set("HTTP-Referer", config.RepoURL)
 
 	resp, err := p.client.Do(req)
 	if err != nil {

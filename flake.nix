@@ -27,6 +27,8 @@
           imagemagick # To convert PNG Logos to ICO
           uutils-coreutils-noprefix # For sha256sum
           xdotool # For simulating keyboard input (paste from clipboard)
+          pkg-config # Required for oto audio library build
+          alsa-lib.dev # ALSA headers for audio playback
         ];
       };
     };

@@ -1,20 +1,29 @@
 // Package sound provides audio feedback functionality for application events.
-// It uses simple system commands to play audio cues for transcription start/end events.
+// It plays embedded WAV files when transcription starts and finishes.
 package sound
 
 import (
+	"bytes"
 	"context"
-	"os/exec"
-	"runtime"
+	"strconv"
+	"sync"
 
+	"github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/speaker"
+	"github.com/gopxl/beep/v2/wav"
+	"github.com/varavelio/tribar/assets/sounds"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/logger"
 )
 
-// Instance handles audio feedback.
+// Instance handles audio feedback playback.
 type Instance struct {
 	logger          logger.Logger
 	settingsManager *config.SettingsManager
+
+	speakerOnce sync.Once
+	speakerErr  error
+	sampleRate  beep.SampleRate
 }
 
 // New creates a new sound instance.
@@ -32,7 +41,7 @@ func (s *Instance) TranscriptionStarted(ctx context.Context) {
 		return
 	}
 
-	go s.playBeep(ctx, 440, 100) // A4 note, 100ms
+	go s.playSound(ctx, true)
 }
 
 // TranscriptionFinished plays a sound when transcription completes.
@@ -42,56 +51,64 @@ func (s *Instance) TranscriptionFinished(ctx context.Context) {
 		return
 	}
 
-	go s.playBeep(ctx, 880, 150) // A5 note, 150ms
+	go s.playSound(ctx, false)
 }
 
-// playBeep plays a beep sound using system tools.
-func (s *Instance) playBeep(ctx context.Context, frequency, durationMs int) {
-	var cmd *exec.Cmd
+// playSound plays the appropriate sound based on the current settings.
+func (s *Instance) playSound(ctx context.Context, isInput bool) {
+	settings := s.settingsManager.Get()
 
-	switch runtime.GOOS {
-	case "linux":
-		// Try paplay with a generated tone, fallback to speaker-test
-		cmd = exec.CommandContext(ctx, "paplay", "--volume=32768", "/usr/share/sounds/freedesktop/stereo/message.oga")
-		if err := cmd.Run(); err != nil {
-			// Fallback: try using beep command if available
-			_ = exec.CommandContext(ctx, "beep", "-f", itoa(frequency), "-l", itoa(durationMs)).Run()
-		}
-	case "darwin":
-		// macOS: use afplay with system sound
-		cmd = exec.CommandContext(ctx, "afplay", "/System/Library/Sounds/Pop.aiff")
-		_ = cmd.Run()
-	case "windows":
-		// Windows: use PowerShell to play a beep
-		cmd = exec.CommandContext(ctx, "powershell", "-c", "[console]::beep("+itoa(frequency)+","+itoa(durationMs)+")")
-		_ = cmd.Run()
-	default:
-		s.logger.Debug(ctx, "sound playback not supported on this platform")
+	idx := s.parseSoundID(settings.SoundFeedbackID)
+	sound := sounds.Sounds[idx]
+
+	var data []byte
+	if isInput {
+		data = sound.Input
+	} else {
+		data = sound.Output
+	}
+
+	streamer, format, err := wav.Decode(bytes.NewReader(data))
+	if err != nil {
+		s.logger.Error(ctx, "failed to decode WAV", "error", err)
+		return
+	}
+	defer streamer.Close()
+
+	s.speakerOnce.Do(func() {
+		s.sampleRate = format.SampleRate
+		s.speakerErr = speaker.Init(format.SampleRate, format.SampleRate.N(format.SampleRate.D(512)))
+	})
+
+	if s.speakerErr != nil {
+		s.logger.Error(ctx, "failed to initialize speaker", "error", s.speakerErr)
+		return
+	}
+
+	// Resample if the audio sample rate differs from speaker sample rate
+	var toPlay beep.Streamer = streamer
+	if format.SampleRate != s.sampleRate {
+		toPlay = beep.Resample(4, format.SampleRate, s.sampleRate, streamer)
+	}
+
+	done := make(chan struct{})
+	speaker.Play(beep.Seq(toPlay, beep.Callback(func() {
+		close(done)
+	})))
+
+	select {
+	case <-done:
+	case <-ctx.Done():
 	}
 }
 
-// itoa converts an int to string without importing strconv.
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
+// parseSoundID converts the sound ID string to a valid array index (0-8).
+func (s *Instance) parseSoundID(id string) int {
+	n, err := strconv.Atoi(id)
+	if err != nil || n < 1 || n > 9 {
+		return 0 // Default to first sound
 	}
-
-	var digits []byte
-	negative := n < 0
-	if negative {
-		n = -n
-	}
-
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-
-	if negative {
-		digits = append([]byte{'-'}, digits...)
-	}
-
-	return string(digits)
+	return n - 1
 }
 
 // Shutdown is a no-op for this implementation.

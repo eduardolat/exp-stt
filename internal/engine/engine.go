@@ -230,8 +230,10 @@ func (e *Engine) ToggleRecording() {
 		e.startRecording()
 	case state.StatusDownloading:
 		e.logger.Warn(e.ctx, "cannot start recording, models are being downloaded")
+		e.notifier.Error(e.ctx, config.AppName, "Please wait, models are being downloaded")
 	case state.StatusLoading:
 		e.logger.Warn(e.ctx, "cannot start recording, models are being loaded")
+		e.notifier.Error(e.ctx, config.AppName, "Please wait, models are being loaded")
 	}
 }
 

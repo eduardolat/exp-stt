@@ -233,11 +233,13 @@ func (i *Instance) updateDownloadProgress() {
 			i.lastDownloadPercent = progress.Percent
 			i.menuDownload.SetTitle(fmt.Sprintf("Downloading %.0f%%", progress.Percent))
 			i.menuDownload.Show()
+			i.menuRecord.Hide()
 		}
 	} else {
 		if i.lastDownloadPercent != 0 {
 			i.lastDownloadPercent = 0
 			i.menuDownload.Hide()
+			i.menuRecord.Show()
 		}
 	}
 }

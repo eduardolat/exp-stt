@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -25,20 +24,16 @@ import (
 	"github.com/varavelio/tribar/internal/transcribe"
 )
 
-type cliFlags struct {
-	Debug bool
-}
-
 func main() {
-	flags := parseFlags()
+	flags := config.ParseFlags()
 	logger := logger.NewSlogLogger(flags.Debug)
-	if err := run(logger); err != nil {
+	if err := run(logger, flags); err != nil {
 		logger.Error(context.Background(), "error while running the app", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(logger logger.Logger) error {
+func run(logger logger.Logger, flags config.Flags) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -108,8 +103,9 @@ func run(logger logger.Logger) error {
 
 	server := server.NewServer(logger, settingsManager, appState, eng)
 	go func() {
-		logger.Info(ctx, "Starting server at http://localhost:8089/", "version", config.AppVersion)
-		if err := server.Start(":8089"); err != nil {
+		addr := flags.Address()
+		logger.Info(ctx, "Starting server", "address", "http://"+addr+"/", "version", config.AppVersion)
+		if err := server.Start(addr); err != nil {
 			logger.Error(ctx, "server error", "err", err)
 			stop()
 		}
@@ -123,13 +119,4 @@ func run(logger logger.Logger) error {
 	stop()
 	logger.Info(ctx, "shutting down gracefully...")
 	return nil
-}
-
-func parseFlags() cliFlags {
-	debugPtr := flag.Bool("debug", false, "enable debug mode")
-	flag.Parse()
-
-	return cliFlags{
-		Debug: *debugPtr,
-	}
 }

@@ -120,6 +120,24 @@ The central orchestrator that connects all components and manages the workflow u
 
 It is the only package allowed to modify the application state and receives all other functional packages as dependencies (except visualization layers like Systray or Server).
 
+#### Server
+
+Source: `internal/server`
+
+Provides an HTTP API and a SvelteKit web UI to control and monitor the application. The Web UI includes a configuration manager to update user preferences, which are persisted via the `config` package.
+
+It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).
+
+The server is built with the `github.com/labstack/echo/v4` framework.
+
+The HTTP API is built with UFO RPC (a framework to build HTTP based RPC APIs), if you need documentation of UFO RPC you can find it here:
+
+https://raw.githubusercontent.com/uforg/uforpc/refs/heads/main/docs/src/content/docs/reference/about.md
+https://raw.githubusercontent.com/uforg/uforpc/refs/heads/main/docs/src/content/docs/reference/request-lifecycle.md
+https://raw.githubusercontent.com/uforg/uforpc/refs/heads/main/docs/src/content/docs/reference/urpc-spec.md
+
+Please when you create a handler for a procedure or stream, create a new file inside `internal/server/api` exclusively for that handler, use the `proc_{snake_case_name}.go` and `stream_{snake_case_name}.go` file names, read some of the existing files to understand the structure. After creating the handler please register it in the `internal/server/api/router.go` file, read this router and two or three other handlers to understand the structure.
+
 #### Systray
 
 Source: `internal/systray`
@@ -128,10 +146,4 @@ A system tray interface that displays app status and provides quick controls.
 
 It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).
 
-#### Server
-
-Source: `internal/server`
-
-Provides an HTTP API and a SvelteKit web UI to control and monitor the application. The Web UI includes a configuration manager to update user preferences, which are persisted via the `config` package.
-
-It receives the state to react to changes (read-only) and the Engine to perform actions, as all interactions must be handled by the orchestrator (engine).
+It also has a button to open the Web UI in the user's default browser.

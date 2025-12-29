@@ -1,4 +1,4 @@
-package config
+package instance
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/flock"
+	"github.com/varavelio/tribar/internal/config"
 )
 
 const (
@@ -19,8 +20,8 @@ const (
 // ErrAlreadyRunning is returned when another instance of Tribar is running.
 var ErrAlreadyRunning = errors.New("tribar is already running")
 
-// InstanceManager handles single-instance enforcement and port discovery.
-type InstanceManager struct {
+// Manager handles single-instance enforcement and port discovery.
+type Manager struct {
 	lock     *flock.Flock
 	lockPath string
 	portPath string
@@ -28,18 +29,18 @@ type InstanceManager struct {
 	port     int
 }
 
-// NewInstanceManager creates a new instance manager.
-// Must be called after EnsureDirectories.
-func NewInstanceManager() *InstanceManager {
-	return &InstanceManager{
-		lockPath: filepath.Join(DirectoryData, lockFileName),
-		portPath: filepath.Join(DirectoryData, portFileName),
+// NewManager creates a new instance manager.
+// Must be called after config.EnsureDirectories.
+func NewManager() *Manager {
+	return &Manager{
+		lockPath: filepath.Join(config.DirectoryData, lockFileName),
+		portPath: filepath.Join(config.DirectoryData, portFileName),
 	}
 }
 
 // AcquireLock attempts to acquire an exclusive file lock.
 // Returns ErrAlreadyRunning if another instance is running.
-func (m *InstanceManager) AcquireLock() error {
+func (m *Manager) AcquireLock() error {
 	m.lock = flock.New(m.lockPath)
 
 	locked, err := m.lock.TryLock()
@@ -57,7 +58,7 @@ func (m *InstanceManager) AcquireLock() error {
 // CreateListener creates a TCP listener on the appropriate port.
 // If portExplicit is true, it will only try the specified port and fail if busy.
 // If portExplicit is false, it will auto-discover a free port in the range.
-func (m *InstanceManager) CreateListener(host string, port int, portExplicit bool) (net.Listener, error) {
+func (m *Manager) CreateListener(host string, port int, portExplicit bool) (net.Listener, error) {
 	if portExplicit {
 		addr := fmt.Sprintf("%s:%d", host, port)
 		listener, err := net.Listen("tcp", addr)
@@ -69,7 +70,7 @@ func (m *InstanceManager) CreateListener(host string, port int, portExplicit boo
 		return listener, nil
 	}
 
-	for p := port; p < port+PortRangeSize; p++ {
+	for p := port; p < port+config.PortRangeSize; p++ {
 		addr := fmt.Sprintf("%s:%d", host, p)
 		listener, err := net.Listen("tcp", addr)
 		if err != nil {
@@ -80,11 +81,11 @@ func (m *InstanceManager) CreateListener(host string, port int, portExplicit boo
 		return listener, nil
 	}
 
-	return nil, fmt.Errorf("could not find a free port in range %d-%d", port, port+PortRangeSize-1)
+	return nil, fmt.Errorf("could not find a free port in range %d-%d", port, port+config.PortRangeSize-1)
 }
 
 // WritePortFile writes the current port to the discovery file.
-func (m *InstanceManager) WritePortFile() error {
+func (m *Manager) WritePortFile() error {
 	content := strconv.Itoa(m.port)
 	if err := os.WriteFile(m.portPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to write port file: %w", err)
@@ -93,13 +94,13 @@ func (m *InstanceManager) WritePortFile() error {
 }
 
 // Port returns the bound port number.
-func (m *InstanceManager) Port() int {
+func (m *Manager) Port() int {
 	return m.port
 }
 
 // Cleanup releases the lock and removes the port file.
 // Safe to call multiple times or on a partially initialized manager.
-func (m *InstanceManager) Cleanup() {
+func (m *Manager) Cleanup() {
 	if m.listener != nil {
 		_ = m.listener.Close()
 	}
@@ -112,14 +113,9 @@ func (m *InstanceManager) Cleanup() {
 }
 
 // ReadServerPort reads the port number from the discovery file.
-// Returns an error if Tribar is not running.
+// Must be called after config.EnsureDirectories.
 func ReadServerPort() (int, error) {
-	dataDir, err := calculateDataDir()
-	if err != nil {
-		return 0, fmt.Errorf("failed to determine data directory: %w", err)
-	}
-
-	portPath := filepath.Join(dataDir, portFileName)
+	portPath := filepath.Join(config.DirectoryData, portFileName)
 	content, err := os.ReadFile(portPath)
 	if err != nil {
 		if os.IsNotExist(err) {

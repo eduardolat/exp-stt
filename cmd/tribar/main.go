@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,6 +14,7 @@ import (
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/engine"
 	"github.com/varavelio/tribar/internal/history"
+	"github.com/varavelio/tribar/internal/instance"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/notify"
 	"github.com/varavelio/tribar/internal/onnx"
@@ -25,26 +24,15 @@ import (
 	"github.com/varavelio/tribar/internal/sound"
 	"github.com/varavelio/tribar/internal/state"
 	"github.com/varavelio/tribar/internal/systray"
+	"github.com/varavelio/tribar/internal/toggle"
 	"github.com/varavelio/tribar/internal/transcribe"
 )
 
 func main() {
 	flags := config.ParseFlags()
-
-	if flags.Toggle {
-		if err := runToggle(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
-		return
-	}
-
 	logger := logger.NewSlogLogger(flags.Debug)
+
 	if err := run(logger, flags); err != nil {
-		if errors.Is(err, config.ErrAlreadyRunning) {
-			fmt.Println("Tribar is already running.")
-			os.Exit(0)
-		}
 		logger.Error(context.Background(), "error while running the app", "err", err)
 		os.Exit(1)
 	}
@@ -64,18 +52,30 @@ func run(logger logger.Logger, flags config.Flags) error {
 		return fmt.Errorf("error ensuring app directories: %w", err)
 	}
 
-	instance := config.NewInstanceManager()
-	if err := instance.AcquireLock(); err != nil {
+	if flags.Toggle {
+		if err := toggle.Execute(); err != nil {
+			return err
+		}
+		fmt.Println("Recording toggled successfully.")
+		return nil
+	}
+
+	inst := instance.NewManager()
+	if err := inst.AcquireLock(); err != nil {
+		if errors.Is(err, instance.ErrAlreadyRunning) {
+			fmt.Println("Tribar is already running.")
+			return nil
+		}
 		return err
 	}
-	defer instance.Cleanup()
+	defer inst.Cleanup()
 
-	listener, err := instance.CreateListener(flags.Host, flags.Port, flags.PortExplicit)
+	listener, err := inst.CreateListener(flags.Host, flags.Port, flags.PortExplicit)
 	if err != nil {
 		return fmt.Errorf("error binding server port: %w", err)
 	}
 
-	if err := instance.WritePortFile(); err != nil {
+	if err := inst.WritePortFile(); err != nil {
 		return fmt.Errorf("error writing port file: %w", err)
 	}
 
@@ -135,7 +135,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	srv := server.NewServer(logger, settingsManager, appState, eng)
 	go func() {
-		addr := fmt.Sprintf("%s:%d", flags.Host, instance.Port())
+		addr := fmt.Sprintf("%s:%d", flags.Host, inst.Port())
 		logger.Info(ctx, "Starting server", "address", "http://"+addr+"/", "version", config.AppVersion)
 		if err := srv.Server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			logger.Error(ctx, "server error", "err", err)
@@ -150,34 +150,5 @@ func run(logger logger.Logger, flags config.Flags) error {
 	<-ctx.Done()
 	stop()
 	logger.Info(ctx, "shutting down gracefully...")
-	return nil
-}
-
-func runToggle() error {
-	port, err := config.ReadServerPort()
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/urpc/RecordingToggle", port)
-	body := bytes.NewBufferString(`{}`)
-
-	resp, err := http.Post(url, "application/json", body)
-	if err != nil {
-		return fmt.Errorf("failed to connect to Tribar: %w", err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		var result map[string]any
-		if err := json.NewDecoder(resp.Body).Decode(&result); err == nil {
-			if errMsg, ok := result["error"].(string); ok {
-				return fmt.Errorf("toggle failed: %s", errMsg)
-			}
-		}
-		return fmt.Errorf("toggle failed with status: %d", resp.StatusCode)
-	}
-
-	fmt.Println("Recording toggled successfully.")
 	return nil
 }

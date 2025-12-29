@@ -20,13 +20,26 @@ tasks:
   build:
     desc: Build the project
     deps:
-      - gen:urpc
+      - codegen
     cmd: go build -o ./dist/tribar ./cmd/tribar/main.go
 
+  codegen:
+    desc: Run all code generators of the project
+    cmds:
+      - task: gen:logo
+      - task: gen:urpc
+
+  # This task takes some seconds to run, so we use `sources` and `generates` to cache
+  # it and avoid running it when it's not needed
   gen:logo:
     desc: Generate logo variants
     cmd: go run ./cmd/genlogo/main.go
+    sources:
+      - ./cmd/genlogo/**/*
+    generates:
+      - ./assets/logo/**/*
 
+  # This code generator is high performance, we can run it every time without caching
   gen:urpc:
     desc: Generate UFO RPC code
     cmd: cd ./internal/server/api && urpc generate

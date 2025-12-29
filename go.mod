@@ -8,6 +8,7 @@ require (
 	github.com/gen2brain/beeep v0.11.1
 	github.com/gen2brain/malgo v0.11.24
 	github.com/go-audio/wav v1.1.0
+	github.com/gofrs/flock v0.13.0
 	github.com/google/uuid v1.6.0
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/labstack/echo/v4 v4.14.0

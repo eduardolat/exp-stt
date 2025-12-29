@@ -18,6 +18,7 @@ import (
 	"github.com/varavelio/tribar/internal/onnx"
 	"github.com/varavelio/tribar/internal/postprocess"
 	"github.com/varavelio/tribar/internal/record"
+	"github.com/varavelio/tribar/internal/server"
 	"github.com/varavelio/tribar/internal/sound"
 	"github.com/varavelio/tribar/internal/state"
 	"github.com/varavelio/tribar/internal/systray"
@@ -102,6 +103,15 @@ func run(logger logger.Logger) error {
 	go func() {
 		if err := eng.EnsureModelsDownloaded(); err != nil {
 			logger.Error(ctx, "failed to download models", "err", err)
+		}
+	}()
+
+	server := server.NewServer(logger, settingsManager, appState)
+	go func() {
+		logger.Info(ctx, "Starting server at http://localhost:8089/", "version", config.AppVersion)
+		if err := server.Start(":8089"); err != nil {
+			logger.Error(ctx, "server error", "err", err)
+			stop()
 		}
 	}()
 

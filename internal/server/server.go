@@ -20,11 +20,33 @@ func NewServer(
 	server.HideBanner = true
 	server.HidePort = true
 
+	// Allow any origin coming from localhost (any port)
+	// Very permissive since it's for local use
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
-		AllowHeaders:     []string{"*"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowOriginFunc: func(origin string) (bool, error) {
+			return true, nil
+		},
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"X-Requested-With",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+			"Connection",
+			"Content-Type",
+		},
 		AllowCredentials: true,
+		MaxAge:           86400,
 	}))
 
 	apiGroup := server.Group("/api/v1")

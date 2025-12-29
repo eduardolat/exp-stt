@@ -1,19 +1,255 @@
 version 1
 
-// UFO RPC Schema example
-// More info: https://github.com/uforg/uforpc
+// ---------------------------------------------------------------------------
+// Data Models
+// ---------------------------------------------------------------------------
 
-type FooType {
-  firstField: string
-  secondField: int[]
+"""
+A user-configurable prompt for LLM post-processing.
+"""
+type Prompt {
+  """ Unique identifier for the prompt """
+  id: string
+
+  """ Display name of the prompt """
+  name: string
+
+  """ The prompt template with ${output} placeholder """
+  body: string
 }
 
-proc BarProc {
-  input {
-    foo: FooType
-  }
+"""
+Application settings that persist across sessions.
+"""
+type Settings {
+  """ Schema version for migrations """
+  schemaVersion: int
 
+  """ Show desktop notification on errors """
+  notifyOnError: bool
+
+  """ Show desktop notification when recording starts """
+  notifyOnStart: bool
+
+  """ Show desktop notification when transcription finishes """
+  notifyOnFinish: bool
+
+  """ Enable audio feedback for events """
+  soundFeedbackEnable: bool
+
+  """ Sound ID for recording start/stop """
+  soundFeedbackRecordId: string
+
+  """ Sound ID for successful transcription """
+  soundFeedbackSuccessId: string
+
+  """ Sound ID for transcription errors """
+  soundFeedbackErrorId: string
+
+  """ Sound volume (0-100) """
+  soundFeedbackVolume: int
+
+  """ Selected input device ID, "default" for system default """
+  inputDevice: string
+
+  """ How to deliver transcription: "copy_only", "copy_paste", "ghost_paste" """
+  outputMode: string
+
+  """ Add trailing space after pasting """
+  outputTrailingSpace: bool
+
+  """ Enable LLM post-processing """
+  postProcessEnabled: bool
+
+  """ OpenAI-compatible API base URL """
+  postProcessBaseUrl: string
+
+  """ API key for post-processing service """
+  postProcessApiKey: string
+
+  """ Model name for post-processing """
+  postProcessModel: string
+
+  """ ID of the prompt to use for post-processing """
+  postProcessPromptId: string
+
+  """ Available prompts for post-processing """
+  prompts: Prompt[]
+
+  """ Maximum number of history entries to keep """
+  historyLimit: int
+
+  """ Enable automatic model unloading """
+  modelUnloadEnable: bool
+
+  """ Seconds of inactivity before unloading model """
+  modelUnloadSeconds: int
+}
+
+"""
+Progress information for model downloads.
+"""
+type DownloadProgress {
+  """ Name of the file being downloaded """
+  fileName: string
+
+  """ Bytes downloaded so far """
+  downloaded: int
+
+  """ Total bytes to download """
+  total: int
+
+  """ Download progress percentage (0-100) """
+  percent: float
+}
+
+"""
+Represents an audio input or output device.
+"""
+type AudioDevice {
+  """ System device identifier """
+  id: string
+
+  """ Human-readable device name """
+  name: string
+
+  """ Whether this is the system default device """
+  isDefault: bool
+}
+
+"""
+Lists of available audio devices.
+"""
+type AvailableDevices {
+  """ Available audio input (capture) devices """
+  inputDevices: AudioDevice[]
+
+  """ Available audio output (playback) devices """
+  outputDevices: AudioDevice[]
+}
+
+"""
+A single transcription history entry.
+"""
+type HistoryEntry {
+  """ Unique identifier (UUIDv7) """
+  id: string
+
+  """ When the transcription was recorded (ISO 8601) """
+  timestamp: string
+
+  """ Raw transcription from the STT model """
+  textRaw: string
+
+  """ Final transcription (post-processed if enabled) """
+  textFinal: string
+
+  """ Recording duration in milliseconds """
+  durationMs: int
+
+  """ Whether LLM post-processing was applied """
+  postProcessed: bool
+}
+
+"""
+Current application state.
+"""
+type State {
+  """
+  Current status of the application.
+  Values: "unknown", "unloaded", "downloading", "loading",
+          "loaded", "listening", "transcribing", "post_processing"
+  """
+  status: string
+
+  """ Model download progress (when status is "downloading") """
+  downloadProgress: DownloadProgress
+
+  """ Available audio devices """
+  devices: AvailableDevices
+
+  """ Transcription history (newest first) """
+  history: HistoryEntry[]
+}
+
+// ---------------------------------------------------------------------------
+// Procedures
+// ---------------------------------------------------------------------------
+
+"""
+Get the current application state including status, devices, and history.
+"""
+proc StateGet {
   output {
-    baz: bool
+    state: State
+  }
+}
+
+"""
+Toggle the recording state. If currently loaded/listening, starts recording.
+If currently listening, stops recording and begins transcription.
+"""
+proc RecordingToggle {}
+
+"""
+Get the current application settings.
+"""
+proc SettingsGet {
+  output {
+    settings: Settings
+  }
+}
+
+"""
+Update the application settings.
+"""
+proc SettingsUpdate {
+  input {
+    """ The new settings to apply """
+    settings: Settings
+  }
+}
+
+"""
+Delete a specific history entry by ID.
+"""
+proc HistoryDeleteEntry {
+  input {
+    """ The ID of the entry to delete """
+    id: string
+  }
+}
+
+"""
+Clear all history entries.
+"""
+proc HistoryClear {}
+
+// ---------------------------------------------------------------------------
+// Streams
+// ---------------------------------------------------------------------------
+
+"""
+Subscribe to real-time application events.
+
+Events are emitted when state or settings change.
+
+A ping event is sent periodically to keep the connection alive.
+
+The output uses a discriminator pattern with optional fields.
+"""
+stream ListenForEvents {
+  output {
+    """
+    Event type discriminator.
+    Values: "ping", "stateUpdated", "settingsUpdated"
+    """
+    eventType: string
+
+    """ Present when eventType is "stateUpdated" """
+    stateUpdated?: State
+
+    """ Present when eventType is "settingsUpdated" """
+    settingsUpdated?: Settings
   }
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/engine"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/server/api"
 	"github.com/varavelio/tribar/internal/state"
@@ -15,6 +16,7 @@ func NewServer(
 	logger logger.Logger,
 	settingsManager *config.SettingsManager,
 	appState *state.Instance,
+	eng *engine.Engine,
 ) *echo.Echo {
 	server := echo.New()
 	server.HideBanner = true
@@ -50,7 +52,7 @@ func NewServer(
 	}))
 
 	apiGroup := server.Group("/api/v1")
-	api.MountRouter(apiGroup, logger, settingsManager, appState)
+	api.MountRouter(apiGroup, logger, settingsManager, appState, eng)
 
 	return server
 }

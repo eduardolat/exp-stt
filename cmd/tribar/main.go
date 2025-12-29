@@ -106,7 +106,7 @@ func run(logger logger.Logger) error {
 		}
 	}()
 
-	server := server.NewServer(logger, settingsManager, appState)
+	server := server.NewServer(logger, settingsManager, appState, eng)
 	go func() {
 		logger.Info(ctx, "Starting server at http://localhost:8089/", "version", config.AppVersion)
 		if err := server.Start(":8089"); err != nil {

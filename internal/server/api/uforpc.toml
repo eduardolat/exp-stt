@@ -1,0 +1,20 @@
+# UFO RPC Code generator config file
+# Star the repo at https://github.com/uforg/uforpc
+# Read more about this file at https://uforpc.uforg.dev/r/configfile
+
+version = 1
+
+schema = "./schema.urpc"
+
+# Uncomment your desired output language(s) below and then
+# run `urpc generate` to execute the code generator.
+
+[playground]
+output_dir = "./playground"
+
+[golang-server]
+output_file = "./uforpc/uforpc.go"
+package_name = "uforpc"
+
+# [typescript-client]
+# output_file = "../../../webapp/src/lib/client.gen.ts"

@@ -19,11 +19,17 @@ tasks:
 
   build:
     desc: Build the project
+    deps:
+      - gen:urpc
     cmd: go build -o ./dist/tribar ./cmd/tribar/main.go
 
   gen:logo:
     desc: Generate logo variants
     cmd: go run ./cmd/genlogo/main.go
+
+  gen:urpc:
+    desc: Generate UFO RPC code
+    cmd: cd ./internal/server/api && urpc generate
 
   test:
     desc: Run all tests

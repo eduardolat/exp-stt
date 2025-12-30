@@ -19,6 +19,31 @@ type Prompt {
 }
 
 """
+Global keyboard shortcut configuration.
+"""
+type Shortcut {
+  """ Modifier keys: "ctrl", "alt", "shift", "meta" """
+  modifiers: string[]
+
+  """ The key to press with modifiers, e.g. "space", "a" """
+  key: string
+}
+
+"""
+Runtime environment information.
+"""
+type SystemInfo {
+  """ Operating system: "windows", "darwin", "linux" """
+  os: string
+
+  """ Architecture: "amd64", "arm64" """
+  arch: string
+
+  """ Display server: "x11", "wayland", "cocoa", "win32", "unknown" """
+  displayServer: string
+}
+
+"""
 Application settings that persist across sessions.
 """
 type Settings {
@@ -84,6 +109,9 @@ type Settings {
 
   """ Seconds of inactivity before unloading model """
   modelUnloadSeconds: int
+
+  """ Global keyboard shortcut for toggle recording """
+  shortcutToggle: Shortcut
 }
 
 """
@@ -170,6 +198,9 @@ type State {
 
   """ Transcription history (newest first) """
   history: HistoryEntry[]
+
+  """ System environment information """
+  systemInfo: SystemInfo
 }
 
 // ---------------------------------------------------------------------------
@@ -224,6 +255,17 @@ proc HistoryDeleteEntry {
 Clear all history entries.
 """
 proc HistoryClear {}
+
+"""
+Update and re-register the toggle recording shortcut.
+Returns success status of the registration.
+"""
+proc ShortcutToggleUpdate {
+  input {
+    """ The new shortcut to register """
+    shortcut: Shortcut
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Streams

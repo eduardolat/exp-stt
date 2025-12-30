@@ -9,6 +9,7 @@ import (
 	"github.com/varavelio/tribar/internal/engine"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/server/api"
+	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/state"
 )
 
@@ -17,6 +18,7 @@ func NewServer(
 	settingsManager *config.SettingsManager,
 	appState *state.Instance,
 	eng *engine.Engine,
+	shortcutMgr *shortcut.Manager,
 ) *echo.Echo {
 	server := echo.New()
 	server.HideBanner = true
@@ -52,7 +54,7 @@ func NewServer(
 	}))
 
 	apiGroup := server.Group("/api/v1")
-	api.MountRouter(apiGroup, logger, settingsManager, appState, eng)
+	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr)
 
 	return server
 }

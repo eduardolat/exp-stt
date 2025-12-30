@@ -11,6 +11,7 @@ import (
 	"github.com/varavelio/tribar/internal/engine"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/server/api/uforpc"
+	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/state"
 )
 
@@ -26,6 +27,7 @@ type handlers struct {
 	settingsManager *config.SettingsManager
 	appState        *state.Instance
 	engine          *engine.Engine
+	shortcutManager *shortcut.Manager
 	uforpcServer    *uforpc.Server[urpcProps]
 }
 
@@ -35,6 +37,7 @@ func MountRouter(
 	settingsManager *config.SettingsManager,
 	appState *state.Instance,
 	eng *engine.Engine,
+	shortcutMgr *shortcut.Manager,
 ) {
 	uforpcServer := uforpc.NewServer[urpcProps]()
 	handlers := &handlers{
@@ -42,6 +45,7 @@ func MountRouter(
 		settingsManager: settingsManager,
 		appState:        appState,
 		engine:          eng,
+		shortcutManager: shortcutMgr,
 		uforpcServer:    uforpcServer,
 	}
 
@@ -54,7 +58,6 @@ func MountRouter(
 	parent.GET("/audio/:id", handlers.handleAudioStream)
 }
 
-// registerURPC registers all UFO RPC handlers
 func (h *handlers) registerURPC() {
 	// Procedures
 	h.registerProcStateGet()
@@ -63,6 +66,7 @@ func (h *handlers) registerURPC() {
 	h.registerProcSettingsUpdate()
 	h.registerProcHistoryDeleteEntry()
 	h.registerProcHistoryClear()
+	h.registerProcShortcutToggleUpdate()
 
 	// Streams
 	h.registerStreamListenForEvents()

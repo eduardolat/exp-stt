@@ -49,7 +49,8 @@ func (h *handlers) buildState(entries []history.Entry) uforpc.State {
 			InputDevices:  mapAudioDevices(devices.InputDevices),
 			OutputDevices: mapAudioDevices(devices.OutputDevices),
 		},
-		History: mapHistoryEntries(entries),
+		History:    mapHistoryEntries(entries),
+		SystemInfo: systemInfoToAPI(state.RuntimeInfo),
 	}
 }
 
@@ -77,6 +78,7 @@ func buildSettings(s config.Settings) uforpc.Settings {
 		HistoryLimit:           s.HistoryLimit,
 		ModelUnloadEnable:      s.ModelUnloadEnable,
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
+		ShortcutToggle:         shortcutToAPI(s.ShortcutToggle),
 	}
 }
 
@@ -104,6 +106,7 @@ func settingsFromAPI(s uforpc.Settings) config.Settings {
 		HistoryLimit:           s.HistoryLimit,
 		ModelUnloadEnable:      s.ModelUnloadEnable,
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
+		ShortcutToggle:         shortcutFromAPI(s.ShortcutToggle),
 	}
 }
 
@@ -160,4 +163,29 @@ func promptsFromAPI(prompts []uforpc.Prompt) []config.Prompt {
 		}
 	}
 	return result
+}
+
+// shortcutToAPI converts config.Shortcut to API Shortcut.
+func shortcutToAPI(s config.Shortcut) uforpc.Shortcut {
+	return uforpc.Shortcut{
+		Modifiers: s.Modifiers,
+		Key:       s.Key,
+	}
+}
+
+// shortcutFromAPI converts API Shortcut to config.Shortcut.
+func shortcutFromAPI(s uforpc.Shortcut) config.Shortcut {
+	return config.Shortcut{
+		Modifiers: s.Modifiers,
+		Key:       s.Key,
+	}
+}
+
+// systemInfoToAPI converts state.SystemInfo to API SystemInfo.
+func systemInfoToAPI(s state.SystemInfo) uforpc.SystemInfo {
+	return uforpc.SystemInfo{
+		Os:            s.OS,
+		Arch:          s.Arch,
+		DisplayServer: s.DisplayServer,
+	}
 }

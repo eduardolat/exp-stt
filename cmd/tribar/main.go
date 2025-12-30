@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	"github.com/varavelio/tribar/internal/clipboard"
@@ -21,31 +20,37 @@ import (
 	"github.com/varavelio/tribar/internal/postprocess"
 	"github.com/varavelio/tribar/internal/record"
 	"github.com/varavelio/tribar/internal/server"
+	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/sound"
 	"github.com/varavelio/tribar/internal/state"
 	"github.com/varavelio/tribar/internal/systray"
 	"github.com/varavelio/tribar/internal/toggle"
 	"github.com/varavelio/tribar/internal/transcribe"
+	"golang.design/x/hotkey/mainthread"
 )
 
 func main() {
 	flags := config.ParseFlags()
-	logger := logger.NewSlogLogger(flags.Debug)
+	log := logger.NewSlogLogger(flags.Debug)
 
-	if err := run(logger, flags); err != nil {
-		logger.Error(context.Background(), "error while running the app", "err", err)
-		os.Exit(1)
-	}
+	mainthread.Init(func() {
+		if err := run(log, flags); err != nil {
+			log.Error(context.Background(), "error while running the app", "err", err)
+			os.Exit(1)
+		}
+	})
 }
 
 func run(logger logger.Logger, flags config.Flags) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	state.InitRuntime()
 	logger.Debug(
-		ctx, "operating system info",
-		"os", runtime.GOOS,
-		"arch", runtime.GOARCH,
+		ctx, "runtime info initialized",
+		"os", state.RuntimeInfo.OS,
+		"arch", state.RuntimeInfo.Arch,
+		"display_server", state.RuntimeInfo.DisplayServer,
 	)
 
 	if err := config.EnsureDirectories(logger); err != nil {
@@ -54,19 +59,19 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	if flags.Toggle {
 		if err := toggle.Execute(); err != nil {
-			return err
+			return fmt.Errorf("error toggling recording: %w", err)
 		}
-		fmt.Println("Recording toggled successfully.")
+		fmt.Println("recording toggled successfully")
 		return nil
 	}
 
 	inst := instance.NewManager()
 	if err := inst.AcquireLock(); err != nil {
 		if errors.Is(err, instance.ErrAlreadyRunning) {
-			fmt.Println("Tribar is already running.")
+			fmt.Println("tribar is already running")
 			return nil
 		}
-		return err
+		return fmt.Errorf("error acquiring lock: %w", err)
 	}
 	defer inst.Cleanup()
 
@@ -133,7 +138,13 @@ func run(logger logger.Logger, flags config.Flags) error {
 		}
 	}()
 
-	srv := server.NewServer(logger, settingsManager, appState, eng)
+	shortcutMgr := shortcut.New(logger, settingsManager, eng.ToggleRecording)
+	if err := shortcutMgr.Start(); err != nil {
+		logger.Warn(ctx, "hotkey registration failed", "err", err)
+	}
+	defer shortcutMgr.Stop()
+
+	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr)
 	go func() {
 		addr := fmt.Sprintf("%s:%d", flags.Host, inst.Port())
 		logger.Info(ctx, "Starting server", "address", "http://"+addr+"/", "version", config.AppVersion)

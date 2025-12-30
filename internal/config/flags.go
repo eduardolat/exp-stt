@@ -25,13 +25,14 @@ const DefaultPort = 8742
 const PortRangeSize = 100
 
 // ParseFlags parses command-line arguments and returns the application flags.
-// Exits with status 0 if --help is requested, or status 2 on parse error.
+// Exits with status 0 if --help or --version is requested, or status 2 on parse error.
 func ParseFlags() Flags {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.Usage = func() {
+		fmt.Fprintf(os.Stderr, "%s v%s\n\n", AppName, AppVersion)
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
-		fmt.Fprintln(os.Stderr, "Tribar Voice - Speech to text application")
+		fmt.Fprintln(os.Stderr, "Speech to text application")
 		fmt.Fprintln(os.Stderr, "\nOptions:")
 		fs.PrintDefaults()
 	}
@@ -40,8 +41,14 @@ func ParseFlags() Flags {
 	host := fs.String("host", DefaultHost, "Network interface to bind the HTTP server to")
 	port := fs.Int("port", 0, "Port number to bind the HTTP server to (auto-discovers if not set)")
 	toggle := fs.Bool("toggle", false, "Toggle recording on a running instance and exit")
+	version := fs.Bool("version", false, "Print version information and exit")
 
 	_ = fs.Parse(os.Args[1:])
+
+	if *version {
+		fmt.Printf("%s v%s\n", AppName, AppVersion)
+		os.Exit(0)
+	}
 
 	portExplicit := *port != 0
 	finalPort := *port

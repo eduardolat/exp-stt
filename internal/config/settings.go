@@ -26,6 +26,12 @@ type Prompt struct {
 	Body string `json:"body"`
 }
 
+// Shortcut represents a global keyboard shortcut configuration.
+type Shortcut struct {
+	Modifiers []string `json:"modifiers"` // "ctrl", "alt", "shift", "meta"
+	Key       string   `json:"key"`       // "space", "a", etc.
+}
+
 // Settings holds all user-configurable preferences.
 type Settings struct {
 	Version int `json:"version"`
@@ -65,6 +71,9 @@ type Settings struct {
 	// Model auto-unload settings
 	ModelUnloadEnable  bool `json:"model_unload_enable"`
 	ModelUnloadSeconds int  `json:"model_unload_seconds"`
+
+	// Global shortcut settings
+	ShortcutToggle Shortcut `json:"shortcut_toggle"`
 }
 
 // defaultPrompts returns the predefined prompts for post-processing.
@@ -176,6 +185,11 @@ var defaultSettings = Settings{
 
 	ModelUnloadEnable:  true,
 	ModelUnloadSeconds: 300,
+
+	ShortcutToggle: Shortcut{
+		Modifiers: []string{"ctrl"},
+		Key:       "space",
+	},
 }
 
 // SettingsManager handles loading and saving of user settings.

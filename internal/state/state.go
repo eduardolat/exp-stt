@@ -3,11 +3,61 @@ package state
 
 import (
 	"context"
+	"os"
+	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/gen2brain/malgo"
 	"github.com/varavelio/tribar/internal/history"
 )
+
+// RuntimeInfo holds system information detected at startup.
+// This is populated by InitRuntime and should not be modified afterwards.
+var RuntimeInfo = SystemInfo{}
+
+// InitRuntime detects and initializes the runtime environment information.
+// This should be called once at application startup, before creating the state Instance.
+func InitRuntime() {
+	RuntimeInfo = SystemInfo{
+		OS:            runtime.GOOS,
+		Arch:          runtime.GOARCH,
+		DisplayServer: getDisplayServer(),
+		HotkeysActive: false,
+	}
+}
+
+// getDisplayServer detects the current display server environment.
+func getDisplayServer() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "win32"
+	case "darwin":
+		return "cocoa"
+	case "linux":
+		WAYLAND_DISPLAY := strings.ToLower(os.Getenv("WAYLAND_DISPLAY"))
+		XDG_SESSION_TYPE := strings.ToLower(os.Getenv("XDG_SESSION_TYPE"))
+		DISPLAY := strings.ToLower(os.Getenv("DISPLAY"))
+
+		if WAYLAND_DISPLAY != "" {
+			return "wayland"
+		}
+
+		if strings.Contains(XDG_SESSION_TYPE, "wayland") {
+			return "wayland"
+		}
+		if strings.Contains(XDG_SESSION_TYPE, "x11") {
+			return "x11"
+		}
+		if DISPLAY != "" {
+			return "x11"
+		}
+
+		return "unknown"
+	default:
+		return "unknown"
+	}
+}
 
 type Status int
 

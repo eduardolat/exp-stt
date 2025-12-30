@@ -43,6 +43,14 @@ type AvailableDevices struct {
 	OutputDevices []AudioDevice `json:"output_devices"`
 }
 
+// SystemInfo contains runtime environment information.
+type SystemInfo struct {
+	OS            string `json:"os"`
+	Arch          string `json:"arch"`
+	DisplayServer string `json:"display_server"` // "x11", "wayland", "cocoa", "win32"
+	HotkeysActive bool   `json:"hotkeys_active"`
+}
+
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
@@ -54,6 +62,9 @@ type Instance struct {
 
 	downloadMu       sync.RWMutex
 	downloadProgress DownloadProgress
+
+	systemInfoMu sync.RWMutex
+	systemInfo   SystemInfo
 
 	audioCtx *malgo.AllocatedContext
 }
@@ -180,4 +191,25 @@ func (i *Instance) ClearHistory(ctx context.Context) error {
 // HistoryCount returns the number of entries in the history.
 func (i *Instance) HistoryCount() int {
 	return i.historyManager.Count()
+}
+
+// SetSystemInfo sets the system information.
+func (i *Instance) SetSystemInfo(info SystemInfo) {
+	i.systemInfoMu.Lock()
+	defer i.systemInfoMu.Unlock()
+	i.systemInfo = info
+}
+
+// GetSystemInfo returns the current system information.
+func (i *Instance) GetSystemInfo() SystemInfo {
+	i.systemInfoMu.RLock()
+	defer i.systemInfoMu.RUnlock()
+	return i.systemInfo
+}
+
+// SetHotkeysActive updates only the HotkeysActive field of SystemInfo.
+func (i *Instance) SetHotkeysActive(active bool) {
+	i.systemInfoMu.Lock()
+	defer i.systemInfoMu.Unlock()
+	i.systemInfo.HotkeysActive = active
 }

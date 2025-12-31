@@ -116,7 +116,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libasound2-dev \
             libgtk-3-dev \
-            libappindicator3-dev \
             libayatana-appindicator3-dev \
             libx11-dev \
             libxext-dev \
@@ -144,10 +143,6 @@ jobs:
       # ============================================
       # Run code generation
       # ============================================
-      - name: Generate logo variants
-        shell: bash
-        run: go run ./cmd/genlogo/main.go
-
       - name: Generate UFO RPC code
         shell: bash
         run: urpc generate ./schema/uforpc.toml

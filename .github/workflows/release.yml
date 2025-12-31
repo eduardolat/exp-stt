@@ -109,15 +109,15 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME:-dev}"
           OUTPUT_NAME="tribar-${VERSION}-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}"
-          
+
           echo "Building ${OUTPUT_NAME}..."
           echo "GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=${CGO_ENABLED}"
-          
+
           go build -v -trimpath \
             -ldflags="-s -w -X github.com/varavelio/tribar/internal/config.AppVersion=${VERSION}" \
             -o "${OUTPUT_NAME}" \
             ./cmd/tribar
-          
+
           echo "Build completed successfully!"
           ls -la "${OUTPUT_NAME}" || dir "${OUTPUT_NAME}"
 

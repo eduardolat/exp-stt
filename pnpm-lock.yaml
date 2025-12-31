@@ -35,9 +35,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.1.18
         version: 4.1.18(vite@7.3.0(jiti@2.6.1)(lightningcss@1.30.2))
-      basecoat-css:
-        specifier: 0.3.9
-        version: 0.3.9
+      daisyui:
+        specifier: 5.5.14
+        version: 5.5.14
       prettier:
         specifier: 3.7.4
         version: 3.7.4
@@ -505,9 +505,6 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
-  basecoat-css@0.3.9:
-    resolution: {integrity: sha512-Rov3CRCZ9slyM59JN5kFI5xw+1eMIMcgBpQ6KAzBieBeXiE9bSGsd/caOAqHuNkEq9L0ozJgZ5Cc+A2VO8Vkbg==}
-
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
@@ -519,6 +516,9 @@ packages:
   cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
+
+  daisyui@5.5.14:
+    resolution: {integrity: sha512-L47rvw7I7hK68TA97VB8Ee0woHew+/ohR6Lx6Ah/krfISOqcG4My7poNpX5Mo5/ytMxiR40fEaz6njzDi7cuSg==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -1158,8 +1158,6 @@ snapshots:
 
   axobject-query@4.1.0: {}
 
-  basecoat-css@0.3.9: {}
-
   chokidar@4.0.3:
     dependencies:
       readdirp: 4.1.2
@@ -1167,6 +1165,8 @@ snapshots:
   clsx@2.1.1: {}
 
   cookie@0.6.0: {}
+
+  daisyui@5.5.14: {}
 
   debug@4.4.3:
     dependencies:

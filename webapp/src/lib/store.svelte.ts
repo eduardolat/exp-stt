@@ -59,7 +59,6 @@ class Store {
 	isConnected = $state(false);
 	isLoading = $state(true);
 	error: string | null = $state(null);
-	currentTab = $state<'home' | 'settings' | 'history'>('home');
 
 	get status() {
 		return this.state.status;

@@ -1,5 +1,15 @@
 {
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"files.associations": {
 		"*.css": "tailwindcss"
-	}
+	},
+	"css.validate": false,
+	"svelte.enable-ts-plugin": true,
+	"[go]": {
+		"editor.defaultFormatter": "golang.go"
+	},
+	"go.lintTool": "golangci-lint",
+	"go.lintFlags": ["--fast"],
+	"go.testFlags": ["-v"]
 }

@@ -1,3 +1,9 @@
+# Available runners:
+#
+# https://github.com/actions/runner-images
+# https://github.blog/changelog/2025-04-14-windows-arm64-hosted-runners-now-available-in-public-preview/
+# https://github.blog/changelog/2024-06-24-github-actions-ubuntu-24-04-image-now-available-for-arm64-runners/
+
 name: Release Build
 
 on:
@@ -22,7 +28,7 @@ jobs:
           # Linux AMD64
           - os: linux
             arch: amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             ext: ''
           # Linux ARM64
           - os: linux
@@ -32,17 +38,17 @@ jobs:
           # macOS AMD64 (Intel)
           - os: darwin
             arch: amd64
-            runner: macos-13
+            runner: macos-15-intel
             ext: ''
           # macOS ARM64 (Apple Silicon)
           - os: darwin
             arch: arm64
-            runner: macos-latest
+            runner: macos-15
             ext: ''
           # Windows AMD64
           - os: windows
             arch: amd64
-            runner: windows-latest
+            runner: windows-2025
             ext: '.exe'
           # Windows ARM64
           - os: windows

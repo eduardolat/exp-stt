@@ -1,21 +1,12 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import {
-		Mic,
-		MicOff,
-		Loader2,
-		Download,
-		Cpu,
-		Sparkles,
-		Check,
-		AlertCircle
-	} from '@lucide/svelte';
+	import { Mic, MicOff, Loader, Download, Cpu, Sparkles, Check, CircleAlert } from '@lucide/svelte';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean }> = {
-		unknown: { icon: AlertCircle, pulse: false },
+		unknown: { icon: CircleAlert, pulse: false },
 		unloaded: { icon: MicOff, pulse: false },
 		downloading: { icon: Download, pulse: true },
-		loading: { icon: Loader2, pulse: true },
+		loading: { icon: Loader, pulse: true },
 		loaded: { icon: Check, pulse: false },
 		listening: { icon: Mic, pulse: true },
 		transcribing: { icon: Cpu, pulse: true },

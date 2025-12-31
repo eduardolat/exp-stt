@@ -51,11 +51,6 @@ jobs:
             arch: amd64
             runner: windows-2025
             ext: '.exe'
-          # Windows ARM64
-          - os: windows
-            arch: arm64
-            runner: windows-11-arm
-            ext: '.exe'
 
     steps:
       - name: Checkout code
@@ -87,7 +82,6 @@ jobs:
             darwin-amd64)  URPC_BINARY="urpc-darwin-amd64" ;;
             darwin-arm64)  URPC_BINARY="urpc-darwin-arm64" ;;
             windows-amd64) URPC_BINARY="urpc-windows-amd64.exe" ;;
-            windows-arm64) URPC_BINARY="urpc-windows-arm64.exe" ;;
           esac
 
           URPC_URL="https://github.com/uforg/uforpc/releases/download/v${URPC_VERSION}/${URPC_BINARY}"

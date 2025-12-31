@@ -49,6 +49,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>History - Tribar Voice</title>
+</svelte:head>
+
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
 		<h2 class="text-lg font-semibold">Transcription History</h2>

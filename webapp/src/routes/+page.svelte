@@ -64,3 +64,7 @@
 		{/if}
 	</div>
 </div>
+
+<svelte:head>
+	<title>Tribar Voice</title>
+</svelte:head>

@@ -15,6 +15,10 @@
 	import { ShortcutInput } from '$lib/components';
 </script>
 
+<svelte:head>
+	<title>General Settings - Tribar Voice</title>
+</svelte:head>
+
 <div class="space-y-6">
 	<div class="card bg-base-200">
 		<div class="card-body">

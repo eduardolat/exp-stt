@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"fyne.io/systray"
+	"github.com/pkg/browser"
 	"github.com/varavelio/tribar/assets/logo"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/state"
@@ -31,6 +32,7 @@ type Instance struct {
 	appState *state.Instance
 	engine   Engine
 	onQuit   func()
+	port     int
 
 	systrayStart func()
 	systrayEnd   func()
@@ -42,6 +44,7 @@ type Instance struct {
 
 	isShuttingDown bool
 
+	menuOpen     *systray.MenuItem
 	menuDownload *systray.MenuItem
 	menuRecord   *systray.MenuItem
 	menuQuit     *systray.MenuItem
@@ -49,11 +52,12 @@ type Instance struct {
 	lastDownloadPercent float64
 }
 
-func New(appState *state.Instance, engine Engine, onQuit func()) *Instance {
+func New(appState *state.Instance, engine Engine, port int, onQuit func()) *Instance {
 	i := &Instance{
 		appState:         appState,
 		engine:           engine,
 		onQuit:           onQuit,
+		port:             port,
 		animationPosCurr: animationPositionMiddle,
 		animationTimer:   time.NewTimer(0),
 	}
@@ -79,6 +83,10 @@ func (i *Instance) onReady() {
 
 	i.menuRecord = systray.AddMenuItem("Toggle recording", "Start or stop recording")
 	systray.AddSeparator()
+
+	i.menuOpen = systray.AddMenuItem("Open settings", "Open tribar settings")
+	systray.AddSeparator()
+
 	i.menuQuit = systray.AddMenuItem("Quit", "Exit the application")
 
 	go i.handleMenuClicks()
@@ -88,6 +96,9 @@ func (i *Instance) onReady() {
 func (i *Instance) handleMenuClicks() {
 	for {
 		select {
+		case <-i.menuOpen.ClickedCh:
+			url := fmt.Sprintf("http://localhost:%d/", i.port)
+			_ = browser.OpenURL(url)
 		case <-i.menuRecord.ClickedCh:
 			if i.engine != nil {
 				i.engine.ToggleRecording()

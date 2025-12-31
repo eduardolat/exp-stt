@@ -154,7 +154,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 		}
 	}()
 
-	stray := systray.New(appState, eng, stop)
+	stray := systray.New(appState, eng, inst.Port(), stop)
 	go stray.Start()
 	defer stray.Shutdown()
 

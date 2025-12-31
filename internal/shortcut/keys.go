@@ -76,14 +76,10 @@ var keyMap = map[string]hotkey.Key{
 	"f12":    hotkey.KeyF12,
 }
 
-// modMap maps string modifier names to hotkey.Modifier constants.
-// Note: On X11, Mod1 is typically Alt, and Mod4 is typically Super/Meta/Win.
-var modMap = map[string]hotkey.Modifier{
-	"ctrl":  hotkey.ModCtrl,
-	"alt":   hotkey.Mod1,
-	"shift": hotkey.ModShift,
-	"meta":  hotkey.Mod4, // Super/Cmd on Mac, Win on Windows
-}
+// modMap is defined in platform-specific files:
+// - modifiers_linux.go
+// - modifiers_windows.go
+// - modifiers_darwin.go
 
 // ParseShortcut converts a config.Shortcut to hotkey modifiers and key.
 func ParseShortcut(s config.Shortcut) ([]hotkey.Modifier, hotkey.Key, error) {

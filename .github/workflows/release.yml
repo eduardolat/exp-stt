@@ -72,11 +72,6 @@ jobs:
         with:
           version: latest
 
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-
       - name: Install urpc CLI
         shell: bash
         run: |
@@ -131,20 +126,30 @@ jobs:
             pkg-config
 
       # ============================================
-      # Install webapp dependencies
+      # Install project dependencies
       # ============================================
-      - name: Install webapp dependencies
+      - name: Install Go dependencies
         shell: bash
-        run: |
-          cd webapp
-          pnpm install --frozen-lockfile
+        run: go mod download
+
+      - name: Install pnpm dependencies
+        shell: bash
+        run: pnpm install --frozen-lockfile
 
       # ============================================
       # Run code generation
       # ============================================
-      - name: Run codegen
+      - name: Generate logo variants
         shell: bash
-        run: task codegen
+        run: go run ./cmd/genlogo/main.go
+
+      - name: Generate UFO RPC code
+        shell: bash
+        run: urpc generate ./schema/uforpc.toml
+
+      - name: Build webapp
+        shell: bash
+        run: cd ./webapp && pnpm run build
 
       # ============================================
       # Build binary

@@ -28,6 +28,13 @@ This repository contains a Speech To Text application named Tribar Voice. It wor
 
 - Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task. It includes checks for both the Go application and the Svelte webapp.
 
+## Shared architecture
+
+The UFO RPC schema and config file is located here:
+
+- schema/schema.urpc
+- schema/uforpc.toml
+
 ## Backend architecture
 
 The backend is divided into several packages inside `internal` which are orchestrated in the main process (`cmd/tribar/main.go`).

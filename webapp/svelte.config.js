@@ -10,8 +10,13 @@ const config = {
 	kit: {
 		adapter: adapter({
 			fallback: 'index.html',
-			strict: true
-		})
+			strict: true,
+			precompress: false
+		}),
+
+		router: {
+			type: 'hash'
+		}
 	}
 };
 

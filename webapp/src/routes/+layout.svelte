@@ -5,6 +5,7 @@
 	import { Mic, Settings, History, Palette, Loader, Sun, Moon, Eclipse } from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
+	import { AnimatedLogo, type AppStatus } from '$lib/components';
 
 	let { children } = $props();
 
@@ -33,7 +34,7 @@
 	<header class="navbar shrink-0 border-b border-base-300">
 		<div class="mx-auto flex w-full max-w-4xl items-center justify-between px-4">
 			<div class="flex items-center gap-3">
-				<Mic class="size-6 text-primary" />
+				<AnimatedLogo status={store.status as AppStatus} size={24} />
 				<span class="text-lg font-semibold">Tribar Voice</span>
 			</div>
 

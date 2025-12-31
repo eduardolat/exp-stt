@@ -28,6 +28,7 @@ tasks:
     cmds:
       - task: gen:logo
       - task: gen:urpc
+      - task: gen:webapp
 
   # This task takes some seconds to run, so we use `sources` and `generates` to cache
   # it and avoid running it when it's not needed
@@ -44,6 +45,10 @@ tasks:
     desc: Generate UFO RPC code
     cmd: urpc generate ./schema/uforpc.toml
 
+  gen:webapp:
+    desc: Build the webapp
+    cmd: cd ./webapp && pnpm run build
+
   test:
     desc: Run all tests
     cmd: go test ./...
@@ -53,6 +58,7 @@ tasks:
     cmds:
       - golangci-lint run
       - pnpm run lint
+      - cd ./webapp && pnpm run check
 
   fmt:
     desc: Format all code

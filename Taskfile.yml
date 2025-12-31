@@ -1,6 +1,6 @@
 # https://taskfile.dev
 
-version: "3"
+version: '3'
 
 tasks:
   ci:
@@ -50,8 +50,12 @@ tasks:
 
   lint:
     desc: Run all linters
-    cmd: golangci-lint run
+    cmds:
+      - golangci-lint run
+      - pnpm run lint
 
   fmt:
     desc: Format all code
-    cmd: go fmt ./...
+    cmds:
+      - go fmt ./...
+      - pnpm run fmt

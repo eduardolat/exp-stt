@@ -1,14 +1,9 @@
-# Available runners:
-#
-# https://github.com/actions/runner-images
-# https://github.blog/changelog/2025-04-14-windows-arm64-hosted-runners-now-available-in-public-preview/
-# https://github.blog/changelog/2024-06-24-github-actions-ubuntu-24-04-image-now-available-for-arm64-runners/
-
 name: Release Build
 
 on:
   release:
     types: [created]
+  # Allow manual trigger for testing
   workflow_dispatch:
 
 permissions:
@@ -16,6 +11,7 @@ permissions:
 
 env:
   GO_VERSION: '1.24'
+  NODE_VERSION: '22'
 
 jobs:
   build:
@@ -28,7 +24,7 @@ jobs:
           # Linux AMD64
           - os: linux
             arch: amd64
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
             ext: ''
           # Linux ARM64
           - os: linux
@@ -38,17 +34,17 @@ jobs:
           # macOS AMD64 (Intel)
           - os: darwin
             arch: amd64
-            runner: macos-15-intel
+            runner: macos-13
             ext: ''
           # macOS ARM64 (Apple Silicon)
           - os: darwin
             arch: arm64
-            runner: macos-15
+            runner: macos-latest
             ext: ''
           # Windows AMD64
           - os: windows
             arch: amd64
-            runner: windows-2025
+            runner: windows-latest
             ext: '.exe'
           # Windows ARM64
           - os: windows
@@ -65,6 +61,50 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+
+      - name: Install urpc CLI
+        shell: bash
+        run: |
+          URPC_VERSION="0.3.9"
+          case "${{ matrix.os }}-${{ matrix.arch }}" in
+            linux-amd64)   URPC_BINARY="urpc-linux-amd64" ;;
+            linux-arm64)   URPC_BINARY="urpc-linux-arm64" ;;
+            darwin-amd64)  URPC_BINARY="urpc-darwin-amd64" ;;
+            darwin-arm64)  URPC_BINARY="urpc-darwin-arm64" ;;
+            windows-amd64) URPC_BINARY="urpc-windows-amd64.exe" ;;
+            windows-arm64) URPC_BINARY="urpc-windows-arm64.exe" ;;
+          esac
+
+          URPC_URL="https://github.com/uforg/uforpc/releases/download/v${URPC_VERSION}/${URPC_BINARY}"
+          echo "Downloading urpc from ${URPC_URL}..."
+
+          if [[ "${{ matrix.os }}" == "windows" ]]; then
+            curl -sSL "${URPC_URL}" -o urpc.exe
+            chmod +x urpc.exe
+            mv urpc.exe /c/Windows/System32/ || mv urpc.exe "${GITHUB_WORKSPACE}/"
+            echo "${GITHUB_WORKSPACE}" >> $GITHUB_PATH
+          else
+            curl -sSL "${URPC_URL}" -o urpc
+            chmod +x urpc
+            sudo mv urpc /usr/local/bin/
+          fi
+
+          urpc --version
 
       # ============================================
       # Linux Dependencies
@@ -91,15 +131,24 @@ jobs:
             pkg-config
 
       # ============================================
-      # macOS - No extra dependencies needed
-      # Xcode Command Line Tools are pre-installed
+      # Install webapp dependencies
       # ============================================
+      - name: Install webapp dependencies
+        shell: bash
+        run: |
+          cd webapp
+          pnpm install --frozen-lockfile
 
       # ============================================
-      # Windows Dependencies - No extra needed
-      # MinGW is pre-installed on Windows runners
+      # Run code generation
       # ============================================
+      - name: Run codegen
+        shell: bash
+        run: task codegen
 
+      # ============================================
+      # Build binary
+      # ============================================
       - name: Build binary
         shell: bash
         env:

@@ -194,6 +194,10 @@ This project uses Tailwind CSS v4 for styling. But it uses Basecoat CSS (`baseco
 
 Search for the previous documentation in Context7 MCP to find documentation about of the available components and how to use them.
 
+Regarding the style, it should be desktop only (no responsive design) because the software is intended to be used only on desktops so we can simplify the design and make it desktop only. It can have a maximum width of 1024px which is configured in the layout and it should be visually comfortable to use and horizontally centered.
+
+Make the style minimalistic and simple, without any unnecessary elements or distractions but without losing the functionality or user experience which is the absolute priority.
+
 ## Icons
 
 Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp. For example if you need `Phone` icon from lucide you can use this:

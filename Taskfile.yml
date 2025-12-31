@@ -45,9 +45,18 @@ tasks:
     desc: Generate UFO RPC code
     cmd: urpc generate ./schema/uforpc.toml
 
+  # This task takes some seconds to run, so we use `sources` and `generates` to cache
+  # it and avoid running it when it's not needed
   gen:webapp:
     desc: Build the webapp
     cmd: cd ./webapp && pnpm run build
+    sources:
+      - ./webapp/**/*
+      - exclude: ./webapp/node_modules/**/*
+      - exclude: ./webapp/.svelte-kit/**/*
+      - exclude: ./webapp/build/**/*
+    generates:
+      - ./webapp/build/**/*
 
   test:
     desc: Run all tests

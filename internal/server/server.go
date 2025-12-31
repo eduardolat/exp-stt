@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,6 +12,7 @@ import (
 	"github.com/varavelio/tribar/internal/server/api"
 	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/state"
+	"github.com/varavelio/tribar/webapp"
 )
 
 func NewServer(
@@ -53,8 +55,13 @@ func NewServer(
 		MaxAge:           86400,
 	}))
 
+	// Mount API routes
 	apiGroup := server.Group("/api/v1")
 	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr)
+
+	// Mount Web UI routes
+	subFS, _ := fs.Sub(webapp.BuildFS, "build")
+	server.Group("/").StaticFS("", subFS)
 
 	return server
 }

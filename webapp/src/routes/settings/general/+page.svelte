@@ -12,11 +12,10 @@
 		Timer,
 		Keyboard
 	} from '@lucide/svelte';
-	import ShortcutInput from './ShortcutInput.svelte';
+	import { ShortcutInput } from '$lib/components';
 </script>
 
 <div class="space-y-6">
-	<!-- Input Device -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -41,7 +40,6 @@
 		</div>
 	</div>
 
-	<!-- Output Mode -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -122,7 +120,6 @@
 		</div>
 	</div>
 
-	<!-- Keyboard Shortcut -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -133,7 +130,6 @@
 		</div>
 	</div>
 
-	<!-- Notifications -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -181,7 +177,6 @@
 		</div>
 	</div>
 
-	<!-- Sound Feedback -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -227,7 +222,6 @@
 		</div>
 	</div>
 
-	<!-- Model Management -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">
@@ -270,7 +264,6 @@
 		</div>
 	</div>
 
-	<!-- History Settings -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<h3 class="card-title text-base">History</h3>

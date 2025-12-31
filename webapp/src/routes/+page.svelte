@@ -1,23 +1,65 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { StatusDisplay, HistoryPanel, SettingsPanel } from '$lib/components';
-	import { Loader2 } from '@lucide/svelte';
+	import { Mic, MicOff, Loader, Download, Cpu, Sparkles, Check, CircleAlert } from '@lucide/svelte';
+
+	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean }> = {
+		unknown: { icon: CircleAlert, pulse: false },
+		unloaded: { icon: MicOff, pulse: false },
+		downloading: { icon: Download, pulse: true },
+		loading: { icon: Loader, pulse: true },
+		loaded: { icon: Check, pulse: false },
+		listening: { icon: Mic, pulse: true },
+		transcribing: { icon: Cpu, pulse: true },
+		post_processing: { icon: Sparkles, pulse: true }
+	};
+
+	let config = $derived(statusConfig[store.status] ?? statusConfig.unknown);
+	let IconComponent = $derived(config.icon);
 </script>
 
-{#if store.isLoading}
-	<div class="flex flex-col items-center justify-center py-20">
-		<Loader2 class="size-8 animate-spin text-primary" />
-		<p class="text-muted-foreground mt-4">Connecting to server...</p>
+<div class="card bg-base-200">
+	<div class="card-body items-center text-center">
+		<div
+			class="flex size-24 items-center justify-center rounded-full bg-base-300"
+			class:animate-pulse={config.pulse}
+		>
+			<IconComponent class="size-12" />
+		</div>
+
+		<h2 class="card-title">{store.statusLabel}</h2>
+
+		{#if store.status === 'downloading'}
+			<div class="mt-2 w-64">
+				<div class="mb-1 flex justify-between text-xs opacity-70">
+					<span>{store.downloadProgress.fileName}</span>
+					<span>{store.downloadProgress.percent.toFixed(1)}%</span>
+				</div>
+				<progress class="progress progress-primary" value={store.downloadProgress.percent} max="100"
+				></progress>
+			</div>
+		{/if}
+
+		<div class="mt-4 card-actions">
+			<button
+				class="btn btn-lg"
+				class:btn-error={store.isRecording}
+				class:btn-primary={!store.isRecording}
+				onclick={() => store.toggleRecording()}
+			>
+				<Mic class="size-5" />
+				Toggle Recording
+			</button>
+		</div>
+
+		{#if store.shortcut.key}
+			<p class="mt-2 text-xs opacity-70">
+				Shortcut:
+				{#if store.shortcut.modifiers.length > 0}
+					<kbd class="kbd kbd-sm">{store.shortcut.modifiers.join(' + ')}</kbd>
+					+
+				{/if}
+				<kbd class="kbd kbd-sm">{store.shortcut.key}</kbd>
+			</p>
+		{/if}
 	</div>
-{:else if store.error}
-	<div class="card flex flex-col items-center justify-center py-12 text-center">
-		<p class="text-destructive">{store.error}</p>
-		<button class="btn mt-4 btn-sm" onclick={() => store.initialize()}>Retry</button>
-	</div>
-{:else if store.currentTab === 'home'}
-	<StatusDisplay />
-{:else if store.currentTab === 'history'}
-	<HistoryPanel />
-{:else if store.currentTab === 'settings'}
-	<SettingsPanel />
-{/if}
+</div>

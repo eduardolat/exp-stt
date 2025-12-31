@@ -2,10 +2,19 @@
 	import '../app.css';
 	import { store } from '$lib/store.svelte';
 	import { onMount } from 'svelte';
-	import { Mic, Settings, History, Wifi, WifiOff, Sun, Moon } from '@lucide/svelte';
+	import { Mic, Settings, History, Wifi, WifiOff, Sun, Moon, Loader2 } from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
+	import { page } from '$app/state';
 
 	let { children } = $props();
+
+	function isActive(path: string): boolean {
+		const currentPath = page.url.hash.slice(1) || '/';
+		if (path === '/') {
+			return currentPath === '/' || currentPath === '';
+		}
+		return currentPath.startsWith(path);
+	}
 
 	onMount(() => {
 		themeChange(false);
@@ -14,8 +23,8 @@
 	});
 </script>
 
-<div class="flex min-h-screen flex-col bg-base-100">
-	<header class="navbar border-b border-base-300">
+<div class="flex h-screen flex-col bg-base-100">
+	<header class="navbar shrink-0 border-b border-base-300">
 		<div class="mx-auto flex w-full max-w-4xl items-center justify-between px-4">
 			<div class="flex items-center gap-3">
 				<Mic class="size-6 text-primary" />
@@ -44,46 +53,61 @@
 		</div>
 	</header>
 
-	<nav class="border-b border-base-300">
+	<nav class="shrink-0 border-b border-base-300">
 		<div class="mx-auto flex max-w-4xl gap-1 px-4">
-			<button
-				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
-				'home'
+			<a
+				href="#/"
+				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
+					'/'
+				)
 					? 'border-primary text-primary'
 					: 'border-transparent opacity-70 hover:opacity-100'}"
-				onclick={() => (store.currentTab = 'home')}
 			>
 				<Mic class="size-4" />
 				Record
-			</button>
-			<button
-				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
-				'history'
+			</a>
+			<a
+				href="#/history"
+				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
+					'/history'
+				)
 					? 'border-primary text-primary'
 					: 'border-transparent opacity-70 hover:opacity-100'}"
-				onclick={() => (store.currentTab = 'history')}
 			>
 				<History class="size-4" />
 				History
-			</button>
-			<button
-				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
-				'settings'
+			</a>
+			<a
+				href="#/settings"
+				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
+					'/settings'
+				)
 					? 'border-primary text-primary'
 					: 'border-transparent opacity-70 hover:opacity-100'}"
-				onclick={() => (store.currentTab = 'settings')}
 			>
 				<Settings class="size-4" />
 				Settings
-			</button>
+			</a>
 		</div>
 	</nav>
 
-	<main class="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
-		{@render children()}
+	<main class="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6">
+		{#if store.isLoading}
+			<div class="flex flex-col items-center justify-center py-20">
+				<Loader2 class="size-8 animate-spin text-primary" />
+				<p class="text-muted-foreground mt-4">Connecting to server...</p>
+			</div>
+		{:else if store.error}
+			<div class="card flex flex-col items-center justify-center py-12 text-center">
+				<p class="text-destructive">{store.error}</p>
+				<button class="btn mt-4 btn-sm" onclick={() => store.initialize()}>Retry</button>
+			</div>
+		{:else}
+			{@render children()}
+		{/if}
 	</main>
 
-	<footer class="border-t border-base-300 py-3 text-center text-xs opacity-70">
+	<footer class="shrink-0 border-t border-base-300 py-3 text-center text-xs opacity-70">
 		<div class="mx-auto max-w-4xl px-4">
 			{store.systemInfo.os} / {store.systemInfo.arch} / {store.systemInfo.displayServer}
 		</div>

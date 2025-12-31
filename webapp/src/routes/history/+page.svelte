@@ -39,15 +39,13 @@
 	}
 
 	async function handleDelete(entry: HistoryEntry) {
-		if (confirm('Delete this transcription?')) {
-			await store.deleteHistoryEntry(entry.id);
-		}
+		if (!confirm('Delete this transcription?')) return;
+		await store.deleteHistoryEntry(entry.id);
 	}
 
 	async function handleClearAll() {
-		if (confirm('Clear all history? This cannot be undone.')) {
-			await store.clearHistory();
-		}
+		if (!confirm('Clear all history? This cannot be undone.')) return;
+		await store.clearHistory();
 	}
 </script>
 
@@ -70,7 +68,9 @@
 				<p class="text-xs opacity-50">Your transcription history will appear here</p>
 			</div>
 		</div>
-	{:else}
+	{/if}
+
+	{#if store.history.length > 0}
 		<div class="space-y-2">
 			{#each store.history as entry (entry.id)}
 				<div class="card overflow-hidden bg-base-200">

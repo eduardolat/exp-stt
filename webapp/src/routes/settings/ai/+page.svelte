@@ -87,7 +87,6 @@
 </script>
 
 <div class="space-y-6">
-	<!-- AI Toggle -->
 	<div class="card bg-base-200">
 		<div class="card-body">
 			<div class="flex items-center justify-between">
@@ -111,7 +110,6 @@
 	</div>
 
 	{#if store.settings.postProcessEnabled}
-		<!-- API Configuration -->
 		<div class="card bg-base-200">
 			<div class="card-body">
 				<h3 class="card-title text-base">
@@ -173,7 +171,6 @@
 			</div>
 		</div>
 
-		<!-- Prompts -->
 		<div class="card bg-base-200">
 			<div class="card-body">
 				<div class="flex items-center justify-between">
@@ -237,7 +234,9 @@
 					<p class="py-4 text-center text-sm opacity-70">
 						No prompts yet. Create one to get started.
 					</p>
-				{:else}
+				{/if}
+
+				{#if store.prompts.length > 0}
 					<div class="mt-4 space-y-2">
 						{#each store.prompts as prompt (prompt.id)}
 							{#if editingPrompt?.id === prompt.id}

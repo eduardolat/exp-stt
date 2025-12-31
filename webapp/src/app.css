@@ -1,2 +1,33 @@
 @import 'tailwindcss';
 @import 'basecoat-css';
+
+/* Custom kbd styling for keyboard shortcuts */
+.kbd {
+	@apply inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1.5 text-xs font-medium text-muted-foreground;
+}
+
+/* Progress bar styling */
+.progress {
+	@apply w-full overflow-hidden rounded-full bg-muted;
+}
+
+.progress-bar {
+	@apply h-full rounded-full bg-primary transition-all duration-300;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.line-clamp-2 {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}

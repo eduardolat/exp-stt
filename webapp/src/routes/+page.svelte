@@ -1,2 +1,23 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { store } from '$lib/store.svelte';
+	import { StatusDisplay, HistoryPanel, SettingsPanel } from '$lib/components';
+	import { Loader2 } from '@lucide/svelte';
+</script>
+
+{#if store.isLoading}
+	<div class="flex flex-col items-center justify-center py-20">
+		<Loader2 class="size-8 animate-spin text-primary" />
+		<p class="mt-4 text-muted-foreground">Connecting to server...</p>
+	</div>
+{:else if store.error}
+	<div class="card flex flex-col items-center justify-center py-12 text-center">
+		<p class="text-destructive">{store.error}</p>
+		<button class="btn btn-sm mt-4" onclick={() => store.initialize()}>Retry</button>
+	</div>
+{:else if store.currentTab === 'home'}
+	<StatusDisplay />
+{:else if store.currentTab === 'history'}
+	<HistoryPanel />
+{:else if store.currentTab === 'settings'}
+	<SettingsPanel />
+{/if}

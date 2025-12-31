@@ -26,7 +26,7 @@ This repository contains a Speech To Text application named Tribar Voice. It wor
 
 - Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp.
 
-- Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task.
+- Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task. It includes checks for both the Go application and the Svelte webapp.
 
 ## Backend architecture
 
@@ -177,3 +177,27 @@ You MUST use this tool whenever writing Svelte code before sending it to the use
 
 Generates a Svelte Playground link with the provided code.
 After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+
+## Style
+
+This project uses Tailwind CSS v4 for styling. But it uses Basecoat CSS (`basecoat-css`) which is a framework on top of Tailwind CSS, it provides a set of pre-styled class based components similar to Shad CN but without the need to use React and its more convenient and framework agnostic, please use it instead of Tailwind CSS classes when possible. Only use Tailwind CSS classes when you really need to, otherwise use the Basecoat CSS classes. You can find more documentation about Basecoat CSS here:
+
+- https://basecoatui.com/
+- https://github.com/hunvreus/basecoat
+
+Search for the previous documentation in Context7 MCP to find documentation about of the available components and how to use them.
+
+## Icons
+
+Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp. For example if you need `Phone` icon from lucide you can use this:
+
+```svelte
+<script>
+	import { Phone } from '@lucide/svelte';
+</script>
+
+<!-- Simple -->
+<Phone />
+<!-- Or with custom classes -->
+<Phone class="size-10 text-red-500" />
+```

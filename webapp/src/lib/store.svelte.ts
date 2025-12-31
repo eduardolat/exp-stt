@@ -11,7 +11,6 @@ import {
 	type Shortcut
 } from './client.gen';
 
-const DEBOUNCE_DELAY_MS = 500;
 const API_BASE_URL = '/api/v1/urpc';
 
 function createDefaultState(): State {
@@ -54,7 +53,6 @@ function createDefaultSettings(): Settings {
 class Store {
 	private client: Client;
 	private eventStreamCancel: (() => void) | null = null;
-	private settingsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	state: State = $state(createDefaultState());
 	settings: Settings = $state(createDefaultSettings());
@@ -203,18 +201,11 @@ class Store {
 
 	async updateSettings(newSettings: Partial<Settings>): Promise<void> {
 		const merged: Settings = { ...this.settings, ...newSettings };
-
-		if (this.settingsDebounceTimer) {
-			clearTimeout(this.settingsDebounceTimer);
+		try {
+			await this.client.procs.settingsUpdate().execute({ settings: merged });
+		} catch (err) {
+			console.error('Failed to update settings:', err);
 		}
-
-		this.settingsDebounceTimer = setTimeout(async () => {
-			try {
-				await this.client.procs.settingsUpdate().execute({ settings: merged });
-			} catch (err) {
-				console.error('Failed to update settings:', err);
-			}
-		}, DEBOUNCE_DELAY_MS);
 	}
 
 	async updateShortcut(shortcut: Shortcut): Promise<void> {
@@ -248,11 +239,6 @@ class Store {
 		if (this.eventStreamCancel) {
 			this.eventStreamCancel();
 			this.eventStreamCancel = null;
-		}
-
-		if (this.settingsDebounceTimer) {
-			clearTimeout(this.settingsDebounceTimer);
-			this.settingsDebounceTimer = null;
 		}
 	}
 }

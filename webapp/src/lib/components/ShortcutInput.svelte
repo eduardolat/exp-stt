@@ -125,34 +125,36 @@
 		</div>
 	</div>
 
-	<div class="field">
-		<label for="shortcut-key" class="text-sm font-medium">Key</label>
-		<select id="shortcut-key" class="select w-40" bind:value={key}>
+	<fieldset class="fieldset">
+		<label class="label" for="shortcut-key">
+			<span class="label-text">Key</span>
+		</label>
+		<select id="shortcut-key" class="select w-40 select-sm" bind:value={key}>
 			<option value="">Select key...</option>
 			{#each AVAILABLE_KEYS as k}
 				<option value={k}>{k.toUpperCase()}</option>
 			{/each}
 		</select>
-	</div>
+	</fieldset>
 
 	{#if key}
 		<div class="flex items-center gap-2 text-sm">
-			<span class="text-muted-foreground">Current shortcut:</span>
+			<span class="opacity-70">Current shortcut:</span>
 			{#if modifiers.length > 0}
 				{#each modifiers as mod}
-					<kbd class="kbd">{mod}</kbd>
+					<kbd class="kbd kbd-sm">{mod}</kbd>
 					<span>+</span>
 				{/each}
 			{/if}
-			<kbd class="kbd">{key}</kbd>
+			<kbd class="kbd kbd-sm">{key}</kbd>
 		</div>
 	{/if}
 
 	{#if updateError}
-		<p class="text-sm text-destructive">{updateError}</p>
+		<p class="text-sm text-error">{updateError}</p>
 	{/if}
 
-	<button class="btn btn-sm" disabled={isUpdating || !key} onclick={saveShortcut}>
+	<button class="btn btn-sm btn-primary" disabled={isUpdating || !key} onclick={saveShortcut}>
 		{isUpdating ? 'Saving...' : 'Save Shortcut'}
 	</button>
 </div>

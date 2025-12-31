@@ -51,36 +51,36 @@
 	<div class="flex items-center justify-between">
 		<h2 class="text-lg font-semibold">Transcription History</h2>
 		{#if store.history.length > 0}
-			<button class="btn btn-sm btn-outline btn-destructive" onclick={handleClearAll}>
-				<Trash2 class="mr-1.5 size-3.5" />
+			<button class="btn btn-outline btn-sm btn-error" onclick={handleClearAll}>
+				<Trash2 class="size-3.5" />
 				Clear All
 			</button>
 		{/if}
 	</div>
 
 	{#if store.history.length === 0}
-		<div class="card flex flex-col items-center justify-center py-12 text-center">
-			<Clock class="mb-3 size-10 text-muted-foreground" />
-			<p class="text-muted-foreground">No transcriptions yet</p>
-			<p class="text-xs text-muted-foreground">Your transcription history will appear here</p>
+		<div class="card bg-base-200">
+			<div class="card-body items-center py-12 text-center">
+				<Clock class="mb-3 size-10 opacity-50" />
+				<p class="opacity-70">No transcriptions yet</p>
+				<p class="text-xs opacity-50">Your transcription history will appear here</p>
+			</div>
 		</div>
 	{:else}
 		<div class="space-y-2">
 			{#each store.history as entry (entry.id)}
-				<div class="card overflow-hidden">
+				<div class="card overflow-hidden bg-base-200">
 					<button
-						class="flex w-full items-start gap-3 p-4 text-left hover:bg-muted/50"
+						class="flex w-full items-start gap-3 p-4 text-left hover:bg-base-300"
 						onclick={() => toggleExpand(entry.id)}
 					>
 						<div class="min-w-0 flex-1">
-							<div class="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+							<div class="mb-1 flex items-center gap-2 text-xs opacity-70">
 								<span>{formatTimestamp(entry.timestamp)}</span>
 								<span>•</span>
 								<span>{formatDuration(entry.durationMs)}</span>
 								{#if entry.postProcessed}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-purple-600"
-									>
+									<span class="badge gap-1 badge-sm badge-secondary">
 										<Sparkles class="size-3" />
 										AI Enhanced
 									</span>
@@ -89,22 +89,22 @@
 							<p class="line-clamp-2 text-sm">{entry.textFinal}</p>
 						</div>
 						{#if expandedId === entry.id}
-							<ChevronUp class="size-4 shrink-0 text-muted-foreground" />
+							<ChevronUp class="size-4 shrink-0 opacity-50" />
 						{:else}
-							<ChevronDown class="size-4 shrink-0 text-muted-foreground" />
+							<ChevronDown class="size-4 shrink-0 opacity-50" />
 						{/if}
 					</button>
 
 					{#if expandedId === entry.id}
-						<div class="border-t bg-muted/30 p-4">
+						<div class="border-t border-base-300 bg-base-300/50 p-4">
 							{#if entry.postProcessed && entry.textRaw !== entry.textFinal}
 								<div class="mb-3">
-									<p class="mb-1 text-xs font-medium text-muted-foreground">Original:</p>
-									<p class="rounded bg-background p-2 text-sm">{entry.textRaw}</p>
+									<p class="mb-1 text-xs font-medium opacity-70">Original:</p>
+									<p class="rounded bg-base-100 p-2 text-sm">{entry.textRaw}</p>
 								</div>
 								<div class="mb-3">
-									<p class="mb-1 text-xs font-medium text-muted-foreground">Enhanced:</p>
-									<p class="rounded bg-background p-2 text-sm">{entry.textFinal}</p>
+									<p class="mb-1 text-xs font-medium opacity-70">Enhanced:</p>
+									<p class="rounded bg-base-100 p-2 text-sm">{entry.textFinal}</p>
 								</div>
 							{:else}
 								<p class="mb-3 text-sm">{entry.textFinal}</p>
@@ -112,17 +112,17 @@
 
 							<div class="flex gap-2">
 								<button
-									class="btn btn-sm btn-outline"
+									class="btn btn-outline btn-sm"
 									onclick={() => copyToClipboard(entry.textFinal)}
 								>
-									<Copy class="mr-1.5 size-3.5" />
+									<Copy class="size-3.5" />
 									Copy
 								</button>
 								<button
-									class="btn btn-sm btn-outline btn-destructive"
+									class="btn btn-outline btn-sm btn-error"
 									onclick={() => handleDelete(entry)}
 								>
-									<Trash2 class="mr-1.5 size-3.5" />
+									<Trash2 class="size-3.5" />
 									Delete
 								</button>
 							</div>

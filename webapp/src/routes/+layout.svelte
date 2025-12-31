@@ -2,51 +2,55 @@
 	import '../app.css';
 	import { store } from '$lib/store.svelte';
 	import { onMount } from 'svelte';
-	import { Mic, Settings, History, Wifi, WifiOff } from '@lucide/svelte';
+	import { Mic, Settings, History, Wifi, WifiOff, Sun, Moon } from '@lucide/svelte';
+	import { themeChange } from 'theme-change';
 
 	let { children } = $props();
 
 	onMount(() => {
+		themeChange(false);
 		store.initialize();
 		return () => store.destroy();
 	});
 </script>
 
-<div class="bg-background flex min-h-screen flex-col">
-	<header class="border-b">
-		<div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+<div class="flex min-h-screen flex-col bg-base-100">
+	<header class="navbar border-b border-base-300">
+		<div class="mx-auto flex w-full max-w-4xl items-center justify-between px-4">
 			<div class="flex items-center gap-3">
 				<Mic class="size-6 text-primary" />
-				<h1 class="text-lg font-semibold">Tribar Voice</h1>
+				<span class="text-lg font-semibold">Tribar Voice</span>
 			</div>
 
 			<div class="flex items-center gap-2">
 				{#if store.isConnected}
-					<div
-						class="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-600"
-					>
+					<div class="badge gap-1 badge-sm badge-success">
 						<Wifi class="size-3" />
-						<span>Connected</span>
+						Connected
 					</div>
 				{:else}
-					<div
-						class="flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-1 text-xs text-red-600"
-					>
+					<div class="badge gap-1 badge-sm badge-error">
 						<WifiOff class="size-3" />
-						<span>Disconnected</span>
+						Disconnected
 					</div>
 				{/if}
+
+				<label class="btn swap btn-circle swap-rotate btn-ghost btn-sm">
+					<input type="checkbox" data-toggle-theme="dark,light" data-act-class="swap-active" />
+					<Sun class="swap-off size-4" />
+					<Moon class="swap-on size-4" />
+				</label>
 			</div>
 		</div>
 	</header>
 
-	<nav class="border-b">
+	<nav class="border-b border-base-300">
 		<div class="mx-auto flex max-w-4xl gap-1 px-4">
 			<button
 				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
 				'home'
 					? 'border-primary text-primary'
-					: 'text-muted-foreground hover:text-foreground border-transparent'}"
+					: 'border-transparent opacity-70 hover:opacity-100'}"
 				onclick={() => (store.currentTab = 'home')}
 			>
 				<Mic class="size-4" />
@@ -56,7 +60,7 @@
 				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
 				'history'
 					? 'border-primary text-primary'
-					: 'text-muted-foreground hover:text-foreground border-transparent'}"
+					: 'border-transparent opacity-70 hover:opacity-100'}"
 				onclick={() => (store.currentTab = 'history')}
 			>
 				<History class="size-4" />
@@ -66,7 +70,7 @@
 				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {store.currentTab ===
 				'settings'
 					? 'border-primary text-primary'
-					: 'text-muted-foreground hover:text-foreground border-transparent'}"
+					: 'border-transparent opacity-70 hover:opacity-100'}"
 				onclick={() => (store.currentTab = 'settings')}
 			>
 				<Settings class="size-4" />
@@ -79,7 +83,7 @@
 		{@render children()}
 	</main>
 
-	<footer class="text-muted-foreground border-t py-3 text-center text-xs">
+	<footer class="border-t border-base-300 py-3 text-center text-xs opacity-70">
 		<div class="mx-auto max-w-4xl px-4">
 			{store.systemInfo.os} / {store.systemInfo.arch} / {store.systemInfo.displayServer}
 		</div>

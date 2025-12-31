@@ -88,220 +88,240 @@
 
 <div class="space-y-6">
 	<!-- AI Toggle -->
-	<section class="card p-4">
-		<div class="flex items-center justify-between">
-			<div class="flex items-center gap-3">
-				<div class="flex size-10 items-center justify-center rounded-lg bg-purple-500/10">
-					<Sparkles class="size-5 text-purple-600" />
+	<div class="card bg-base-200">
+		<div class="card-body">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<div class="flex size-10 items-center justify-center rounded-lg bg-secondary">
+						<Sparkles class="size-5 text-secondary-content" />
+					</div>
+					<div>
+						<h3 class="font-medium">AI Post-Processing</h3>
+						<p class="text-xs opacity-70">Enhance transcriptions with LLM</p>
+					</div>
 				</div>
-				<div>
-					<h3 class="font-medium">AI Post-Processing</h3>
-					<p class="text-xs text-muted-foreground">Enhance transcriptions with LLM</p>
-				</div>
+				<input
+					type="checkbox"
+					class="toggle"
+					checked={store.settings.postProcessEnabled}
+					onchange={(e) => store.updateSettings({ postProcessEnabled: e.currentTarget.checked })}
+				/>
 			</div>
-			<input
-				type="checkbox"
-				role="switch"
-				checked={store.settings.postProcessEnabled}
-				onchange={(e) => store.updateSettings({ postProcessEnabled: e.currentTarget.checked })}
-			/>
 		</div>
-	</section>
+	</div>
 
 	{#if store.settings.postProcessEnabled}
 		<!-- API Configuration -->
-		<section class="card p-4">
-			<h3 class="mb-4 flex items-center gap-2 font-medium">
-				<Bot class="size-4" />
-				API Configuration
-			</h3>
-			<div class="space-y-4">
-				<div class="field">
-					<label for="baseUrl" class="flex items-center gap-1.5 text-sm">
-						<Link class="size-3.5" />
-						Base URL
-					</label>
-					<input
-						type="url"
-						id="baseUrl"
-						placeholder="https://api.openai.com/v1"
-						value={store.settings.postProcessBaseUrl}
-						onchange={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
-						class="input"
-					/>
-					<p class="text-xs text-muted-foreground">OpenAI-compatible API endpoint</p>
-				</div>
+		<div class="card bg-base-200">
+			<div class="card-body">
+				<h3 class="card-title text-base">
+					<Bot class="size-4" />
+					API Configuration
+				</h3>
+				<div class="space-y-4">
+					<fieldset class="fieldset">
+						<label class="label" for="baseUrl">
+							<span class="label-text flex items-center gap-1.5">
+								<Link class="size-3.5" />
+								Base URL
+							</span>
+						</label>
+						<input
+							type="url"
+							id="baseUrl"
+							class="input w-full"
+							placeholder="https://api.openai.com/v1"
+							value={store.settings.postProcessBaseUrl}
+							onblur={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
+						/>
+						<p class="label">
+							<span class="label-text-alt">OpenAI-compatible API endpoint</span>
+						</p>
+					</fieldset>
 
-				<div class="field">
-					<label for="apiKey" class="flex items-center gap-1.5 text-sm">
-						<Key class="size-3.5" />
-						API Key
-					</label>
-					<input
-						type="password"
-						id="apiKey"
-						placeholder="sk-..."
-						value={store.settings.postProcessApiKey}
-						onchange={(e) => store.updateSettings({ postProcessApiKey: e.currentTarget.value })}
-						class="input"
-					/>
-				</div>
+					<fieldset class="fieldset">
+						<label class="label" for="apiKey">
+							<span class="label-text flex items-center gap-1.5">
+								<Key class="size-3.5" />
+								API Key
+							</span>
+						</label>
+						<input
+							type="password"
+							id="apiKey"
+							class="input w-full"
+							placeholder="sk-..."
+							value={store.settings.postProcessApiKey}
+							onblur={(e) => store.updateSettings({ postProcessApiKey: e.currentTarget.value })}
+						/>
+					</fieldset>
 
-				<div class="field">
-					<label for="model" class="text-sm">Model</label>
-					<input
-						type="text"
-						id="model"
-						placeholder="gpt-4o-mini"
-						value={store.settings.postProcessModel}
-						onchange={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
-						class="input"
-					/>
+					<fieldset class="fieldset">
+						<label class="label" for="model">
+							<span class="label-text">Model</span>
+						</label>
+						<input
+							type="text"
+							id="model"
+							class="input w-full"
+							placeholder="gpt-4o-mini"
+							value={store.settings.postProcessModel}
+							onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
+						/>
+					</fieldset>
 				</div>
 			</div>
-		</section>
+		</div>
 
 		<!-- Prompts -->
-		<section class="card p-4">
-			<div class="mb-4 flex items-center justify-between">
-				<h3 class="flex items-center gap-2 font-medium">
-					<FileText class="size-4" />
-					Prompts
-				</h3>
-				{#if !isCreating}
-					<button class="btn btn-sm btn-outline" onclick={startCreate}>
-						<Plus class="mr-1.5 size-3.5" />
-						New Prompt
-					</button>
+		<div class="card bg-base-200">
+			<div class="card-body">
+				<div class="flex items-center justify-between">
+					<h3 class="card-title text-base">
+						<FileText class="size-4" />
+						Prompts
+					</h3>
+					{#if !isCreating}
+						<button class="btn btn-outline btn-sm" onclick={startCreate}>
+							<Plus class="size-3.5" />
+							New Prompt
+						</button>
+					{/if}
+				</div>
+
+				{#if isCreating}
+					<div class="mt-4 rounded-lg border border-base-300 p-4">
+						<div class="space-y-3">
+							<fieldset class="fieldset">
+								<label class="label" for="newPromptName">
+									<span class="label-text">Name</span>
+								</label>
+								<input
+									type="text"
+									id="newPromptName"
+									class="input w-full"
+									placeholder="My Custom Prompt"
+									bind:value={newPromptName}
+								/>
+							</fieldset>
+							<fieldset class="fieldset">
+								<label class="label" for="newPromptBody">
+									<span class="label-text">
+										Prompt Template
+										<span class="opacity-70">(use {'${output}'} for transcription)</span>
+									</span>
+								</label>
+								<textarea
+									id="newPromptBody"
+									rows={5}
+									class="textarea w-full"
+									placeholder="Enter your prompt template..."
+									bind:value={newPromptBody}
+								></textarea>
+							</fieldset>
+						</div>
+						<div class="mt-3 flex gap-2">
+							<button class="btn btn-sm btn-primary" onclick={saveNewPrompt}>
+								<Check class="size-3.5" />
+								Save
+							</button>
+							<button class="btn btn-ghost btn-sm" onclick={cancelCreate}>
+								<X class="size-3.5" />
+								Cancel
+							</button>
+						</div>
+					</div>
+				{/if}
+
+				{#if store.prompts.length === 0}
+					<p class="py-4 text-center text-sm opacity-70">
+						No prompts yet. Create one to get started.
+					</p>
+				{:else}
+					<div class="mt-4 space-y-2">
+						{#each store.prompts as prompt (prompt.id)}
+							{#if editingPrompt?.id === prompt.id}
+								<div class="rounded-lg border border-base-300 p-4">
+									<div class="space-y-3">
+										<fieldset class="fieldset">
+											<label class="label" for="editPromptName">
+												<span class="label-text">Name</span>
+											</label>
+											<input
+												type="text"
+												id="editPromptName"
+												class="input w-full"
+												bind:value={editingPrompt.name}
+											/>
+										</fieldset>
+										<fieldset class="fieldset">
+											<label class="label" for="editPromptBody">
+												<span class="label-text">Prompt Template</span>
+											</label>
+											<textarea
+												id="editPromptBody"
+												rows={5}
+												class="textarea w-full"
+												bind:value={editingPrompt.body}
+											></textarea>
+										</fieldset>
+									</div>
+									<div class="mt-3 flex gap-2">
+										<button class="btn btn-sm btn-primary" onclick={saveEdit}>
+											<Check class="size-3.5" />
+											Save
+										</button>
+										<button class="btn btn-ghost btn-sm" onclick={cancelEdit}>
+											<X class="size-3.5" />
+											Cancel
+										</button>
+									</div>
+								</div>
+							{:else}
+								{@const isSelected = store.settings.postProcessPromptId === prompt.id}
+								<div
+									class="flex items-center justify-between rounded-lg border p-3 transition-colors {isSelected
+										? 'border-primary bg-primary/10'
+										: 'border-base-300'}"
+								>
+									<button
+										class="flex flex-1 items-center gap-3 text-left"
+										onclick={() => selectPrompt(prompt.id)}
+									>
+										<input
+											type="radio"
+											name="selectedPrompt"
+											class="radio radio-sm radio-primary"
+											checked={isSelected}
+											onchange={() => selectPrompt(prompt.id)}
+										/>
+										<div>
+											<p class="font-medium">{prompt.name}</p>
+											<p class="line-clamp-1 text-xs opacity-70">{prompt.body}</p>
+										</div>
+									</button>
+									<div class="flex gap-1">
+										<button
+											class="btn btn-ghost btn-sm"
+											onclick={() => startEdit(prompt)}
+											title="Edit"
+										>
+											<Pencil class="size-3.5" />
+										</button>
+										<button
+											class="btn text-error btn-ghost btn-sm"
+											onclick={() => deletePrompt(prompt.id)}
+											title="Delete"
+										>
+											<Trash2 class="size-3.5" />
+										</button>
+									</div>
+								</div>
+							{/if}
+						{/each}
+					</div>
 				{/if}
 			</div>
-
-			{#if isCreating}
-				<div class="mb-4 rounded-lg border p-4">
-					<div class="mb-3 space-y-3">
-						<div class="field">
-							<label for="newPromptName" class="text-sm">Name</label>
-							<input
-								type="text"
-								id="newPromptName"
-								placeholder="My Custom Prompt"
-								bind:value={newPromptName}
-								class="input"
-							/>
-						</div>
-						<div class="field">
-							<label for="newPromptBody" class="text-sm">
-								Prompt Template
-								<span class="text-muted-foreground">(use {'${output}'} for transcription)</span>
-							</label>
-							<textarea
-								id="newPromptBody"
-								rows={5}
-								bind:value={newPromptBody}
-								class="textarea"
-								placeholder="Enter your prompt template..."
-							></textarea>
-						</div>
-					</div>
-					<div class="flex gap-2">
-						<button class="btn btn-sm" onclick={saveNewPrompt}>
-							<Check class="mr-1.5 size-3.5" />
-							Save
-						</button>
-						<button class="btn btn-sm btn-outline" onclick={cancelCreate}>
-							<X class="mr-1.5 size-3.5" />
-							Cancel
-						</button>
-					</div>
-				</div>
-			{/if}
-
-			{#if store.prompts.length === 0}
-				<p class="py-4 text-center text-sm text-muted-foreground">
-					No prompts yet. Create one to get started.
-				</p>
-			{:else}
-				<div class="space-y-2">
-					{#each store.prompts as prompt (prompt.id)}
-						{#if editingPrompt?.id === prompt.id}
-							<div class="rounded-lg border p-4">
-								<div class="mb-3 space-y-3">
-									<div class="field">
-										<label for="editPromptName" class="text-sm">Name</label>
-										<input
-											type="text"
-											id="editPromptName"
-											bind:value={editingPrompt.name}
-											class="input"
-										/>
-									</div>
-									<div class="field">
-										<label for="editPromptBody" class="text-sm">Prompt Template</label>
-										<textarea
-											id="editPromptBody"
-											rows={5}
-											bind:value={editingPrompt.body}
-											class="textarea"
-										></textarea>
-									</div>
-								</div>
-								<div class="flex gap-2">
-									<button class="btn btn-sm" onclick={saveEdit}>
-										<Check class="mr-1.5 size-3.5" />
-										Save
-									</button>
-									<button class="btn btn-sm btn-outline" onclick={cancelEdit}>
-										<X class="mr-1.5 size-3.5" />
-										Cancel
-									</button>
-								</div>
-							</div>
-						{:else}
-							{@const isSelected = store.settings.postProcessPromptId === prompt.id}
-							<div
-								class="flex items-center justify-between rounded-lg border p-3 transition-colors {isSelected
-									? 'border-primary bg-primary/5'
-									: ''}"
-							>
-								<button
-									class="flex flex-1 items-center gap-3 text-left"
-									onclick={() => selectPrompt(prompt.id)}
-								>
-									<div
-										class="flex size-4 items-center justify-center rounded-full border {isSelected
-											? 'border-primary bg-primary'
-											: ''}"
-									>
-										{#if isSelected}
-											<Check class="size-2.5 text-primary-foreground" />
-										{/if}
-									</div>
-									<div>
-										<p class="font-medium">{prompt.name}</p>
-										<p class="line-clamp-1 text-xs text-muted-foreground">{prompt.body}</p>
-									</div>
-								</button>
-								<div class="flex gap-1">
-									<button
-										class="btn btn-sm btn-ghost"
-										onclick={() => startEdit(prompt)}
-										title="Edit"
-									>
-										<Pencil class="size-3.5" />
-									</button>
-									<button
-										class="btn btn-sm btn-ghost text-destructive"
-										onclick={() => deletePrompt(prompt.id)}
-										title="Delete"
-									>
-										<Trash2 class="size-3.5" />
-									</button>
-								</div>
-							</div>
-						{/if}
-					{/each}
-				</div>
-			{/if}
-		</section>
+		</div>
 	{/if}
 </div>

@@ -10,8 +10,3 @@
 	scrollbar-width: thin;
 	scroll-behavior: smooth;
 }
-
-html {
-	overflow-x: hidden;
-	overflow-y: hidden;
-}

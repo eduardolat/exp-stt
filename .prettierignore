@@ -5,6 +5,9 @@ yarn.lock
 bun.lock
 bun.lockb
 
+# Generated files
+*.gen.ts
+
 # SvelteKit
 .svelte-kit/
 

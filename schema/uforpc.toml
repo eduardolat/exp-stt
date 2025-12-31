@@ -10,11 +10,11 @@ schema = "./schema.urpc"
 # run `urpc generate` to execute the code generator.
 
 [playground]
-output_dir = "./playground"
+output_dir = "../internal/server/api/playground"
 
 [golang-server]
-output_file = "./uforpc/uforpc.go"
+output_file = "../internal/server/api/uforpc/uforpc.go"
 package_name = "uforpc"
 
-# [typescript-client]
-# output_file = "../../../webapp/src/lib/client.gen.ts"
+[typescript-client]
+output_file = "../webapp/src/lib/client.gen.ts"

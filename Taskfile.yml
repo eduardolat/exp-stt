@@ -42,7 +42,7 @@ tasks:
   # This code generator is high performance, we can run it every time without caching
   gen:urpc:
     desc: Generate UFO RPC code
-    cmd: cd ./internal/server/api && urpc generate
+    cmd: urpc generate ./schema/uforpc.toml
 
   test:
     desc: Run all tests

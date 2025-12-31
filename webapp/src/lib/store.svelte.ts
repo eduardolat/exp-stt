@@ -156,7 +156,7 @@ class Store {
 	private startEventStream(): void {
 		const { stream, cancel } = this.client.streams
 			.listenForEvents()
-			.withReconnect({ maxAttempts: 10, initialDelayMs: 1000, maxDelayMs: 10000 })
+			.withReconnect({ maxAttempts: 100, initialDelayMs: 1000, maxDelayMs: 5000 })
 			.execute({});
 
 		this.eventStreamCancel = cancel;

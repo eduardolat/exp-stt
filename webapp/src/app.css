@@ -6,6 +6,11 @@
 	logs: false;
 }
 
+html {
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+
 * {
 	scrollbar-width: thin;
 	scroll-behavior: smooth;

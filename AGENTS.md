@@ -24,7 +24,7 @@ This repository contains a Speech To Text application named Tribar Voice. It wor
 
 - When you write conditionals, avoid using `else` block, this ensures the code is readable and prevents nesting-hell, this applies for all programming languages, even Svelte templates. Instead of `else` use inverted conditions in `if` blocks.
 
-- Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp.
+- Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp, please dont use hardcoded SVG elements.
 
 - Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task. It includes checks for both the Go application and the Svelte webapp.
 

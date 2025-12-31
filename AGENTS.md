@@ -4,6 +4,12 @@
 
 This repository contains a Speech To Text application named Tribar Voice. It works by executing a machine learning model called Parakeet using the Onnx Runtime port with Golang. It also have a webapp built with SvelteKit to control the application.
 
+## Maintaining this Document
+
+After completing any task, review this file and update it if you made structural changes or discovered patterns worth documenting. Only add information that helps understand how to work with the project. Avoid implementation details, file listings, or trivial changes. This is a general guide, not a changelog.
+
+When updating this document, do so with the context of the entire document in mind; do not simply add new sections at the end, but place them where they make the most sense within the context of the document.
+
 ## General instructions
 
 - Always use Context7 MCP (context7) when you need setup or configuration steps, or
@@ -158,6 +164,16 @@ It also has a button to open the Web UI in the user's default browser.
 ## Web UI
 
 The Web UI source code is inside the `webapp/` directory, it is built with SvelteKit. It uses PNPM as the package manager.
+
+### Routing
+
+The webapp uses SvelteKit's hash-based router (`router: { type: 'hash' }` in svelte.config.js). Navigation URLs use hash fragments (e.g., `#/` instead of `/`, `#/history` instead of `/history`, `#/settings/general` instead of `/settings/general`). This enables state persistence across page refreshes without server-side routing.
+
+### Components
+
+Page-specific components should live alongside their route files (e.g., `routes/history/MyHistoryComponent.svelte` instead of `webapp/src/lib/components/MyHistoryComponent.svelte`).
+
+Only truly shared components belong in `webapp/src/lib/components/`.
 
 ### Svelte MCP
 

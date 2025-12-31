@@ -32,7 +32,7 @@
 
 	const STATUS_COLOR: Record<AppStatus, LogoColor> = {
 		unknown: 'gray',
-		unloaded: 'gray',
+		unloaded: 'white',
 		downloading: 'amber',
 		loading: 'amber',
 		loaded: 'white',

@@ -2,15 +2,15 @@
 	import { store } from '$lib/store.svelte';
 	import { Mic, MicOff, Loader, Download, Cpu, Sparkles, Check, CircleAlert } from '@lucide/svelte';
 
-	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean }> = {
-		unknown: { icon: CircleAlert, pulse: false },
-		unloaded: { icon: MicOff, pulse: false },
-		downloading: { icon: Download, pulse: true },
-		loading: { icon: Loader, pulse: true },
-		loaded: { icon: Check, pulse: false },
-		listening: { icon: Mic, pulse: true },
-		transcribing: { icon: Cpu, pulse: true },
-		post_processing: { icon: Sparkles, pulse: true }
+	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
+		unknown: { icon: CircleAlert, pulse: false, spin: false },
+		unloaded: { icon: MicOff, pulse: false, spin: false },
+		downloading: { icon: Download, pulse: true, spin: false },
+		loading: { icon: Loader, pulse: false, spin: true },
+		loaded: { icon: Check, pulse: false, spin: false },
+		listening: { icon: Mic, pulse: true, spin: false },
+		transcribing: { icon: Cpu, pulse: true, spin: false },
+		post_processing: { icon: Sparkles, pulse: true, spin: false }
 	};
 
 	let config = $derived(statusConfig[store.status] ?? statusConfig.unknown);
@@ -22,6 +22,7 @@
 		<div
 			class="flex size-24 items-center justify-center rounded-full bg-base-300"
 			class:animate-pulse={config.pulse}
+			class:animate-spin={config.spin}
 		>
 			<IconComponent class="size-12" />
 		</div>

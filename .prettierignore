@@ -17,3 +17,7 @@ assets/
 
 # Golang project
 internal/
+
+# Output
+build/
+dist/

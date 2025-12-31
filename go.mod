@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/labstack/echo/v4 v4.14.0
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/yalue/onnxruntime_go v1.25.0
 	golang.design/x/hotkey v0.4.1
 	golang.org/x/sync v0.19.0

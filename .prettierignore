@@ -5,8 +5,12 @@ yarn.lock
 bun.lock
 bun.lockb
 
+# SvelteKit
+.svelte-kit/
+
 # Miscellaneous
-/static/
+static/
+assets/
 
 # Golang project
-/internal/
+internal/

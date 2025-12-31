@@ -1,0 +1,13 @@
+{
+	"name": "tribar",
+	"private": true,
+	"scripts": {
+		"fmt": "prettier --write .",
+		"lint": "prettier --check ."
+	},
+	"devDependencies": {
+		"prettier": "3.7.4",
+		"prettier-plugin-svelte": "3.4.1",
+		"prettier-plugin-tailwindcss": "0.7.2"
+	}
+}

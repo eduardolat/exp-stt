@@ -1,14 +1,11 @@
 {
 	"name": "webapp",
 	"private": true,
-	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"fmt": "prettier --write .",
-		"lint": "prettier --check ."
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "3.0.10",

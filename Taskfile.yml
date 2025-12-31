@@ -6,10 +6,17 @@ tasks:
   ci:
     desc: Run CI tasks
     cmds:
+      - task: deps
       - task: fmt
       - task: build
       - task: lint
       - task: test
+
+  deps:
+    desc: Install all dependencies for the project
+    cmds:
+      - go mod download
+      - pnpm install
 
   run:
     desc: Build and run the project

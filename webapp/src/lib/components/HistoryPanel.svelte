@@ -3,6 +3,10 @@
 	import { Copy, Trash2, Clock, Sparkles, ChevronDown, ChevronUp } from '@lucide/svelte';
 	import type { HistoryEntry } from '$lib/client.gen';
 
+	function getAudioUrl(id: string): string {
+		return `/api/v1/audio/${id}`;
+	}
+
 	let expandedId = $state<string | null>(null);
 
 	function formatDuration(ms: number): string {
@@ -97,27 +101,45 @@
 
 					{#if expandedId === entry.id}
 						<div class="border-t border-base-300 bg-base-300/50 p-4">
+							<div class="mb-3">
+								<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
+								<audio controls class="w-full" preload="none">
+									<source src={getAudioUrl(entry.id)} type="audio/wav" />
+									Your browser does not support audio playback.
+								</audio>
+							</div>
+
+							<div class="mb-3">
+								<div class="mb-1 flex items-center justify-between">
+									<p class="text-xs font-medium opacity-70">Original:</p>
+									<button
+										class="btn btn-ghost btn-xs"
+										onclick={() => copyToClipboard(entry.textRaw)}
+									>
+										<Copy class="size-3" />
+										Copy
+									</button>
+								</div>
+								<p class="rounded bg-base-100 p-2 text-sm">{entry.textRaw}</p>
+							</div>
+
 							{#if entry.postProcessed && entry.textRaw !== entry.textFinal}
 								<div class="mb-3">
-									<p class="mb-1 text-xs font-medium opacity-70">Original:</p>
-									<p class="rounded bg-base-100 p-2 text-sm">{entry.textRaw}</p>
-								</div>
-								<div class="mb-3">
-									<p class="mb-1 text-xs font-medium opacity-70">Enhanced:</p>
+									<div class="mb-1 flex items-center justify-between">
+										<p class="text-xs font-medium opacity-70">Enhanced:</p>
+										<button
+											class="btn btn-ghost btn-xs"
+											onclick={() => copyToClipboard(entry.textFinal)}
+										>
+											<Copy class="size-3" />
+											Copy
+										</button>
+									</div>
 									<p class="rounded bg-base-100 p-2 text-sm">{entry.textFinal}</p>
 								</div>
-							{:else}
-								<p class="mb-3 text-sm">{entry.textFinal}</p>
 							{/if}
 
-							<div class="flex gap-2">
-								<button
-									class="btn btn-outline btn-sm"
-									onclick={() => copyToClipboard(entry.textFinal)}
-								>
-									<Copy class="size-3.5" />
-									Copy
-								</button>
+							<div class="flex justify-end">
 								<button
 									class="btn btn-outline btn-sm btn-error"
 									onclick={() => handleDelete(entry)}

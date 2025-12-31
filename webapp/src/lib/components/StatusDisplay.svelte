@@ -53,16 +53,10 @@
 				class="btn btn-lg"
 				class:btn-error={store.isRecording}
 				class:btn-primary={!store.isRecording}
-				disabled={store.isProcessing || store.status === 'unknown' || store.status === 'unloaded'}
 				onclick={() => store.toggleRecording()}
 			>
-				{#if store.isRecording}
-					<MicOff class="size-5" />
-					Stop Recording
-				{:else}
-					<Mic class="size-5" />
-					Start Recording
-				{/if}
+				<Mic class="size-5" />
+				Toggle Recording
 			</button>
 		</div>
 

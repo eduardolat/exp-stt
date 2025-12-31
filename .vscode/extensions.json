@@ -2,6 +2,9 @@
   "recommendations": [
     "mkhl.direnv",
     "golang.go",
-    "jnoortheen.nix-ide"
+    "jnoortheen.nix-ide",
+    "svelte.svelte-vscode",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
   ]
 }

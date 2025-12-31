@@ -187,12 +187,11 @@ After completing the code, ask the user if they want a playground link. Only cal
 
 ## Style
 
-This project uses Tailwind CSS v4 for styling. But it uses Basecoat CSS (`basecoat-css`) which is a framework on top of Tailwind CSS, it provides a set of pre-styled class based components similar to Shad CN but without the need to use React and its more convenient and framework agnostic, please use it instead of Tailwind CSS classes when possible. Only use Tailwind CSS classes when you really need to, otherwise use the Basecoat CSS classes. You can find more documentation about Basecoat CSS here:
+This project uses Tailwind CSS v4 for styling. But it uses DaisyUI which is a framework on top of Tailwind CSS, it provides a set of pre-styled class based components, please use it instead of Tailwind CSS generic classes when possible. Only use Tailwind CSS classes when you really need to, otherwise use the DaisyUI CSS classes. You can find more documentation about DaisyUI CSS here:
 
-- https://basecoatui.com/
-- https://github.com/hunvreus/basecoat
+- https://daisyui.com/llms.txt
 
-Search for the previous documentation in Context7 MCP to find documentation about of the available components and how to use them.
+Please use your fetch tool to read this documentation when you need it to find documentation about of the available components and how to use them.
 
 Regarding the style, it should be desktop only (no responsive design) because the software is intended to be used only on desktops so we can simplify the design and make it desktop only. It can have a maximum width of 1024px which is configured in the layout and it should be visually comfortable to use and horizontally centered.
 

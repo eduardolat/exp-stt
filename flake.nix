@@ -13,6 +13,17 @@
         inherit system;
       };
 
+      customPnpm = pkgs.pnpm.override { nodejs = pkgs.nodejs_24; };
+
+      p-shortcut = pkgs.writeShellScriptBin "p" ''
+        exec ${customPnpm}/bin/pnpm "$@"
+      '';
+
+      no-npm = pkgs.writeShellScriptBin "npm" ''
+        echo -e "Por favor, usa \033[0;32mpnpm\033[0m para mantener la consistencia del monorepo."
+        exit 1
+      '';
+
       # UFO RPC
       urpc = pkgs.stdenv.mkDerivation {
         pname = "urpc";
@@ -43,6 +54,10 @@
           go-task
           git
           curl
+          p-shortcut
+          no-npm
+          customPnpm
+          nodejs_24
           urpc # RPC Framework
           librsvg # To convert SVG Logos to PNG
           imagemagick # To convert PNG Logos to ICO

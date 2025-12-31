@@ -2,11 +2,17 @@
 	import '../app.css';
 	import { store } from '$lib/store.svelte';
 	import { onMount } from 'svelte';
-	import { Mic, Settings, History, Wifi, WifiOff, Sun, Moon, Loader2 } from '@lucide/svelte';
+	import { Mic, Settings, History, Palette, Loader, Sun, Moon, Eclipse } from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
 
 	let { children } = $props();
+
+	const themes = [
+		{ value: 'light', label: 'Light', icon: Sun },
+		{ value: 'dim', label: 'Dark', icon: Moon },
+		{ value: 'dracula', label: 'Dracula', icon: Eclipse }
+	];
 
 	function isActive(path: string): boolean {
 		const currentPath = page.url.hash.slice(1) || '/';
@@ -31,24 +37,24 @@
 				<span class="text-lg font-semibold">Tribar Voice</span>
 			</div>
 
-			<div class="flex items-center gap-2">
-				{#if store.isConnected}
-					<div class="badge gap-1 badge-sm badge-success">
-						<Wifi class="size-3" />
-						Connected
-					</div>
-				{:else}
-					<div class="badge gap-1 badge-sm badge-error">
-						<WifiOff class="size-3" />
-						Disconnected
-					</div>
-				{/if}
-
-				<label class="btn swap btn-circle swap-rotate btn-ghost btn-sm">
-					<input type="checkbox" data-toggle-theme="dark,light" data-act-class="swap-active" />
-					<Sun class="swap-off size-4" />
-					<Moon class="swap-on size-4" />
-				</label>
+			<div class="dropdown dropdown-end">
+				<div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+					<Palette class="mr-1 size-4" />
+					<span>Theme</span>
+				</div>
+				<ul
+					tabindex="-1"
+					class="dropdown-content menu z-10 w-36 rounded-box bg-base-200 p-2 shadow"
+				>
+					{#each themes as theme}
+						<li>
+							<button data-set-theme={theme.value}>
+								<theme.icon class="size-4" />
+								{theme.label}
+							</button>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		</div>
 	</header>
@@ -94,7 +100,7 @@
 	<main class="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6">
 		{#if store.isLoading}
 			<div class="flex flex-col items-center justify-center py-20">
-				<Loader2 class="size-8 animate-spin text-primary" />
+				<Loader class="size-8 animate-spin text-primary" />
 				<p class="text-muted-foreground mt-4">Connecting to server...</p>
 			</div>
 		{:else if store.error}

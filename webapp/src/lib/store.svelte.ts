@@ -11,7 +11,15 @@ import {
 	type Shortcut
 } from './client.gen';
 
-const API_BASE_URL = '/api/v1/urpc';
+const URPC_API_DEFAULT_URL = '/api/v1/urpc';
+const URPC_API_STORAGE_KEY = 'tribar_api_base_url';
+
+function getApiBaseUrl(): string {
+	if (typeof localStorage !== 'undefined') {
+		return localStorage.getItem(URPC_API_STORAGE_KEY) ?? URPC_API_DEFAULT_URL;
+	}
+	return URPC_API_DEFAULT_URL;
+}
 
 function createDefaultState(): State {
 	return {
@@ -124,7 +132,7 @@ class Store {
 	}
 
 	constructor() {
-		this.client = NewClient(API_BASE_URL).build();
+		this.client = NewClient(getApiBaseUrl()).build();
 	}
 
 	async initialize(): Promise<void> {

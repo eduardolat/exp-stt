@@ -283,27 +283,27 @@
 							{:else}
 								{@const isSelected = store.settings.postProcessPromptId === prompt.id}
 								<div
-									class="flex items-center justify-between rounded-lg border p-3 transition-colors {isSelected
+									class="flex items-center rounded-lg border transition-colors {isSelected
 										? 'border-primary bg-primary/10'
 										: 'border-base-300'}"
 								>
 									<button
-										class="flex flex-1 items-center gap-3 text-left"
+										class="flex flex-1 cursor-pointer items-center gap-3 py-3 pr-2 pl-3 text-left"
 										onclick={() => selectPrompt(prompt.id)}
 									>
 										<input
 											type="radio"
 											name="selectedPrompt"
-											class="radio radio-sm radio-primary"
+											class="pointer-events-none radio radio-sm radio-primary"
 											checked={isSelected}
-											onchange={() => selectPrompt(prompt.id)}
+											tabindex="-1"
 										/>
-										<div>
+										<div class="flex-1">
 											<p class="font-medium">{prompt.name}</p>
 											<p class="line-clamp-1 text-xs opacity-70">{prompt.body}</p>
 										</div>
 									</button>
-									<div class="flex gap-1">
+									<div class="flex shrink-0 gap-1 py-3 pr-3">
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => startEdit(prompt)}

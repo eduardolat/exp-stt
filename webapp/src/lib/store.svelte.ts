@@ -209,6 +209,7 @@ class Store {
 	async updateSettings(newSettings: Partial<Settings>): Promise<void> {
 		const merged: Settings = { ...this.settings, ...newSettings };
 		try {
+			this.settings = merged; // Optimistic update first
 			await this.client.procs.settingsUpdate().execute({ settings: merged });
 		} catch (err) {
 			console.error('Failed to update settings:', err);
@@ -217,6 +218,7 @@ class Store {
 
 	async updateShortcut(shortcut: Shortcut): Promise<void> {
 		try {
+			this.settings.shortcutToggle = shortcut; // Optimistic update first
 			await this.client.procs.shortcutToggleUpdate().execute({ shortcut });
 		} catch (err) {
 			console.error('Failed to update shortcut:', err);

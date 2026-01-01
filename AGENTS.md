@@ -232,6 +232,16 @@ Use `@lucide/svelte` icons whenever you need icons and you are working on the we
 
 The Web UI should use svelte runes to store it's internal state and should be realtime updated using the server state and config which is received in real time from the server by using the SSE stream provided by the UFO RPC Client.
 
-When the user makes changes to the config, the Web UI should send a request to the server to update the config (using debouncing to prevent unnecessary requests). The server immediately updates the config and sends a response to the Web UI in the form of an SSE event to update the state and the Web APP should be smart enough to react to the changes and update the state accordingly even if the state is the same or is different from the previous state it should not break the app.
-
 The entire state should be stored in the `src/lib/store.svelte.ts` file (in a singleton Store class) and should be used throughout the app to react to changes in the state using svelte runes.
+
+### Optimistic Updates
+
+**All UI state changes must use optimistic updates** to ensure the app feels instantaneous with zero lag.
+
+The pattern is:
+
+1. **Immediately update local state** when the user makes a change
+2. **Send request to backend** in parallel
+3. **SSE stream syncs final state** - the authoritative server state will replace the local state
+
+This makes the UI feel totally responsive while maintaining consistency with the backend. The SSE stream naturally handles state synchronization, so there's no need for manual reversion on errors.

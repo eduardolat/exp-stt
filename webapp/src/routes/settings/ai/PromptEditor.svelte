@@ -14,22 +14,29 @@
 	let { prompt, isSelected, onSelect, onUpdate, onDelete }: Props = $props();
 
 	let modal: Modal | undefined = $state();
-	let editingPrompt: Prompt | null = $state(null);
+	let editName = $state('');
+	let editBody = $state('');
 
 	function startEdit() {
-		editingPrompt = { ...prompt };
+		editName = prompt.name;
+		editBody = prompt.body;
 		modal?.open();
 	}
 
 	function cancelEdit() {
-		editingPrompt = null;
 		modal?.close();
 	}
 
 	function saveEdit() {
-		if (!editingPrompt || !editingPrompt.name.trim() || !editingPrompt.body.trim()) return;
-		onUpdate(editingPrompt);
-		cancelEdit();
+		if (!editName.trim() || !editBody.trim()) return;
+
+		onUpdate({
+			id: prompt.id,
+			name: editName.trim(),
+			body: editBody.trim()
+		});
+
+		modal?.close();
 	}
 
 	function handleDelete() {
@@ -75,30 +82,28 @@
 
 <Modal bind:this={modal} title="Edit Prompt: {prompt.name}" size="lg">
 	{#snippet children()}
-		{#if editingPrompt}
-			<fieldset class="fieldset">
-				<label class="label" for="editPromptName-{prompt.id}">
-					<span class="label-text">Name</span>
-				</label>
-				<input
-					type="text"
-					id="editPromptName-{prompt.id}"
-					class="input w-full"
-					bind:value={editingPrompt.name}
-				/>
-			</fieldset>
-			<fieldset class="fieldset">
-				<label class="label" for="editPromptBody-{prompt.id}">
-					<span class="label-text">Prompt Template</span>
-				</label>
-				<textarea
-					id="editPromptBody-{prompt.id}"
-					rows={12}
-					class="textarea w-full"
-					bind:value={editingPrompt.body}
-				></textarea>
-			</fieldset>
-		{/if}
+		<fieldset class="fieldset">
+			<label class="label" for="editPromptName-{prompt.id}">
+				<span class="label-text">Name</span>
+			</label>
+			<input
+				type="text"
+				id="editPromptName-{prompt.id}"
+				class="input w-full"
+				bind:value={editName}
+			/>
+		</fieldset>
+		<fieldset class="fieldset">
+			<label class="label" for="editPromptBody-{prompt.id}">
+				<span class="label-text">Prompt Template</span>
+			</label>
+			<textarea
+				id="editPromptBody-{prompt.id}"
+				rows={12}
+				class="textarea w-full"
+				bind:value={editBody}
+			></textarea>
+		</fieldset>
 	{/snippet}
 	{#snippet actions()}
 		<button class="btn btn-primary" onclick={saveEdit}>

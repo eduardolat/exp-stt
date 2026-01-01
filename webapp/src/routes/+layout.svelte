@@ -117,7 +117,7 @@
 	<footer class="shrink-0 border-t border-base-300 py-3 text-center text-xs opacity-70">
 		<div class="mx-auto max-w-4xl px-4">
 			{store.systemInfo.os} / {store.systemInfo.arch}
-			{#if store.systemInfo.os === 'Linux'}
+			{#if store.systemInfo.os == 'linux'}
 				/ {store.systemInfo.displayServer}
 			{/if}
 		</div>

@@ -1,11 +1,12 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { X } from '@lucide/svelte';
 
 	interface Props {
 		title: string;
 		size?: 'sm' | 'md' | 'lg';
-		children?: import('svelte').Snippet;
-		actions?: import('svelte').Snippet;
+		children?: Snippet;
+		actions?: Snippet;
 	}
 
 	let { title, size = 'md', children, actions }: Props = $props();
@@ -25,15 +26,9 @@
 	export function close() {
 		dialog?.close();
 	}
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === dialog) {
-			close();
-		}
-	}
 </script>
 
-<dialog bind:this={dialog} class="modal" onclick={handleBackdropClick}>
+<dialog bind:this={dialog} class="modal">
 	<div class={sizeClasses[size]}>
 		<div class="mb-4 flex items-center justify-between">
 			<h3 class="text-lg font-bold">{title}</h3>
@@ -54,4 +49,8 @@
 			</div>
 		{/if}
 	</div>
+
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
 </dialog>

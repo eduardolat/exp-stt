@@ -4,6 +4,7 @@
 	import { Info } from '@lucide/svelte';
 	import CopyButton from './CopyButton.svelte';
 	import Modal from './Modal.svelte';
+	import Card from './Card.svelte';
 
 	interface Props {
 		children?: Snippet;
@@ -48,8 +49,6 @@
 				desktop environment to handle global shortcuts.
 			</p>
 
-			<div class="divider my-2"></div>
-
 			<p class="text-sm">
 				<strong>How to configure shortcuts manually:</strong>
 			</p>
@@ -58,7 +57,7 @@
 				following command:
 			</p>
 
-			<div class="rounded-lg bg-base-200 p-3">
+			<Card class="p-3">
 				<div class="mb-2 flex items-center justify-between">
 					<code class="font-mono text-sm">tribar --toggle</code>
 					<CopyButton text="tribar --toggle" />
@@ -66,38 +65,38 @@
 				<p class="text-xs opacity-70">
 					This command starts or stops recording when triggered by your chosen keyboard shortcut.
 				</p>
-			</div>
+			</Card>
 
 			<p class="text-sm">
 				<strong>Instructions by desktop environment:</strong>
 			</p>
 
 			<div class="space-y-3">
-				<div class="rounded-lg bg-base-200 p-3">
+				<Card class="p-3">
 					<p class="mb-1 text-sm font-semibold">GNOME / Ubuntu</p>
 					<p class="text-xs opacity-80">
 						Open <strong>Settings → Keyboard → Keyboard Shortcuts → Custom Shortcuts</strong>. Click
 						the <strong>+</strong> button, name it "Toggle Tribar", paste the command above, and
 						assign your preferred key combination (e.g., <kbd>Super+Space</kbd>).
 					</p>
-				</div>
+				</Card>
 
-				<div class="rounded-lg bg-base-200 p-3">
+				<Card class="p-3">
 					<p class="mb-1 text-sm font-semibold">KDE Plasma</p>
 					<p class="text-xs opacity-80">
 						Go to <strong>System Settings → Shortcuts → Custom Shortcuts</strong>. Create a new
 						shortcut, select <strong>Command/URL</strong>, paste the command, and set your desired
 						key combination.
 					</p>
-				</div>
+				</Card>
 
-				<div class="rounded-lg bg-base-200 p-3">
+				<Card class="p-3">
 					<p class="mb-1 text-sm font-semibold">Hyprland / Sway (Tiling WMs)</p>
 					<p class="text-xs opacity-80">
 						Add a bind to your config file:
 						<code class="ml-1 text-xs">bind = SUPER, SPACE, exec, tribar --toggle</code>
 					</p>
-				</div>
+				</Card>
 			</div>
 		</div>
 	</Modal>

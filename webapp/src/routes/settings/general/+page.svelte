@@ -12,7 +12,8 @@
 		Timer,
 		Keyboard
 	} from '@lucide/svelte';
-	import { ShortcutInput } from '$lib/components';
+	import ShortcutInput from './ShortcutInput.svelte';
+	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 </script>
 
 <svelte:head>
@@ -130,7 +131,9 @@
 				<Keyboard class="size-4" />
 				Keyboard Shortcut
 			</h3>
-			<ShortcutInput />
+			<WaylandShortcutAlert>
+				<ShortcutInput />
+			</WaylandShortcutAlert>
 		</div>
 	</div>
 

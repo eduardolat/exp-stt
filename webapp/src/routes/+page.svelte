@@ -10,9 +10,11 @@
 		Check,
 		CircleAlert,
 		Clock,
-		ArrowRight
+		ArrowRight,
+		Info
 	} from '@lucide/svelte';
-	import { HistoryItem } from '$lib/components';
+	import { HistoryItem, Modal, CopyButton } from '$lib/components';
+	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
 		unknown: { icon: CircleAlert, pulse: false, spin: false },
@@ -51,11 +53,11 @@
 			<!-- Status Icon + Label -->
 			<div class="flex flex-col items-center gap-3">
 				<div
-					class="flex size-20 items-center justify-center rounded-full bg-base-300"
+					class="flex size-30 items-center justify-center rounded-full bg-base-300"
 					class:animate-pulse={config.pulse}
 					class:animate-spin={config.spin}
 				>
-					<IconComponent class="size-10" />
+					<IconComponent class="size-20" />
 				</div>
 				<p class="font-medium">{store.statusLabel}</p>
 
@@ -75,7 +77,7 @@
 			</div>
 
 			<!-- Action Button + Shortcut -->
-			<div class="flex flex-col items-center gap-3">
+			<div class="flex flex-col items-center gap-4">
 				<button
 					class="btn btn-lg"
 					class:btn-error={store.isRecording}
@@ -86,16 +88,18 @@
 					Toggle Recording
 				</button>
 
-				{#if store.shortcut.key}
-					<p class="text-xs opacity-70">
-						Shortcut:
-						{#if store.shortcut.modifiers.length > 0}
-							<kbd class="kbd kbd-sm">{store.shortcut.modifiers.join(' + ')}</kbd>
-							+
-						{/if}
-						<kbd class="kbd kbd-sm">{store.shortcut.key}</kbd>
-					</p>
-				{/if}
+				<WaylandShortcutAlert>
+					{#if store.shortcut.key}
+						<p class="text-xs opacity-70">
+							Shortcut:
+							{#if store.shortcut.modifiers.length > 0}
+								<kbd class="kbd kbd-sm">{store.shortcut.modifiers.join(' + ')}</kbd>
+								+
+							{/if}
+							<kbd class="kbd kbd-sm">{store.shortcut.key}</kbd>
+						</p>
+					{/if}
+				</WaylandShortcutAlert>
 			</div>
 		</div>
 	</div>

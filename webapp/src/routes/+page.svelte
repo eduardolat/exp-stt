@@ -1,6 +1,18 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Mic, MicOff, Loader, Download, Cpu, Sparkles, Check, CircleAlert } from '@lucide/svelte';
+	import {
+		Mic,
+		MicOff,
+		Loader,
+		Download,
+		Cpu,
+		Sparkles,
+		Check,
+		CircleAlert,
+		Clock,
+		ArrowRight
+	} from '@lucide/svelte';
+	import { HistoryItem } from '$lib/components';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
 		unknown: { icon: CircleAlert, pulse: false, spin: false },
@@ -15,56 +27,104 @@
 
 	let config = $derived(statusConfig[store.status] ?? statusConfig.unknown);
 	let IconComponent = $derived(config.icon);
+	let recentHistory = $derived(store.history.slice(0, 3));
+
+	async function handleDelete(entry: (typeof store.history)[0]) {
+		if (!confirm('Delete this transcription?')) return;
+		await store.deleteHistoryEntry(entry.id);
+	}
 </script>
 
-<div class="card bg-base-200">
-	<div class="card-body items-center text-center">
-		<div
-			class="flex size-24 items-center justify-center rounded-full bg-base-300"
-			class:animate-pulse={config.pulse}
-			class:animate-spin={config.spin}
-		>
-			<IconComponent class="size-12" />
-		</div>
+<svelte:head>
+	<title>Dashboard - Tribar Voice</title>
+</svelte:head>
 
-		<h2 class="card-title">{store.statusLabel}</h2>
-
-		{#if store.status === 'downloading'}
-			<div class="mt-2 w-64">
-				<div class="mb-1 flex justify-between text-xs opacity-70">
-					<span>{store.downloadProgress.fileName}</span>
-					<span>{store.downloadProgress.percent.toFixed(1)}%</span>
-				</div>
-				<progress class="progress progress-primary" value={store.downloadProgress.percent} max="100"
-				></progress>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+	<!-- Recording Control Panel -->
+	<div class="card bg-base-200">
+		<div class="card-body flex flex-col justify-between">
+			<!-- Title -->
+			<div class="text-center">
+				<h3 class="card-title justify-center text-base">Recording</h3>
 			</div>
-		{/if}
 
-		<div class="mt-4 card-actions">
-			<button
-				class="btn btn-lg"
-				class:btn-error={store.isRecording}
-				class:btn-primary={!store.isRecording}
-				onclick={() => store.toggleRecording()}
-			>
-				<Mic class="size-5" />
-				Toggle Recording
-			</button>
-		</div>
+			<!-- Status Icon + Label -->
+			<div class="flex flex-col items-center gap-3">
+				<div
+					class="flex size-20 items-center justify-center rounded-full bg-base-300"
+					class:animate-pulse={config.pulse}
+					class:animate-spin={config.spin}
+				>
+					<IconComponent class="size-10" />
+				</div>
+				<p class="font-medium">{store.statusLabel}</p>
 
-		{#if store.shortcut.key}
-			<p class="mt-2 text-xs opacity-70">
-				Shortcut:
-				{#if store.shortcut.modifiers.length > 0}
-					<kbd class="kbd kbd-sm">{store.shortcut.modifiers.join(' + ')}</kbd>
-					+
+				{#if store.status === 'downloading'}
+					<div class="w-full max-w-xs">
+						<div class="mb-1 flex justify-between text-xs opacity-70">
+							<span class="truncate">{store.downloadProgress.fileName}</span>
+							<span>{store.downloadProgress.percent.toFixed(1)}%</span>
+						</div>
+						<progress
+							class="progress progress-primary"
+							value={store.downloadProgress.percent}
+							max="100"
+						></progress>
+					</div>
 				{/if}
-				<kbd class="kbd kbd-sm">{store.shortcut.key}</kbd>
-			</p>
-		{/if}
+			</div>
+
+			<!-- Action Button + Shortcut -->
+			<div class="flex flex-col items-center gap-3">
+				<button
+					class="btn btn-lg"
+					class:btn-error={store.isRecording}
+					class:btn-primary={!store.isRecording}
+					onclick={() => store.toggleRecording()}
+				>
+					<Mic class="size-5" />
+					Toggle Recording
+				</button>
+
+				{#if store.shortcut.key}
+					<p class="text-xs opacity-70">
+						Shortcut:
+						{#if store.shortcut.modifiers.length > 0}
+							<kbd class="kbd kbd-sm">{store.shortcut.modifiers.join(' + ')}</kbd>
+							+
+						{/if}
+						<kbd class="kbd kbd-sm">{store.shortcut.key}</kbd>
+					</p>
+				{/if}
+			</div>
+		</div>
+	</div>
+
+	<!-- Recent History Panel -->
+	<div class="card bg-base-200">
+		<div class="card-body">
+			<h3 class="mb-2 card-title text-base">Recent Transcriptions</h3>
+
+			{#if recentHistory.length === 0}
+				<div class="flex flex-col items-center justify-center py-12 text-center">
+					<Clock class="mb-2 size-8 opacity-50" />
+					<p class="text-sm opacity-70">No transcriptions yet</p>
+					<p class="text-xs opacity-50">Start recording to see your transcriptions here</p>
+				</div>
+			{:else}
+				<div class="space-y-2">
+					{#each recentHistory as entry (entry.id)}
+						<HistoryItem {entry} onDelete={handleDelete} />
+					{/each}
+				</div>
+
+				<div class="mt-4 flex justify-end">
+					<a href="#/history" class="btn gap-1 btn-ghost btn-sm">
+						View All History
+						<ArrowRight class="size-4" />
+					</a>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
-
-<svelte:head>
-	<title>Tribar Voice</title>
-</svelte:head>

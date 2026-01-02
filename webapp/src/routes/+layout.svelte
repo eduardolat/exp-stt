@@ -4,10 +4,10 @@
 	import { store } from '$lib/store.svelte';
 	import { onMount } from 'svelte';
 	import {
-		Mic,
+		LayoutDashboard,
+		History,
 		Settings,
 		Sparkles,
-		History,
 		Palette,
 		Loader,
 		Sun,
@@ -79,8 +79,8 @@
 					? 'border-primary text-primary'
 					: 'border-transparent opacity-70 hover:opacity-100'}"
 			>
-				<Mic class="size-4" />
-				Record
+				<LayoutDashboard class="size-4" />
+				Dashboard
 			</a>
 			<a
 				href="#/history"

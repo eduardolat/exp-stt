@@ -31,7 +31,7 @@
 <dialog bind:this={dialog} class="modal">
 	<div class="modal-box flex max-h-[90dvh] flex-col p-0 {sizeClasses[size]}">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b border-base-300 px-6 py-4">
+		<div class="flex items-center justify-between border-b border-base-300 p-4">
 			<h3 class="text-lg font-bold">{title}</h3>
 			<button class="btn btn-circle btn-ghost btn-sm" onclick={close} title="Close">
 				<X class="size-4" />
@@ -39,7 +39,7 @@
 		</div>
 
 		<!-- Scrollable Content -->
-		<div class="grow overflow-y-auto px-6 py-4">
+		<div class="grow overflow-y-auto p-4">
 			{#if children}
 				{@render children()}
 			{/if}
@@ -47,7 +47,7 @@
 
 		<!-- Footer -->
 		{#if actions}
-			<div class="border-t border-base-300 px-6 py-4">
+			<div class="border-t border-base-300 p-4">
 				<div class="m-0 modal-action">
 					{@render actions()}
 				</div>

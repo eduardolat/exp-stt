@@ -2,14 +2,15 @@
 	import { Trash2, Sparkles } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import type { HistoryEntry } from '$lib/client.gen';
-	import { Modal, CopyButton } from '$lib/components';
+	import { Card, Modal, CopyButton } from '$lib/components';
 
 	interface Props {
 		entry: HistoryEntry;
 		onDelete: (entry: HistoryEntry) => void;
+		darker?: boolean;
 	}
 
-	let { entry, onDelete }: Props = $props();
+	let { entry, onDelete, darker }: Props = $props();
 
 	let modal: { open: () => void; close: () => void } | undefined = $state();
 
@@ -41,13 +42,7 @@
 	{/if}
 {/snippet}
 
-<button
-	class="
-		w-full cursor-pointer rounded-lg border border-base-300 bg-base-300 p-3 text-left transition-all
-		hover:border-primary hover:bg-base-100 hover:shadow-md
-	"
-	onclick={handleItemClick}
->
+<Card {darker} interactive onclick={handleItemClick} class="p-3">
 	<div class="mb-1.5 flex items-center justify-between gap-2">
 		<div class="flex items-center gap-2 text-xs opacity-70">
 			<span>{formatTimestamp(entry.timestamp)}</span>
@@ -63,7 +58,7 @@
 	<p class="line-clamp-2 text-sm">
 		{@render textWithFallback(entry.textFinal)}
 	</p>
-</button>
+</Card>
 
 <Modal bind:this={modal} title="Transcription Details">
 	<div class="space-y-4">
@@ -79,30 +74,30 @@
 			{/if}
 		</div>
 
-		<div>
+		<Card class="p-4">
 			<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
 			<audio controls class="w-full" preload="none">
 				<source src={getAudioUrl(entry.id)} type="audio/wav" />
 				Your browser does not support audio playback.
 			</audio>
-		</div>
+		</Card>
 
-		<div>
+		<Card class="p-4">
 			<div class="mb-1 flex items-center justify-between">
 				<p class="text-xs font-medium opacity-70">Original:</p>
 				<CopyButton text={entry.textRaw} showLabel />
 			</div>
-			<p class="rounded bg-base-300 p-2 text-sm">{@render textWithFallback(entry.textRaw)}</p>
-		</div>
+			<p class="text-sm">{@render textWithFallback(entry.textRaw)}</p>
+		</Card>
 
 		{#if entry.postProcessed && entry.textRaw !== entry.textFinal}
-			<div>
+			<Card class="p-4">
 				<div class="mb-1 flex items-center justify-between">
 					<p class="text-xs font-medium opacity-70">Enhanced:</p>
 					<CopyButton text={entry.textFinal} showLabel />
 				</div>
-				<p class="rounded bg-base-300 p-2 text-sm">{@render textWithFallback(entry.textFinal)}</p>
-			</div>
+				<p class="text-sm">{@render textWithFallback(entry.textFinal)}</p>
+			</Card>
 		{/if}
 	</div>
 

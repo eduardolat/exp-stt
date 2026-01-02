@@ -16,7 +16,7 @@
 	} from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
-	import { AnimatedLogo, type AppStatus } from '$lib/components';
+	import { AnimatedLogo, type AppStatus, Card } from '$lib/components';
 	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
@@ -119,17 +119,17 @@
 		</div>
 	</nav>
 
-	<main class="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6">
+	<main class="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-4">
 		{#if store.isLoading}
 			<div class="flex flex-col items-center justify-center py-20">
 				<Loader class="size-8 animate-spin text-primary" />
 				<p class="text-muted-foreground mt-4">Connecting to server...</p>
 			</div>
 		{:else if store.error}
-			<div class="card flex flex-col items-center justify-center py-12 text-center">
+			<Card class="flex flex-col items-center justify-center py-12 text-center">
 				<p class="text-destructive">{store.error}</p>
 				<button class="btn mt-4 btn-sm" onclick={() => store.initialize()}>Retry</button>
-			</div>
+			</Card>
 		{:else}
 			{@render children()}
 		{/if}

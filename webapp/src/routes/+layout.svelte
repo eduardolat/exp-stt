@@ -22,7 +22,7 @@
 
 	const themes = [
 		{ value: 'light', label: 'Light', icon: Sun },
-		{ value: 'dim', label: 'Dark', icon: Moon },
+		{ value: 'dark', label: 'Dark', icon: Moon },
 		{ value: 'dracula', label: 'Dracula', icon: Eclipse }
 	];
 

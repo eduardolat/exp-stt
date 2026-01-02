@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Trash2, Clock } from '@lucide/svelte';
-	import { HistoryItem, Card } from '$lib/components';
+	import { Trash2, Clock, Settings } from '@lucide/svelte';
+	import { HistoryItem, Card, Modal } from '$lib/components';
+
+	let settingsModal: Modal | undefined = $state();
 
 	async function handleDelete(entry: (typeof store.history)[0]) {
 		if (!confirm('Delete this transcription?')) return;
@@ -18,15 +20,44 @@
 	<title>History - Tribar Voice</title>
 </svelte:head>
 
+<Modal bind:this={settingsModal} title="History Settings" size="sm">
+	{#snippet children()}
+		<fieldset class="fieldset">
+			<label class="label" for="historyLimit">
+				<span class="label-text">Maximum entries to keep</span>
+			</label>
+			<input
+				type="number"
+				id="historyLimit"
+				class="input input-sm w-full"
+				min="10"
+				max="1000"
+				step="10"
+				value={store.settings.historyLimit}
+				onblur={(e) => store.updateSettings({ historyLimit: parseInt(e.currentTarget.value) })}
+			/>
+			<p class="label">
+				<span class="label-text-alt opacity-70">Older entries will be automatically removed</span>
+			</p>
+		</fieldset>
+	{/snippet}
+</Modal>
+
 <div class="space-y-4">
-	<div class="flex items-center justify-between">
+	<div class="flex items-end justify-between">
 		<h2 class="text-lg font-semibold">History</h2>
-		{#if store.history.length > 0}
-			<button class="btn btn-outline btn-sm btn-error" onclick={handleClearAll}>
-				<Trash2 class="size-3.5" />
-				Clear All
+		<div class="flex gap-2">
+			<button class="btn btn-sm" onclick={() => settingsModal?.open()} title="History Settings">
+				<Settings class="size-3.5" />
+				Settings
 			</button>
-		{/if}
+			{#if store.history.length > 0}
+				<button class="btn btn-sm btn-error" onclick={handleClearAll}>
+					<Trash2 class="size-3.5" />
+					Clear All
+				</button>
+			{/if}
+		</div>
 	</div>
 
 	{#if store.history.length === 0}

@@ -40,7 +40,7 @@
 	<title>Dashboard - Tribar Voice</title>
 </svelte:head>
 
-<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+<div class="grid grid-cols-2 gap-4">
 	<!-- Recording Control Panel -->
 	<div>
 		<Card class="card-body flex flex-col items-center justify-between gap-4">

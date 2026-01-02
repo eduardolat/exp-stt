@@ -17,6 +17,7 @@
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
 	import { AnimatedLogo, type AppStatus } from '$lib/components';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 
@@ -142,4 +143,6 @@
 			{/if}
 		</div>
 	</footer>
+
+	<Toaster />
 </div>

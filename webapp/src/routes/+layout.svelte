@@ -144,5 +144,5 @@
 		</div>
 	</footer>
 
-	<Toaster />
+	<Toaster richColors />
 </div>

@@ -1,8 +1,19 @@
 <script lang="ts">
 	import '../app.css';
+
 	import { store } from '$lib/store.svelte';
 	import { onMount } from 'svelte';
-	import { Mic, Settings, History, Palette, Loader, Sun, Moon, Eclipse } from '@lucide/svelte';
+	import {
+		Mic,
+		Settings,
+		Sparkles,
+		History,
+		Palette,
+		Loader,
+		Sun,
+		Moon,
+		Eclipse
+	} from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
 	import { AnimatedLogo, type AppStatus } from '$lib/components';
@@ -17,9 +28,7 @@
 
 	function isActive(path: string): boolean {
 		const currentPath = page.url.hash.slice(1) || '/';
-		if (path === '/') {
-			return currentPath === '/' || currentPath === '';
-		}
+		if (path === '/') return currentPath === '/' || currentPath === '';
 		return currentPath.startsWith(path);
 	}
 
@@ -85,15 +94,26 @@
 				History
 			</a>
 			<a
-				href="#/settings"
+				href="#/settings/general"
 				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
-					'/settings'
+					'/settings/general'
 				)
 					? 'border-primary text-primary'
 					: 'border-transparent opacity-70 hover:opacity-100'}"
 			>
 				<Settings class="size-4" />
 				Settings
+			</a>
+			<a
+				href="#/settings/ai"
+				class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
+					'/settings/ai'
+				)
+					? 'border-primary text-primary'
+					: 'border-transparent opacity-70 hover:opacity-100'}"
+			>
+				<Sparkles class="size-4" />
+				AI
 			</a>
 		</div>
 	</nav>

@@ -129,14 +129,14 @@
 				</div>
 			</Card>
 
-			<label class="label cursor-pointer justify-start gap-3 pt-2">
+			<label class="label cursor-pointer justify-between pt-2">
+				<span class="text-sm">Add trailing space after paste</span>
 				<input
 					type="checkbox"
 					class="toggle toggle-sm"
 					checked={store.settings.outputTrailingSpace}
 					onchange={(e) => store.updateSettings({ outputTrailingSpace: e.currentTarget.checked })}
 				/>
-				<span class="text-sm">Add trailing space after paste</span>
 			</label>
 		</div>
 	</Card>
@@ -179,7 +179,7 @@
 					<input
 						type="range"
 						id="volume"
-						class="range range-sm"
+						class="range w-full range-sm"
 						min="0"
 						max="100"
 						value={store.settings.soundFeedbackVolume}
@@ -197,44 +197,49 @@
 			<Bell class="size-4" />
 			Notifications
 		</h3>
-		<div class="space-y-2">
-			<label class="label cursor-pointer justify-between">
-				<div class="flex items-center gap-2">
-					<BellOff class="size-4 opacity-70" />
-					<span class="text-sm">Notify on errors</span>
-				</div>
-				<input
-					type="checkbox"
-					class="toggle toggle-sm"
-					checked={store.settings.notifyOnError}
-					onchange={(e) => store.updateSettings({ notifyOnError: e.currentTarget.checked })}
-				/>
-			</label>
-			<label class="label cursor-pointer justify-between">
-				<div class="flex items-center gap-2">
-					<Bell class="size-4 opacity-70" />
-					<span class="text-sm">Notify on recording start</span>
-				</div>
-				<input
-					type="checkbox"
-					class="toggle toggle-sm"
-					checked={store.settings.notifyOnStart}
-					onchange={(e) => store.updateSettings({ notifyOnStart: e.currentTarget.checked })}
-				/>
-			</label>
-			<label class="label cursor-pointer justify-between">
-				<div class="flex items-center gap-2">
-					<Bell class="size-4 opacity-70" />
-					<span class="text-sm">Notify on transcription complete</span>
-				</div>
-				<input
-					type="checkbox"
-					class="toggle toggle-sm"
-					checked={store.settings.notifyOnFinish}
-					onchange={(e) => store.updateSettings({ notifyOnFinish: e.currentTarget.checked })}
-				/>
-			</label>
-		</div>
+		<table class="w-full">
+			<tbody>
+				<tr>
+					<td class="py-2">
+						<span class="text-sm">Notify on errors</span>
+					</td>
+					<td class="py-2 text-right">
+						<input
+							type="checkbox"
+							class="toggle toggle-sm"
+							checked={store.settings.notifyOnError}
+							onchange={(e) => store.updateSettings({ notifyOnError: e.currentTarget.checked })}
+						/>
+					</td>
+				</tr>
+				<tr>
+					<td class="py-2">
+						<span class="text-sm">Notify on recording start</span>
+					</td>
+					<td class="py-2 text-right">
+						<input
+							type="checkbox"
+							class="toggle toggle-sm"
+							checked={store.settings.notifyOnStart}
+							onchange={(e) => store.updateSettings({ notifyOnStart: e.currentTarget.checked })}
+						/>
+					</td>
+				</tr>
+				<tr>
+					<td class="py-2">
+						<span class="text-sm">Notify on transcription complete</span>
+					</td>
+					<td class="py-2 text-right">
+						<input
+							type="checkbox"
+							class="toggle toggle-sm"
+							checked={store.settings.notifyOnFinish}
+							onchange={(e) => store.updateSettings({ notifyOnFinish: e.currentTarget.checked })}
+						/>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 	</Card>
 
 	<!-- Model Unloading -->
@@ -258,21 +263,48 @@
 			</label>
 
 			{#if store.settings.modelUnloadEnable}
+				{@const presetValues = [60, 120, 180, 240, 300, 600, 900, 1200, 1800, 3600, 7200]}
+				{@const isPreset = presetValues.includes(store.settings.modelUnloadSeconds)}
+				{@const selectValue = isPreset ? String(store.settings.modelUnloadSeconds) : 'custom'}
+
 				<fieldset class="fieldset">
 					<label class="label" for="unloadSeconds">
-						<span class="label-text">Unload after (seconds)</span>
+						<span class="label-text">Unload after</span>
 					</label>
-					<input
-						type="number"
+					<select
 						id="unloadSeconds"
-						class="input input-sm w-32"
-						min="60"
-						max="3600"
-						step="60"
-						value={store.settings.modelUnloadSeconds}
-						onblur={(e) =>
-							store.updateSettings({ modelUnloadSeconds: parseInt(e.currentTarget.value) })}
-					/>
+						class="select w-full select-sm"
+						value={selectValue}
+						onchange={(e) => {
+							const value = e.currentTarget.value;
+							if (value === 'custom') {
+								const customValue = prompt(
+									'Enter custom time in seconds:',
+									String(store.settings.modelUnloadSeconds)
+								);
+								if (customValue !== null && !isNaN(parseInt(customValue))) {
+									store.updateSettings({ modelUnloadSeconds: parseInt(customValue) });
+								}
+							} else {
+								store.updateSettings({ modelUnloadSeconds: parseInt(value) });
+							}
+						}}
+					>
+						<option value="60">1 minute</option>
+						<option value="120">2 minutes</option>
+						<option value="180">3 minutes</option>
+						<option value="240">4 minutes</option>
+						<option value="300">5 minutes</option>
+						<option value="600">10 minutes</option>
+						<option value="900">15 minutes</option>
+						<option value="1200">20 minutes</option>
+						<option value="1800">30 minutes</option>
+						<option value="3600">1 hour</option>
+						<option value="7200">2 hours</option>
+						<option value="custom"
+							>{isPreset ? 'Custom...' : `Custom (${store.settings.modelUnloadSeconds}s)`}</option
+						>
+					</select>
 				</fieldset>
 			{/if}
 		</div>

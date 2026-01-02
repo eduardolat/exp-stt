@@ -18,7 +18,9 @@
 	}
 
 	function formatTimestamp(iso: string): string {
-		return formatDistanceToNow(new Date(iso), { addSuffix: true });
+		const text = formatDistanceToNow(new Date(iso), { addSuffix: true });
+		const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
+		return capitalized;
 	}
 
 	function handleItemClick() {
@@ -31,10 +33,19 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-	class="cursor-pointer rounded-lg border border-base-300 bg-base-300 p-3 transition-all hover:border-primary hover:bg-base-100 hover:shadow-md"
+{#snippet textWithFallback(text: string)}
+	{#if text.trim()}
+		{text}
+	{:else}
+		<span class="opacity-70">(No text available)</span>
+	{/if}
+{/snippet}
+
+<button
+	class="
+		w-full cursor-pointer rounded-lg border border-base-300 bg-base-300 p-3 text-left transition-all
+		hover:border-primary hover:bg-base-100 hover:shadow-md
+	"
 	onclick={handleItemClick}
 >
 	<div class="mb-1.5 flex items-center justify-between gap-2">
@@ -49,15 +60,17 @@
 		</div>
 		<CopyButton text={entry.textFinal} showLabel />
 	</div>
-	<p class="line-clamp-2 text-sm">{entry.textFinal}</p>
-</div>
+	<p class="line-clamp-2 text-sm">
+		{@render textWithFallback(entry.textFinal)}
+	</p>
+</button>
 
 <Modal bind:this={modal} title="Transcription Details">
 	<div class="space-y-4">
 		<div class="flex items-center gap-2 text-sm opacity-70">
 			<span>{formatTimestamp(entry.timestamp)}</span>
 			<span>•</span>
-			<span>{Math.floor(entry.durationMs / 1000)}s</span>
+			<span>Took {Math.floor(entry.durationMs / 1000)}s</span>
 			{#if entry.postProcessed}
 				<span class="ml-auto badge gap-1 badge-sm badge-secondary">
 					<Sparkles class="size-3" />
@@ -79,7 +92,7 @@
 				<p class="text-xs font-medium opacity-70">Original:</p>
 				<CopyButton text={entry.textRaw} showLabel />
 			</div>
-			<p class="rounded bg-base-300 p-2 text-sm">{entry.textRaw}</p>
+			<p class="rounded bg-base-300 p-2 text-sm">{@render textWithFallback(entry.textRaw)}</p>
 		</div>
 
 		{#if entry.postProcessed && entry.textRaw !== entry.textFinal}
@@ -88,16 +101,17 @@
 					<p class="text-xs font-medium opacity-70">Enhanced:</p>
 					<CopyButton text={entry.textFinal} showLabel />
 				</div>
-				<p class="rounded bg-base-300 p-2 text-sm">{entry.textFinal}</p>
+				<p class="rounded bg-base-300 p-2 text-sm">{@render textWithFallback(entry.textFinal)}</p>
 			</div>
 		{/if}
+	</div>
 
+	{#snippet actions()}
 		<div class="flex justify-end gap-2 pt-2">
 			<button class="btn btn-outline btn-sm btn-error" onclick={handleDelete}>
 				<Trash2 class="size-3.5" />
 				Delete
 			</button>
-			<button class="btn btn-sm" onclick={() => modal?.close()}>Close</button>
 		</div>
-	</div>
+	{/snippet}
 </Modal>

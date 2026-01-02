@@ -14,9 +14,9 @@
 	let dialog: HTMLDialogElement | undefined = $state();
 
 	const sizeClasses = {
-		sm: 'modal-box max-w-md',
-		md: 'modal-box',
-		lg: 'modal-box max-w-3xl'
+		sm: 'max-w-md',
+		md: 'max-w-xl',
+		lg: 'max-w-3xl'
 	};
 
 	export function open() {
@@ -29,23 +29,28 @@
 </script>
 
 <dialog bind:this={dialog} class="modal">
-	<div class={sizeClasses[size]}>
-		<div class="mb-4 flex items-center justify-between">
+	<div class="modal-box flex max-h-[90dvh] flex-col p-0 {sizeClasses[size]}">
+		<!-- Header -->
+		<div class="flex items-center justify-between border-b border-base-300 px-6 py-4">
 			<h3 class="text-lg font-bold">{title}</h3>
 			<button class="btn btn-circle btn-ghost btn-sm" onclick={close} title="Close">
 				<X class="size-4" />
 			</button>
 		</div>
 
-		<div class="space-y-4">
+		<!-- Scrollable Content -->
+		<div class="grow overflow-y-auto px-6 py-4">
 			{#if children}
 				{@render children()}
 			{/if}
 		</div>
 
+		<!-- Footer -->
 		{#if actions}
-			<div class="modal-action">
-				{@render actions()}
+			<div class="border-t border-base-300 px-6 py-4">
+				<div class="m-0 modal-action">
+					{@render actions()}
+				</div>
 			</div>
 		{/if}
 	</div>

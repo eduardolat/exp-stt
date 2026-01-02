@@ -59,7 +59,7 @@
 			<span>•</span>
 			<span>{Math.floor(entry.durationMs / 1000)}s</span>
 			{#if entry.postProcessed}
-				<span class="badge gap-1 badge-sm badge-secondary">
+				<span class="ml-auto badge gap-1 badge-sm badge-secondary">
 					<Sparkles class="size-3" />
 					AI Enhanced
 				</span>

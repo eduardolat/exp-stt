@@ -49,8 +49,8 @@
 
 	/* border radius */
 	--radius-selector: 0.5rem;
-	--radius-field: 0.25rem;
-	--radius-box: 0.5rem;
+	--radius-field: 0.5rem;
+	--radius-box: 1rem;
 
 	/* base sizes */
 	--size-selector: 0.25rem;
@@ -61,7 +61,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 0;
+	--noise: 1;
 }
 
 @plugin 'daisyui/theme' {
@@ -102,8 +102,8 @@
 
 	/* border radius */
 	--radius-selector: 0.5rem;
-	--radius-field: 0.25rem;
-	--radius-box: 0.5rem;
+	--radius-field: 0.5rem;
+	--radius-box: 1rem;
 
 	/* base sizes */
 	--size-selector: 0.25rem;
@@ -114,7 +114,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 0;
+	--noise: 1;
 }
 
 @plugin 'daisyui/theme' {
@@ -154,8 +154,8 @@
 
 	/* border radius */
 	--radius-selector: 0.5rem;
-	--radius-field: 0.25rem;
-	--radius-box: 0.5rem;
+	--radius-field: 0.5rem;
+	--radius-box: 1rem;
 
 	/* base sizes */
 	--size-selector: 0.25rem;
@@ -166,7 +166,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 0;
+	--noise: 1;
 }
 
 html {

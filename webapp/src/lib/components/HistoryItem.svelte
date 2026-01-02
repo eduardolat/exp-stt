@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Copy, Trash2, Sparkles } from '@lucide/svelte';
+	import { Trash2, Sparkles } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import type { HistoryEntry } from '$lib/client.gen';
-	import { Modal } from '$lib/components';
+	import { Modal, CopyButton } from '$lib/components';
 
 	interface Props {
 		entry: HistoryEntry;
@@ -21,11 +21,6 @@
 		return formatDistanceToNow(new Date(iso), { addSuffix: true });
 	}
 
-	async function copyToClipboard(text: string, event?: Event) {
-		event?.stopPropagation();
-		await navigator.clipboard.writeText(text);
-	}
-
 	function handleItemClick() {
 		modal?.open();
 	}
@@ -39,7 +34,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="cursor-pointer rounded-lg bg-base-300 p-3 transition-colors hover:bg-base-100"
+	class="cursor-pointer rounded-lg border border-base-300 bg-base-300 p-3 transition-all hover:border-primary hover:bg-base-100 hover:shadow-md"
 	onclick={handleItemClick}
 >
 	<div class="mb-1.5 flex items-center justify-between gap-2">
@@ -52,14 +47,7 @@
 				</span>
 			{/if}
 		</div>
-		<button
-			class="btn gap-1 btn-ghost btn-xs"
-			onclick={(e) => copyToClipboard(entry.textFinal, e)}
-			title="Copy to clipboard"
-		>
-			<Copy class="size-3" />
-			Copy
-		</button>
+		<CopyButton text={entry.textFinal} showLabel />
 	</div>
 	<p class="line-clamp-2 text-sm">{entry.textFinal}</p>
 </div>
@@ -89,10 +77,7 @@
 		<div>
 			<div class="mb-1 flex items-center justify-between">
 				<p class="text-xs font-medium opacity-70">Original:</p>
-				<button class="btn btn-ghost btn-xs" onclick={() => copyToClipboard(entry.textRaw)}>
-					<Copy class="size-3" />
-					Copy
-				</button>
+				<CopyButton text={entry.textRaw} showLabel />
 			</div>
 			<p class="rounded bg-base-300 p-2 text-sm">{entry.textRaw}</p>
 		</div>
@@ -101,10 +86,7 @@
 			<div>
 				<div class="mb-1 flex items-center justify-between">
 					<p class="text-xs font-medium opacity-70">Enhanced:</p>
-					<button class="btn btn-ghost btn-xs" onclick={() => copyToClipboard(entry.textFinal)}>
-						<Copy class="size-3" />
-						Copy
-					</button>
+					<CopyButton text={entry.textFinal} showLabel />
 				</div>
 				<p class="rounded bg-base-300 p-2 text-sm">{entry.textFinal}</p>
 			</div>

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Card, Modal, PageHeader } from '$lib/components';
+	import { Card, PageHeader } from '$lib/components';
 	import PromptEditor from './PromptEditor.svelte';
 	import ModelPicker from './ModelPicker.svelte';
 	import BaseUrlPicker from './BaseUrlPicker.svelte';
+	import CreatePromptModal from './CreatePromptModal.svelte';
 	import {
 		Sparkles,
 		Plus,
-		Check,
 		Bot,
 		Key,
 		Link,
@@ -19,51 +19,14 @@
 	} from '@lucide/svelte';
 	import type { Prompt } from '$lib/client.gen';
 
-	let newPromptName = $state('');
-	let newPromptBody = $state('');
 	let modelPicker: { open: () => void } | undefined = $state();
 	let baseUrlPicker: { open: () => void } | undefined = $state();
+	let createPromptModal: { open: () => void } | undefined = $state();
 
-	let createModal: Modal | undefined = $state();
-
-	function startCreate() {
-		newPromptName = '';
-		newPromptBody = [
-			'You are an expert editor for raw speech-to-text transcriptions. Your task is to format the input into clear, readable written text.',
-			'',
-			'Strictly follow these rules:',
-			'1. Punctuation & Formatting: Add proper punctuation (periods, commas, question marks) and capitalization.',
-			'2. Language: Output MUST be in the same language as the input. Do not translate.',
-			'3. Cleanup: Remove filler words (like "um", "uh", "like", "you know") and stuttering, but keep the core meaning intact.',
-			'4. Output: specificy ONLY the processed text. Do not add quotes, prefixes (like "Here is the text:"), or explanations. Respond literally with the processed text.',
-			'',
-			'Raw transcription:',
-			'${output}'
-		].join('\n');
-
-		createModal?.open();
-	}
-
-	function cancelCreate() {
-		newPromptName = '';
-		newPromptBody = '';
-		createModal?.close();
-	}
-
-	function saveNewPrompt() {
-		if (!newPromptName.trim() || !newPromptBody.trim()) return;
-
-		const newPrompt: Prompt = {
-			id: crypto.randomUUID(),
-			name: newPromptName.trim(),
-			body: newPromptBody.trim()
-		};
-
+	function handleSaveNewPrompt(newPrompt: Prompt) {
 		store.updateSettings({
 			prompts: [...store.prompts, newPrompt]
 		});
-
-		cancelCreate();
 	}
 
 	function updatePrompt(updatedPrompt: Prompt) {
@@ -206,7 +169,7 @@
 					<FileText class="size-4" />
 					Prompts
 				</h3>
-				<button class="btn btn-outline btn-sm" onclick={startCreate}>
+				<button class="btn btn-outline btn-sm" onclick={() => createPromptModal?.open()}>
 					<Plus class="size-3.5" />
 					New Prompt
 				</button>
@@ -255,46 +218,7 @@
 	</Card>
 {/if}
 
-<Modal bind:this={createModal} title="Create New Prompt" size="lg">
-	{#snippet children()}
-		<fieldset class="fieldset">
-			<label class="label" for="newPromptName">
-				<span class="label-text">Name</span>
-			</label>
-			<input
-				type="text"
-				id="newPromptName"
-				class="input w-full"
-				placeholder="My Custom Prompt"
-				bind:value={newPromptName}
-			/>
-		</fieldset>
-		<fieldset class="fieldset">
-			<label class="label" for="newPromptBody">
-				<span class="label-text">
-					Prompt Template
-					<span class="opacity-70">
-						(use {'${output}'} to insert the unprocessed transcription)
-					</span>
-				</span>
-			</label>
-			<textarea
-				id="newPromptBody"
-				rows={12}
-				class="textarea w-full"
-				placeholder="Enter your prompt template..."
-				bind:value={newPromptBody}
-			></textarea>
-		</fieldset>
-	{/snippet}
-	{#snippet actions()}
-		<button class="btn btn-primary" onclick={saveNewPrompt}>
-			<Check class="size-4" />
-			Save
-		</button>
-		<button class="btn" onclick={cancelCreate}>Cancel</button>
-	{/snippet}
-</Modal>
+<CreatePromptModal bind:this={createPromptModal} onSave={handleSaveNewPrompt} />
 
 <ModelPicker
 	bind:this={modelPicker}

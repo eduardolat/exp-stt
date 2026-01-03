@@ -28,8 +28,19 @@
 
 	function startCreate() {
 		newPromptName = '';
-		newPromptBody =
-			'You are a helpful assistant. Clean up and improve the following transcription:\n\n${output}\n\nProvide only the improved text without any additional commentary.';
+		newPromptBody = [
+			'You are an expert editor for raw speech-to-text transcriptions. Your task is to format the input into clear, readable written text.',
+			'',
+			'Strictly follow these rules:',
+			'1. Punctuation & Formatting: Add proper punctuation (periods, commas, question marks) and capitalization.',
+			'2. Language: Output MUST be in the same language as the input. Do not translate.',
+			'3. Cleanup: Remove filler words (like "um", "uh", "like", "you know") and stuttering, but keep the core meaning intact.',
+			'4. Output: specificy ONLY the processed text. Do not add quotes, prefixes (like "Here is the text:"), or explanations. Respond literally with the processed text.',
+			'',
+			'Raw transcription:',
+			'${output}'
+		].join('\n');
+
 		createModal?.open();
 	}
 
@@ -262,7 +273,9 @@
 			<label class="label" for="newPromptBody">
 				<span class="label-text">
 					Prompt Template
-					<span class="opacity-70">(use {'${output}'} for transcription)</span>
+					<span class="opacity-70">
+						(use {'${output}'} to insert the unprocessed transcription)
+					</span>
 				</span>
 			</label>
 			<textarea

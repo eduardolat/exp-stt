@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -83,77 +84,20 @@ type Settings struct {
 var defaultPrompts = []Prompt{
 	{
 		ID:   "bc3eb08b-be67-4055-9e3f-40a43a6cc142",
-		Name: "Cleanup",
-		Body: `You are a transcription cleanup assistant. Your task is to clean up speech-to-text output.
+		Name: "Cleanup transcription",
 
-Instructions:
-- Fix obvious transcription errors and typos
-- Add proper punctuation and capitalization
-- Remove filler words (um, uh, like, you know) unless they add meaning
-- Preserve the original meaning and tone exactly
-- Do not add, remove, or change any substantive content
-- Do not add explanations or commentary
-- Return only the cleaned text
-
-Output the cleaned transcription directly without any prefix or explanation.
-
-Raw transcription: ${output}`,
-	},
-	{
-		ID:   "55f21e4e-b314-4a49-9a61-8d22ddc8713b",
-		Name: "Formal",
-		Body: `You are a professional writing assistant. Your task is to transform speech-to-text output into formal written text.
-
-Instructions:
-- Convert spoken language to formal written style
-- Fix grammar, punctuation, and capitalization
-- Remove filler words and verbal pauses
-- Use professional vocabulary where appropriate
-- Maintain the original meaning and intent
-- Structure sentences for clarity
-- Do not add new information or change the meaning
-- Return only the formatted text
-
-Output the formal text directly without any prefix or explanation.
-
-Raw transcription: ${output}`,
-	},
-	{
-		ID:   "3eeed235-49e3-487c-84a2-85028e15ca93",
-		Name: "Technical",
-		Body: `You are a technical documentation assistant. Your task is to format speech-to-text output for technical contexts.
-
-Instructions:
-- Fix transcription errors, especially technical terms
-- Use proper technical terminology and formatting
-- Add appropriate punctuation for code-related content
-- Format lists and steps clearly if present
-- Preserve technical accuracy
-- Use clear, concise language
-- Do not add explanations or change meaning
-- Return only the formatted text
-
-Output the technical text directly without any prefix or explanation.
-
-Raw transcription: ${output}`,
-	},
-	{
-		ID:   "1dee2faf-4c65-4349-a48b-16768791efe9",
-		Name: "Creative",
-		Body: `You are a creative writing assistant. Your task is to polish speech-to-text output while preserving creative voice.
-
-Instructions:
-- Fix transcription errors and add punctuation
-- Preserve the speaker's unique voice and style
-- Keep creative expressions and metaphors
-- Maintain emotional tone and emphasis
-- Remove only meaningless filler words
-- Do not change the creative intent
-- Return only the polished text
-
-Output the polished text directly without any prefix or explanation.
-
-Raw transcription: ${output}`,
+		Body: strings.Join([]string{
+			"You are an expert editor for raw speech-to-text transcriptions. Your task is to format the input into clear, readable written text.",
+			"",
+			"Strictly follow these rules:",
+			"1. Punctuation & Formatting: Add proper punctuation (periods, commas, question marks) and capitalization.",
+			"2. Language: Output MUST be in the same language as the input. Do not translate.",
+			"3. Cleanup: Remove filler words (like \"um\", \"uh\", \"like\", \"you know\") and stuttering, but keep the core meaning intact.",
+			"4. Output: specificy ONLY the processed text. Do not add quotes, prefixes (like \"Here is the text:\"), or explanations. Respond literally with the processed text.",
+			"",
+			"Raw transcription:",
+			"${output}",
+		}, "\n"),
 	},
 }
 

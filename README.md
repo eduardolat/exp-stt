@@ -1,5 +1,7 @@
 # Tribar Voice
 
+<img src="assets/logo/png/black-white-logo-128.png" alt="Tribar Voice Logo" width="128" />
+
 Tribar Voice is a desktop application designed to make speech-to-text simple, private, and powerful. It listens to your voice and converts it into text in real-time, running entirely on your computer without sending audio to the cloud.
 
 Whether you are drafting emails, writing code, or just prefer speaking over typing, Tribar Voice integrates seamlessly into your workflow with smart clipboard features and optional AI tools to polish your text.
@@ -74,4 +76,4 @@ We want Tribar Voice to be the best tool for your workflow. If you have ideas, f
 
 ## License
 
-MIT
+This project is 100% free and open source software, licensed under the MIT License.

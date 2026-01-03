@@ -2,7 +2,7 @@ export function formatTimeAgo(date: Date | string | number): string {
 	const d = new Date(date);
 	const now = new Date();
 	const diffInSeconds = (d.getTime() - now.getTime()) / 1000;
-	const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+	const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'always' });
 
 	// Use absolute value for comparisons, but keep sign for formatting
 	const absDiff = Math.abs(diffInSeconds);

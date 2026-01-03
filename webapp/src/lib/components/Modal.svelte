@@ -7,9 +7,10 @@
 		size?: 'sm' | 'md' | 'lg';
 		children?: Snippet;
 		actions?: Snippet;
+		onClose?: () => void;
 	}
 
-	let { title, size = 'md', children, actions }: Props = $props();
+	let { title, size = 'md', children, actions, onClose }: Props = $props();
 
 	let dialog: HTMLDialogElement | undefined = $state();
 
@@ -25,10 +26,11 @@
 
 	export function close() {
 		dialog?.close();
+		onClose?.();
 	}
 </script>
 
-<dialog bind:this={dialog} class="modal">
+<dialog bind:this={dialog} class="modal" onclose={onClose}>
 	<div class="modal-box flex max-h-[90dvh] flex-col p-0 {sizeClasses[size]}">
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b border-base-300 p-4">

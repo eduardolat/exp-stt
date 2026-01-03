@@ -1,21 +1,11 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Trash2, Clock, Settings, Sparkles } from '@lucide/svelte';
-	import { HistoryItem, Card, Modal, CopyButton } from '$lib/components';
-	import { formatTimeAgo } from '$lib/formatters';
+	import { Trash2, Clock, Settings } from '@lucide/svelte';
+	import { HistoryItem, Card, Modal, HistoryModal } from '$lib/components';
 	import type { HistoryEntry } from '$lib/client.gen';
 
 	let settingsModal: Modal | undefined = $state();
-	let detailsModal: Modal | undefined = $state();
 	let selectedEntry: HistoryEntry | null = $state(null);
-
-	async function handleDelete(entry: HistoryEntry) {
-		if (!confirm('Delete this transcription?')) return;
-		await store.deleteHistoryEntry(entry.id);
-		if (selectedEntry?.id === entry.id) {
-			detailsModal?.close();
-		}
-	}
 
 	async function handleClearAll() {
 		if (!confirm('Clear all history? This cannot be undone.')) return;
@@ -24,27 +14,8 @@
 
 	function handleItemClick(entry: HistoryEntry) {
 		selectedEntry = entry;
-		detailsModal?.open();
-	}
-
-	function formatTimestamp(iso: string): string {
-		const text = formatTimeAgo(iso);
-		const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
-		return capitalized;
-	}
-
-	function getAudioUrl(id: string): string {
-		return `/api/v1/audio/${id}`;
 	}
 </script>
-
-{#snippet textWithFallback(text: string)}
-	{#if text.trim()}
-		{text}
-	{:else}
-		<span class="opacity-70">(No text available)</span>
-	{/if}
-{/snippet}
 
 <svelte:head>
 	<title>History - Tribar Voice</title>
@@ -73,64 +44,7 @@
 	{/snippet}
 </Modal>
 
-<Modal bind:this={detailsModal} title="Transcription Details">
-	{#snippet children()}
-		{#if selectedEntry}
-			<div class="space-y-4">
-				<div class="flex items-center gap-2 text-sm opacity-70">
-					<span>{formatTimestamp(selectedEntry.timestamp)}</span>
-					<span>•</span>
-					<span>Took {Math.floor(selectedEntry.durationMs / 1000)}s</span>
-					{#if selectedEntry.postProcessed}
-						<span class="ml-auto badge gap-1 badge-sm badge-secondary">
-							<Sparkles class="size-3" />
-							AI Enhanced
-						</span>
-					{/if}
-				</div>
-
-				<Card class="p-4">
-					<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
-					<audio controls class="w-full" preload="none" src={getAudioUrl(selectedEntry.id)}>
-						Your browser does not support audio playback.
-					</audio>
-				</Card>
-
-				<Card class="p-4">
-					<div class="mb-1 flex items-center justify-between">
-						<p class="text-xs font-medium opacity-70">Original:</p>
-						<CopyButton text={selectedEntry.textRaw} showLabel />
-					</div>
-					<p class="text-sm">{@render textWithFallback(selectedEntry.textRaw)}</p>
-				</Card>
-
-				{#if selectedEntry.postProcessed && selectedEntry.textRaw !== selectedEntry.textFinal}
-					<Card class="p-4">
-						<div class="mb-1 flex items-center justify-between">
-							<p class="text-xs font-medium opacity-70">Enhanced:</p>
-							<CopyButton text={selectedEntry.textFinal} showLabel />
-						</div>
-						<p class="text-sm">{@render textWithFallback(selectedEntry.textFinal)}</p>
-					</Card>
-				{/if}
-			</div>
-		{/if}
-	{/snippet}
-
-	{#snippet actions()}
-		{#if selectedEntry}
-			<div class="flex justify-end gap-2 pt-2">
-				<button
-					class="btn btn-outline btn-sm btn-error"
-					onclick={() => selectedEntry && handleDelete(selectedEntry)}
-				>
-					<Trash2 class="size-3.5" />
-					Delete
-				</button>
-			</div>
-		{/if}
-	{/snippet}
-</Modal>
+<HistoryModal entry={selectedEntry} onClose={() => (selectedEntry = null)} />
 
 <div class="space-y-4">
 	<div class="flex items-end justify-between">

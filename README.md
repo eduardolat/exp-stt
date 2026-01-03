@@ -25,7 +25,7 @@ Tribar Voice uses the robust **Parakeet** model for offline speech recognition. 
 
 Bulgarian (bg), Croatian (hr), Czech (cs), Danish (da), Dutch (nl), English (en), Estonian (et), Finnish (fi), French (fr), German (de), Greek (el), Hungarian (hu), Italian (it), Latvian (lv), Lithuanian (lt), Maltese (mt), Polish (pl), Portuguese (pt), Romanian (ro), Slovak (sk), Slovenian (sl), Spanish (es), Swedish (sv), Russian (ru), Ukrainian (uk).
 
-This isn't a limitation of the Tribar Voice application itself—as new models become available, we look forward to bringing support for even more languages!
+We are constantly monitoring advancements in speech recognition to bring support for even more languages.
 
 ## Supported Operating Systems
 

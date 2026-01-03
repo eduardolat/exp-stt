@@ -65,7 +65,7 @@
 	);
 </script>
 
-<Modal bind:this={modal} title={modalTitle} size="lg">
+<Modal bind:this={modal} title={modalTitle} size="lg" disableBackdropClose>
 	{#snippet children()}
 		<div class="flex h-125 flex-col">
 			{#if currentStep === 1}

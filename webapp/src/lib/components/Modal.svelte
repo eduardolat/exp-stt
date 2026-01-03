@@ -5,11 +5,12 @@
 	interface Props {
 		title: string;
 		size?: 'sm' | 'md' | 'lg';
+		disableBackdropClose?: boolean;
 		children?: Snippet;
 		actions?: Snippet;
 	}
 
-	let { title, size = 'md', children, actions }: Props = $props();
+	let { title, size = 'md', disableBackdropClose = false, children, actions }: Props = $props();
 
 	let dialog: HTMLDialogElement | undefined = $state();
 
@@ -55,7 +56,11 @@
 		{/if}
 	</div>
 
-	<form method="dialog" class="modal-backdrop">
-		<button>close</button>
-	</form>
+	{#if !disableBackdropClose}
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	{:else}
+		<div class="modal-backdrop"></div>
+	{/if}
 </dialog>

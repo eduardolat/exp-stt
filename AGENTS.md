@@ -213,6 +213,8 @@ Regarding the style, it should be desktop only (no responsive design) because th
 
 Make the style minimalistic and simple, without any unnecessary elements or distractions but without losing the functionality or user experience which is the absolute priority.
 
+Try to avoid at all costs creating layout shifts that can cause jank or discomfort to the user. Use always same size on things that change.
+
 ## Icons
 
 Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp. For example if you need `Phone` icon from lucide you can use this:

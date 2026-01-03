@@ -36,7 +36,7 @@
 		</h3>
 		<fieldset class="fieldset">
 			<select
-				class="select w-full"
+				class="select w-full select-sm"
 				value={store.settings.inputDevice}
 				onchange={(e) => store.updateSettings({ inputDevice: e.currentTarget.value })}
 			>

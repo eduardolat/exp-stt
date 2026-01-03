@@ -46,19 +46,11 @@ func NewServer(
 			// Default: Restrict to localhost/loopback
 			// This prevents malicious websites from accessing the local API
 			// via cross-site requests (CSRF/CORS attacks).
-			if origin == "http://localhost" ||
-				origin == "https://localhost" ||
-				origin == "http://127.0.0.1" ||
-				origin == "https://127.0.0.1" {
-				return true, nil
-			}
-
-			// Allow dynamic ports on localhost (common in development)
-			// e.g. http://localhost:5173
-			if strings.HasPrefix(origin, "http://localhost:") ||
-				strings.HasPrefix(origin, "http://127.0.0.1:") ||
-				strings.HasPrefix(origin, "https://localhost:") ||
-				strings.HasPrefix(origin, "https://127.0.0.1:") {
+			// We allow dynamic ports (e.g. :5173) for development.
+			if origin == "http://localhost" || strings.HasPrefix(origin, "http://localhost:") ||
+				origin == "https://localhost" || strings.HasPrefix(origin, "https://localhost:") ||
+				origin == "http://127.0.0.1" || strings.HasPrefix(origin, "http://127.0.0.1:") ||
+				origin == "https://127.0.0.1" || strings.HasPrefix(origin, "https://127.0.0.1:") {
 				return true, nil
 			}
 

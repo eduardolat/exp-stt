@@ -1,6 +1,7 @@
-# Tribar Voice
-
-<img src="assets/logo/png/black-white-logo-128.png" alt="Tribar Voice Logo" width="128" />
+<div align="center">
+  <img src="assets/logo/png/black-white-logo-128.png" alt="Tribar Voice Logo" width="128" />
+  <h1>Tribar Voice</h1>
+</div>
 
 Tribar Voice is a desktop application designed to make speech-to-text simple, private, and powerful. It listens to your voice and converts it into text in real-time, running entirely on your computer without sending audio to the cloud.
 
@@ -28,13 +29,17 @@ Tribar Voice is built on cross-platform technologies (Go and Web) and is designe
 
 ## Installation
 
-Tribar Voice is currently distributed as source code. You'll need a few tools to build it.
+You can download the latest pre-compiled binary for your operating system from the [Releases page](https://github.com/varavelio/tribar/releases).
 
-### Prerequisites
+If you prefer to build from source, follow the instructions below.
+
+### Building from Source
+
+#### Prerequisites
 
 This project includes a `flake.nix` file that automatically installs all necessary dependencies. If you are not using Nix, you will need to install the required tools manually.
 
-### Building from Source
+#### Steps
 
 1.  **Clone the repository:**
 
@@ -76,4 +81,4 @@ We want Tribar Voice to be the best tool for your workflow. If you have ideas, f
 
 ## License
 
-This project is 100% free and open source software, licensed under the MIT License.
+This project is 100% free and open source software, licensed under the [MIT License](LICENSE).

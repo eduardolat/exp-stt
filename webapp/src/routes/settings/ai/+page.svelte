@@ -3,6 +3,7 @@
 	import { Card, Modal, PageHeader } from '$lib/components';
 	import PromptEditor from './PromptEditor.svelte';
 	import ModelPicker from './ModelPicker.svelte';
+	import BaseUrlPicker from './BaseUrlPicker.svelte';
 	import {
 		Sparkles,
 		Plus,
@@ -13,13 +14,15 @@
 		FileText,
 		Zap,
 		ZapOff,
-		Search
+		Search,
+		FileDigit
 	} from '@lucide/svelte';
 	import type { Prompt } from '$lib/client.gen';
 
 	let newPromptName = $state('');
 	let newPromptBody = $state('');
 	let modelPicker: { open: () => void } | undefined = $state();
+	let baseUrlPicker: { open: () => void } | undefined = $state();
 
 	let createModal: Modal | undefined = $state();
 
@@ -112,16 +115,25 @@
 							Base URL
 						</span>
 					</label>
-					<input
-						type="url"
-						id="baseUrl"
-						class="input w-full"
-						placeholder="https://api.openai.com/v1"
-						value={store.settings.postProcessBaseUrl}
-						onblur={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
-					/>
+					<div class="join w-full">
+						<input
+							type="url"
+							id="baseUrl"
+							class="input join-item w-full"
+							placeholder="https://api.openai.com/v1"
+							value={store.settings.postProcessBaseUrl}
+							onblur={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
+						/>
+						<button
+							class="btn join-item border-base-content/20 btn-outline"
+							onclick={() => baseUrlPicker?.open()}
+							title="Browse providers"
+						>
+							<Search class="size-4" />
+						</button>
+					</div>
 					<p class="label">
-						<span class="label-text-alt">OpenAI-compatible API endpoint</span>
+						<span class="label-text-alt">Enter manually or browse providers</span>
 					</p>
 				</fieldset>
 
@@ -135,28 +147,35 @@
 					<input
 						type="password"
 						id="apiKey"
+						autocomplete="off"
 						class="input w-full"
 						placeholder="sk-..."
 						value={store.settings.postProcessApiKey}
 						onblur={(e) => store.updateSettings({ postProcessApiKey: e.currentTarget.value })}
 					/>
+					<p class="label">
+						<span class="label-text-alt">Get your API key from your provider's dashboard</span>
+					</p>
 				</fieldset>
 
 				<fieldset class="fieldset">
 					<label class="label" for="model">
-						<span class="label-text">Model</span>
+						<span class="label-text flex items-center gap-1.5">
+							<FileDigit class="size-3.5" />
+							Model
+						</span>
 					</label>
-					<div class="flex gap-2">
+					<div class="join w-full">
 						<input
 							type="text"
 							id="model"
-							class="input w-full"
+							class="input join-item w-full"
 							placeholder="gpt-4o-mini"
 							value={store.settings.postProcessModel}
 							onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
 						/>
 						<button
-							class="btn btn-square btn-outline"
+							class="btn join-item border-base-content/20 btn-outline"
 							onclick={() => modelPicker?.open()}
 							title="Browse available models"
 						>
@@ -269,4 +288,9 @@
 	baseUrl={store.settings.postProcessBaseUrl}
 	apiKey={store.settings.postProcessApiKey}
 	onSelect={(id) => store.updateSettings({ postProcessModel: id })}
+/>
+
+<BaseUrlPicker
+	bind:this={baseUrlPicker}
+	onSelect={(url) => store.updateSettings({ postProcessBaseUrl: url })}
 />

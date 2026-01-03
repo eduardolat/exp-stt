@@ -19,6 +19,14 @@ Whether you are drafting emails, writing code, or just prefer speaking over typi
 - **History & Playback**: Every transcription is saved with its audio. You can search your history and replay recordings anytime.
 - **System Tray Integration**: Quietly runs in the background. Access controls or open the dashboard via the system tray icon.
 
+## Supported Languages
+
+Tribar Voice uses the robust **Parakeet** model for offline speech recognition. This means our language support is tied to what the model can understand. Currently, you can speak in:
+
+Bulgarian (bg), Croatian (hr), Czech (cs), Danish (da), Dutch (nl), English (en), Estonian (et), Finnish (fi), French (fr), German (de), Greek (el), Hungarian (hu), Italian (it), Latvian (lv), Lithuanian (lt), Maltese (mt), Polish (pl), Portuguese (pt), Romanian (ro), Slovak (sk), Slovenian (sl), Spanish (es), Swedish (sv), Russian (ru), Ukrainian (uk).
+
+This isn't a limitation of the Tribar Voice application itself—as new models become available, we look forward to bringing support for even more languages!
+
 ## Supported Operating Systems
 
 Tribar Voice is built on cross-platform technologies (Go and Web) and is designed to work on:

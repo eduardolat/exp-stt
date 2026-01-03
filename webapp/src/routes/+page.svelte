@@ -55,11 +55,11 @@
 
 		<!-- Status Icon + Label -->
 		<div
-			class="flex size-30 items-center justify-center rounded-full bg-base-300"
+			class="flex size-20 items-center justify-center rounded-full bg-base-300"
 			class:animate-pulse={config.pulse}
 			class:animate-spin={config.spin}
 		>
-			<IconComponent class="size-20" />
+			<IconComponent class="size-10" />
 		</div>
 		<p class="font-medium">{store.statusLabel}</p>
 
@@ -105,8 +105,8 @@
 
 		{#if recentHistory.length === 0}
 			<div class="flex flex-col items-center justify-center py-26 text-center">
-				<Clock class="mb-2 size-8 opacity-50" />
-				<p class="text-sm opacity-70">No transcriptions yet</p>
+				<Clock class="mb-2 size-10 opacity-50" />
+				<p class="mb-2 text-sm opacity-70">No transcriptions yet</p>
 				<p class="text-xs opacity-50">Start recording to see your transcriptions here</p>
 			</div>
 		{:else}

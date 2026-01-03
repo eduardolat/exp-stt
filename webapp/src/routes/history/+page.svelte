@@ -61,8 +61,8 @@
 <div class="space-y-4">
 	{#if store.history.length === 0}
 		<Card class="card-body items-center py-12 text-center">
-			<Clock class="mb-3 size-10 opacity-50" />
-			<p class="opacity-70">No transcriptions yet</p>
+			<Clock class="mb-4 size-10 opacity-50" />
+			<h3 class="text-lg font-medium">No transcriptions yet</h3>
 			<p class="text-xs opacity-50">Your transcription history will appear here</p>
 		</Card>
 	{:else}

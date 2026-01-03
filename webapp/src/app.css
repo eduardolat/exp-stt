@@ -169,6 +169,18 @@
 	--noise: 1;
 }
 
+@utility input {
+	@apply outline-0;
+}
+
+@utility select {
+	@apply outline-0;
+}
+
+@utility textarea {
+	@apply outline-0;
+}
+
 html {
 	overflow-x: hidden;
 	overflow-y: hidden;

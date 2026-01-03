@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Trash2, Clock, Settings } from '@lucide/svelte';
-	import { HistoryItem, Card, Modal } from '$lib/components';
+	import { Trash2, Clock, Settings, History } from '@lucide/svelte';
+	import { HistoryItem, Card, Modal, PageHeader } from '$lib/components';
 
 	let settingsModal: Modal | undefined = $state();
 
@@ -43,23 +43,22 @@
 	{/snippet}
 </Modal>
 
-<div class="space-y-4">
-	<div class="flex items-end justify-between">
-		<h2 class="text-lg font-semibold">History</h2>
-		<div class="flex gap-2">
-			<button class="btn btn-sm" onclick={() => settingsModal?.open()} title="History Settings">
-				<Settings class="size-3.5" />
-				Settings
+<PageHeader icon={History} title="History" description="View and manage your recent transcriptions">
+	{#snippet actions()}
+		<button class="btn btn-sm" onclick={() => settingsModal?.open()} title="History Settings">
+			<Settings class="size-3.5" />
+			Settings
+		</button>
+		{#if store.history.length > 0}
+			<button class="btn btn-sm btn-error" onclick={handleClearAll}>
+				<Trash2 class="size-3.5" />
+				Clear All
 			</button>
-			{#if store.history.length > 0}
-				<button class="btn btn-sm btn-error" onclick={handleClearAll}>
-					<Trash2 class="size-3.5" />
-					Clear All
-				</button>
-			{/if}
-		</div>
-	</div>
+		{/if}
+	{/snippet}
+</PageHeader>
 
+<div class="space-y-4">
 	{#if store.history.length === 0}
 		<Card class="card-body items-center py-12 text-center">
 			<Clock class="mb-3 size-10 opacity-50" />

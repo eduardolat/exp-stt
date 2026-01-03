@@ -9,9 +9,10 @@
 		ClipboardPaste,
 		Ghost,
 		Timer,
-		Keyboard
+		Keyboard,
+		Settings
 	} from '@lucide/svelte';
-	import { Card } from '$lib/components';
+	import { Card, PageHeader } from '$lib/components';
 	import ShortcutInput from './ShortcutInput.svelte';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 </script>
@@ -19,6 +20,12 @@
 <svelte:head>
 	<title>General Settings - Tribar Voice</title>
 </svelte:head>
+
+<PageHeader
+	icon={Settings}
+	title="General Settings"
+	description="Configure general Tribar settings"
+/>
 
 <div class="columns-2 gap-4 space-y-4">
 	<!-- Input Device -->

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Card, Modal } from '$lib/components';
+	import { Card, Modal, PageHeader } from '$lib/components';
 	import PromptEditor from './PromptEditor.svelte';
 	import { Sparkles, Plus, Check, Bot, Key, Link, FileText } from '@lucide/svelte';
 	import type { Prompt } from '$lib/client.gen';
@@ -66,120 +66,114 @@
 	<title>AI Settings - Tribar Voice</title>
 </svelte:head>
 
-<div class="space-y-4">
-	<Card class="card-body">
-		<div class="flex items-center justify-between">
-			<div class="flex items-center gap-3">
-				<div class="flex size-10 items-center justify-center rounded-lg bg-secondary">
-					<Sparkles class="size-5 text-secondary-content" />
-				</div>
-				<div>
-					<h3 class="font-medium">AI Post-Processing</h3>
-					<p class="text-xs opacity-70">Enhance transcriptions with LLM</p>
-				</div>
-			</div>
+<PageHeader
+	icon={Sparkles}
+	title="AI Enhancement"
+	description="Configure AI post-processing for transcriptions"
+>
+	{#snippet actions()}
+		<label class="label cursor-pointer gap-2">
+			<span class="text-sm">Enable AI Enhancement</span>
 			<input
 				type="checkbox"
 				class="toggle"
 				checked={store.settings.postProcessEnabled}
 				onchange={(e) => store.updateSettings({ postProcessEnabled: e.currentTarget.checked })}
 			/>
+		</label>
+	{/snippet}
+</PageHeader>
+
+<div class="space-y-4">
+	<Card class="card-body">
+		<h3 class="card-title text-base">
+			<Bot class="size-4" />
+			API Configuration
+		</h3>
+		<div class="space-y-4">
+			<fieldset class="fieldset">
+				<label class="label" for="baseUrl">
+					<span class="label-text flex items-center gap-1.5">
+						<Link class="size-3.5" />
+						Base URL
+					</span>
+				</label>
+				<input
+					type="url"
+					id="baseUrl"
+					class="input w-full"
+					placeholder="https://api.openai.com/v1"
+					value={store.settings.postProcessBaseUrl}
+					onblur={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
+				/>
+				<p class="label">
+					<span class="label-text-alt">OpenAI-compatible API endpoint</span>
+				</p>
+			</fieldset>
+
+			<fieldset class="fieldset">
+				<label class="label" for="apiKey">
+					<span class="label-text flex items-center gap-1.5">
+						<Key class="size-3.5" />
+						API Key
+					</span>
+				</label>
+				<input
+					type="password"
+					id="apiKey"
+					class="input w-full"
+					placeholder="sk-..."
+					value={store.settings.postProcessApiKey}
+					onblur={(e) => store.updateSettings({ postProcessApiKey: e.currentTarget.value })}
+				/>
+			</fieldset>
+
+			<fieldset class="fieldset">
+				<label class="label" for="model">
+					<span class="label-text">Model</span>
+				</label>
+				<input
+					type="text"
+					id="model"
+					class="input w-full"
+					placeholder="gpt-4o-mini"
+					value={store.settings.postProcessModel}
+					onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
+				/>
+			</fieldset>
 		</div>
 	</Card>
 
-	{#if store.settings.postProcessEnabled}
-		<Card class="card-body">
+	<Card class="card-body">
+		<div class="flex items-center justify-between">
 			<h3 class="card-title text-base">
-				<Bot class="size-4" />
-				API Configuration
+				<FileText class="size-4" />
+				Prompts
 			</h3>
-			<div class="space-y-4">
-				<fieldset class="fieldset">
-					<label class="label" for="baseUrl">
-						<span class="label-text flex items-center gap-1.5">
-							<Link class="size-3.5" />
-							Base URL
-						</span>
-					</label>
-					<input
-						type="url"
-						id="baseUrl"
-						class="input w-full"
-						placeholder="https://api.openai.com/v1"
-						value={store.settings.postProcessBaseUrl}
-						onblur={(e) => store.updateSettings({ postProcessBaseUrl: e.currentTarget.value })}
-					/>
-					<p class="label">
-						<span class="label-text-alt">OpenAI-compatible API endpoint</span>
-					</p>
-				</fieldset>
+			<button class="btn btn-outline btn-sm" onclick={startCreate}>
+				<Plus class="size-3.5" />
+				New Prompt
+			</button>
+		</div>
 
-				<fieldset class="fieldset">
-					<label class="label" for="apiKey">
-						<span class="label-text flex items-center gap-1.5">
-							<Key class="size-3.5" />
-							API Key
-						</span>
-					</label>
-					<input
-						type="password"
-						id="apiKey"
-						class="input w-full"
-						placeholder="sk-..."
-						value={store.settings.postProcessApiKey}
-						onblur={(e) => store.updateSettings({ postProcessApiKey: e.currentTarget.value })}
-					/>
-				</fieldset>
+		{#if store.prompts.length === 0}
+			<p class="py-4 text-center text-sm opacity-70">No prompts yet. Create one to get started.</p>
+		{/if}
 
-				<fieldset class="fieldset">
-					<label class="label" for="model">
-						<span class="label-text">Model</span>
-					</label>
-					<input
-						type="text"
-						id="model"
-						class="input w-full"
-						placeholder="gpt-4o-mini"
-						value={store.settings.postProcessModel}
-						onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
+		{#if store.prompts.length > 0}
+			<div class="mt-4 space-y-2">
+				{#each store.prompts as prompt (prompt.id)}
+					<PromptEditor
+						{prompt}
+						isSelected={store.settings.postProcessPromptId === prompt.id}
+						onSelect={selectPrompt}
+						onUpdate={updatePrompt}
+						onDelete={deletePrompt}
 					/>
-				</fieldset>
+				{/each}
 			</div>
-		</Card>
-
-		<Card class="card-body">
-			<div class="flex items-center justify-between">
-				<h3 class="card-title text-base">
-					<FileText class="size-4" />
-					Prompts
-				</h3>
-				<button class="btn btn-outline btn-sm" onclick={startCreate}>
-					<Plus class="size-3.5" />
-					New Prompt
-				</button>
-			</div>
-
-			{#if store.prompts.length === 0}
-				<p class="py-4 text-center text-sm opacity-70">
-					No prompts yet. Create one to get started.
-				</p>
-			{/if}
-
-			{#if store.prompts.length > 0}
-				<div class="mt-4 space-y-2">
-					{#each store.prompts as prompt (prompt.id)}
-						<PromptEditor
-							{prompt}
-							isSelected={store.settings.postProcessPromptId === prompt.id}
-							onSelect={selectPrompt}
-							onUpdate={updatePrompt}
-							onDelete={deletePrompt}
-						/>
-					{/each}
-				</div>
-			{/if}
-		</Card>
-	{/if}
+		{/if}
+	</Card>
 </div>
 
 <Modal bind:this={createModal} title="Create New Prompt" size="lg">

@@ -10,9 +10,10 @@
 		Check,
 		CircleAlert,
 		Clock,
-		ArrowRight
+		ArrowRight,
+		LayoutDashboard
 	} from '@lucide/svelte';
-	import { HistoryItem, Card } from '$lib/components';
+	import { HistoryItem, Card, PageHeader } from '$lib/components';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
@@ -39,6 +40,12 @@
 <svelte:head>
 	<title>Dashboard - Tribar Voice</title>
 </svelte:head>
+
+<PageHeader
+	icon={LayoutDashboard}
+	title="Dashboard"
+	description="Overview of your transcription activity and system status"
+/>
 
 <div class="columns-2 gap-4 space-y-4">
 	<!-- Recording Control Panel -->

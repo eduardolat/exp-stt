@@ -54,7 +54,8 @@ function createDefaultSettings(): Settings {
 		historyLimit: 100,
 		modelUnloadEnable: false,
 		modelUnloadSeconds: 300,
-		shortcutToggle: { modifiers: [], key: '' }
+		shortcutToggle: { modifiers: [], key: '' },
+		pasteShortcut: 'ctrl+v'
 	};
 }
 

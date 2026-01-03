@@ -136,15 +136,33 @@
 				</div>
 			</Card>
 
-			<label class="label cursor-pointer justify-between pt-2">
-				<span class="text-sm">Add trailing space after paste</span>
-				<input
-					type="checkbox"
-					class="toggle toggle-sm"
-					checked={store.settings.outputTrailingSpace}
-					onchange={(e) => store.updateSettings({ outputTrailingSpace: e.currentTarget.checked })}
-				/>
-			</label>
+			{#if store.settings.outputMode !== 'copy_only'}
+				<fieldset class="fieldset pt-2">
+					<label class="label" for="pasteShortcut">
+						<span class="label-text">Paste Shortcut Sequence</span>
+					</label>
+					<select
+						id="pasteShortcut"
+						class="select w-full select-sm"
+						value={store.settings.pasteShortcut}
+						onchange={(e) => store.updateSettings({ pasteShortcut: e.currentTarget.value })}
+					>
+						<option value="ctrl+v">Ctrl + V</option>
+						<option value="ctrl+shift+v">Ctrl + Shift + V</option>
+						<option value="shift+insert">Shift + Insert</option>
+					</select>
+				</fieldset>
+
+				<label class="label cursor-pointer justify-between pt-2">
+					<span class="text-sm">Add trailing space after paste</span>
+					<input
+						type="checkbox"
+						class="toggle toggle-sm"
+						checked={store.settings.outputTrailingSpace}
+						onchange={(e) => store.updateSettings({ outputTrailingSpace: e.currentTarget.checked })}
+					/>
+				</label>
+			{/if}
 		</div>
 	</Card>
 

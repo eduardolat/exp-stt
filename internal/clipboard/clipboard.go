@@ -12,6 +12,32 @@ import (
 	"github.com/varavelio/tribar/internal/logger"
 )
 
+// PasteShortcut represents a validated keyboard shortcut for pasting.
+type PasteShortcut string
+
+const (
+	// PasteShortcutCtrlV is the standard Ctrl+V paste shortcut.
+	PasteShortcutCtrlV PasteShortcut = "ctrl+v"
+	// PasteShortcutCtrlShiftV is the Ctrl+Shift+V paste shortcut (often used for plain text paste).
+	PasteShortcutCtrlShiftV PasteShortcut = "ctrl+shift+v"
+	// PasteShortcutShiftInsert is the Shift+Insert paste shortcut.
+	PasteShortcutShiftInsert PasteShortcut = "shift+insert"
+)
+
+// parsePasteShortcut parses a string into a PasteShortcut, returning the default if invalid.
+func parsePasteShortcut(s string) PasteShortcut {
+	switch s {
+	case string(PasteShortcutCtrlV):
+		return PasteShortcutCtrlV
+	case string(PasteShortcutCtrlShiftV):
+		return PasteShortcutCtrlShiftV
+	case string(PasteShortcutShiftInsert):
+		return PasteShortcutShiftInsert
+	default:
+		return PasteShortcutCtrlV // Fallback to default
+	}
+}
+
 // Instance handles output of transcription results.
 type Instance struct {
 	logger logger.Logger
@@ -25,18 +51,20 @@ func New(logger logger.Logger) *Instance {
 }
 
 // Write outputs the transcription result based on the configured mode.
-func (w *Instance) Write(ctx context.Context, mode config.OutputMode, text string) error {
+func (w *Instance) Write(ctx context.Context, mode config.OutputMode, pasteShortcutRaw string, text string) error {
 	if text == "" {
 		return nil
 	}
+
+	shortcut := parsePasteShortcut(pasteShortcutRaw)
 
 	switch mode {
 	case config.OutputModeCopyOnly:
 		return w.copyToClipboard(ctx, text)
 	case config.OutputModeCopyPaste:
-		return w.pasteWorkflow(ctx, text, false)
+		return w.pasteWorkflow(ctx, shortcut, text, false)
 	case config.OutputModeGhostPaste:
-		return w.pasteWorkflow(ctx, text, true)
+		return w.pasteWorkflow(ctx, shortcut, text, true)
 	default:
 		return w.copyToClipboard(ctx, text)
 	}
@@ -52,7 +80,7 @@ func (w *Instance) copyToClipboard(ctx context.Context, text string) error {
 }
 
 // pasteWorkflow handles the copy-paste workflow with optional clipboard restoration.
-func (w *Instance) pasteWorkflow(ctx context.Context, text string, restore bool) error {
+func (w *Instance) pasteWorkflow(ctx context.Context, shortcut PasteShortcut, text string, restore bool) error {
 	var originalContent string
 
 	if restore {
@@ -65,7 +93,7 @@ func (w *Instance) pasteWorkflow(ctx context.Context, text string, restore bool)
 
 	time.Sleep(50 * time.Millisecond)
 
-	if err := triggerPastePlatform(); err != nil {
+	if err := triggerPastePlatform(shortcut); err != nil {
 		w.logger.Warn(ctx, "paste trigger failed, text remains in clipboard", "err", err)
 		return err
 	}

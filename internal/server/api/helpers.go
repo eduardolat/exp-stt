@@ -79,6 +79,7 @@ func buildSettings(s config.Settings) uforpc.Settings {
 		ModelUnloadEnable:      s.ModelUnloadEnable,
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
 		ShortcutToggle:         shortcutToAPI(s.ShortcutToggle),
+		PasteShortcut:          s.PasteShortcut,
 	}
 }
 
@@ -107,6 +108,7 @@ func settingsFromAPI(s uforpc.Settings) config.Settings {
 		ModelUnloadEnable:      s.ModelUnloadEnable,
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
 		ShortcutToggle:         shortcutFromAPI(s.ShortcutToggle),
+		PasteShortcut:          s.PasteShortcut,
 	}
 }
 

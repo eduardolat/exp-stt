@@ -310,7 +310,7 @@ func (e *Engine) processRecording() {
 		outputText = outputText + " "
 	}
 
-	if err := e.writer.Write(e.ctx, settings.OutputMode, outputText); err != nil {
+	if err := e.writer.Write(e.ctx, settings.OutputMode, settings.PasteShortcut, outputText); err != nil {
 		e.logger.Error(e.ctx, "failed to write output", "err", err)
 	}
 

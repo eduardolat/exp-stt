@@ -74,6 +74,9 @@ type Settings struct {
 
 	// Global shortcut settings
 	ShortcutToggle Shortcut `json:"shortcut_toggle"`
+
+	// Paste shortcut settings
+	PasteShortcut string `json:"paste_shortcut"`
 }
 
 // defaultPrompts returns the predefined prompts for post-processing.
@@ -190,6 +193,8 @@ var defaultSettings = Settings{
 		Modifiers: []string{"ctrl"},
 		Key:       "space",
 	},
+
+	PasteShortcut: "ctrl+v",
 }
 
 // SettingsManager handles loading and saving of user settings.

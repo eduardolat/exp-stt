@@ -80,6 +80,9 @@ type Settings {
   """ How to deliver transcription: "copy_only", "copy_paste", "ghost_paste" """
   outputMode: string
 
+  """ Combinación de teclas para pegar: "ctrl+v", "ctrl+shift+v", "shift+insert" """
+  pasteShortcut: string
+
   """ Add trailing space after pasting """
   outputTrailingSpace: bool
 

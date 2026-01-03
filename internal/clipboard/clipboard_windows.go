@@ -16,6 +16,8 @@ const (
 	inputKeyboard = 1
 	keyEventKeyUp = 0x0002
 	vkControl     = 0x11
+	vkShift       = 0x10
+	vkInsert      = 0x2D
 	vkV           = 0x56
 )
 
@@ -33,8 +35,8 @@ type input struct {
 	padding [8]byte
 }
 
-// triggerPastePlatform sends Ctrl+V directly via Windows API.
-func triggerPastePlatform() error {
+// triggerPastePlatform sends the specified paste shortcut directly via Windows API.
+func triggerPastePlatform(shortcut PasteShortcut) error {
 	var inputs []input
 
 	// Helper to create input struct
@@ -48,11 +50,25 @@ func triggerPastePlatform() error {
 		}
 	}
 
-	// Sequence: Ctrl Down -> V Down -> V Up -> Ctrl Up
-	inputs = append(inputs, createKey(vkControl, 0))
-	inputs = append(inputs, createKey(vkV, 0))
-	inputs = append(inputs, createKey(vkV, keyEventKeyUp))
-	inputs = append(inputs, createKey(vkControl, keyEventKeyUp))
+	switch shortcut {
+	case PasteShortcutCtrlShiftV:
+		inputs = append(inputs, createKey(vkControl, 0))
+		inputs = append(inputs, createKey(vkShift, 0))
+		inputs = append(inputs, createKey(vkV, 0))
+		inputs = append(inputs, createKey(vkV, keyEventKeyUp))
+		inputs = append(inputs, createKey(vkShift, keyEventKeyUp))
+		inputs = append(inputs, createKey(vkControl, keyEventKeyUp))
+	case PasteShortcutShiftInsert:
+		inputs = append(inputs, createKey(vkShift, 0))
+		inputs = append(inputs, createKey(vkInsert, 0))
+		inputs = append(inputs, createKey(vkInsert, keyEventKeyUp))
+		inputs = append(inputs, createKey(vkShift, keyEventKeyUp))
+	default: // PasteShortcutCtrlV
+		inputs = append(inputs, createKey(vkControl, 0))
+		inputs = append(inputs, createKey(vkV, 0))
+		inputs = append(inputs, createKey(vkV, keyEventKeyUp))
+		inputs = append(inputs, createKey(vkControl, keyEventKeyUp))
+	}
 
 	cbSize := int(unsafe.Sizeof(inputs[0]))
 	procSendInput.Call(

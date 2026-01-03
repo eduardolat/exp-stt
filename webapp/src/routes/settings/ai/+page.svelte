@@ -2,11 +2,24 @@
 	import { store } from '$lib/store.svelte';
 	import { Card, Modal, PageHeader } from '$lib/components';
 	import PromptEditor from './PromptEditor.svelte';
-	import { Sparkles, Plus, Check, Bot, Key, Link, FileText, Zap, ZapOff } from '@lucide/svelte';
+	import ModelPicker from './ModelPicker.svelte';
+	import {
+		Sparkles,
+		Plus,
+		Check,
+		Bot,
+		Key,
+		Link,
+		FileText,
+		Zap,
+		ZapOff,
+		Search
+	} from '@lucide/svelte';
 	import type { Prompt } from '$lib/client.gen';
 
 	let newPromptName = $state('');
 	let newPromptBody = $state('');
+	let modelPicker: { open: () => void } | undefined = $state();
 
 	let createModal: Modal | undefined = $state();
 
@@ -133,14 +146,26 @@
 					<label class="label" for="model">
 						<span class="label-text">Model</span>
 					</label>
-					<input
-						type="text"
-						id="model"
-						class="input w-full"
-						placeholder="gpt-4o-mini"
-						value={store.settings.postProcessModel}
-						onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
-					/>
+					<div class="flex gap-2">
+						<input
+							type="text"
+							id="model"
+							class="input w-full"
+							placeholder="gpt-4o-mini"
+							value={store.settings.postProcessModel}
+							onblur={(e) => store.updateSettings({ postProcessModel: e.currentTarget.value })}
+						/>
+						<button
+							class="btn btn-square btn-outline"
+							onclick={() => modelPicker?.open()}
+							title="Browse available models"
+						>
+							<Search class="size-4" />
+						</button>
+					</div>
+					<p class="label">
+						<span class="label-text-alt">Enter manually or browse available models</span>
+					</p>
 				</fieldset>
 			</div>
 		</Card>
@@ -238,3 +263,10 @@
 		<button class="btn" onclick={cancelCreate}>Cancel</button>
 	{/snippet}
 </Modal>
+
+<ModelPicker
+	bind:this={modelPicker}
+	baseUrl={store.settings.postProcessBaseUrl}
+	apiKey={store.settings.postProcessApiKey}
+	onSelect={(id) => store.updateSettings({ postProcessModel: id })}
+/>

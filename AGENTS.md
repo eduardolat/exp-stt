@@ -65,6 +65,22 @@ Source: `internal/logger`
 
 The `logger` package is a utility for printing important data to STDOUT in a structured way; it must be created right after starting the program to allow capturing logs of absolutely everything else in the program.
 
+#### EventBus (Pub/Sub)
+
+Source: `internal/eventbus`
+
+The `eventbus` package provides a centralized pub/sub event bus for real-time communication between application components. It uses the `asaskevich/EventBus` library.
+
+##### Event Topics
+
+- `TopicStateChanged`: Published when the application state changes (status updates, history modifications).
+- `TopicSettingsChanged`: Published when user settings are updated.
+
+##### Usage Pattern
+
+Publishing events: In `state` and `config` packages.
+Subscribing to events: In SSE stream handlers.
+
 #### Config
 
 Source: `internal/config`
@@ -201,7 +217,7 @@ You MUST use this tool whenever writing Svelte code before sending it to the use
 Generates a Svelte Playground link with the provided code.
 After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
 
-## Style
+### Style
 
 This project uses Tailwind CSS v4 for styling. But it uses DaisyUI which is a framework on top of Tailwind CSS, it provides a set of pre-styled class based components, please use it instead of Tailwind CSS generic classes when possible. Only use Tailwind CSS classes when you really need to, otherwise use the DaisyUI CSS classes. You can find more documentation about DaisyUI CSS here:
 
@@ -215,7 +231,7 @@ Make the style minimalistic and simple, without any unnecessary elements or dist
 
 Try to avoid at all costs creating layout shifts that can cause jank or discomfort to the user. Use always same size on things that change.
 
-## Icons
+### Icons
 
 Use `@lucide/svelte` icons whenever you need icons and you are working on the webapp. For example if you need `Phone` icon from lucide you can use this:
 
@@ -230,7 +246,7 @@ Use `@lucide/svelte` icons whenever you need icons and you are working on the we
 <Phone class="size-10 text-red-500" />
 ```
 
-## State
+### State
 
 The Web UI should use svelte runes to store it's internal state and should be realtime updated using the server state and config which is received in real time from the server by using the SSE stream provided by the UFO RPC Client.
 

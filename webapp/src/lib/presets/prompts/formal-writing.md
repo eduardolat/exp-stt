@@ -1,6 +1,6 @@
 ---
-name: Formal Writing
-description: Transform casual speech into professional, formal written text suitable for business or academic contexts.
+name: Clean & Format (Formal)
+description: Transform speech into polished, professional text for business or academic use.
 icon: GraduationCap
 ---
 

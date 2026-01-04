@@ -1,6 +1,6 @@
 ---
-name: Translate to Spanish
-description: Clean up and translate the transcription to Spanish, maintaining natural fluency.
+name: Clean & Translate (Spanish)
+description: Clean up and translate the transcription to fluent Spanish.
 icon: Languages
 ---
 

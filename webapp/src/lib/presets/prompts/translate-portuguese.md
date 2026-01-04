@@ -1,6 +1,6 @@
 ---
-name: Translate to Portuguese
-description: Clean up and translate the transcription to Portuguese, maintaining natural fluency.
+name: Clean & Translate (Portuguese)
+description: Clean up and translate the transcription to fluent Portuguese.
 icon: Languages
 ---
 

@@ -1,6 +1,6 @@
 ---
-name: Developer Dictation
-description: Fix transcribed developer speech with programming terms, technical jargon, and common dictation artifacts.
+name: Clean & Format (Developer)
+description: Fix programming terms, technical jargon, and common developer dictation artifacts.
 icon: Code
 ---
 

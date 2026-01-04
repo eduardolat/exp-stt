@@ -1,6 +1,6 @@
 ---
-name: Translate to English
-description: Clean up and translate the transcription to English, maintaining natural fluency.
+name: Clean & Translate (English)
+description: Clean up and translate the transcription to fluent English.
 icon: Languages
 ---
 

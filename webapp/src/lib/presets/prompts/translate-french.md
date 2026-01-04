@@ -1,6 +1,6 @@
 ---
-name: Translate to French
-description: Clean up and translate the transcription to French, maintaining natural fluency.
+name: Clean & Translate (French)
+description: Clean up and translate the transcription to fluent French.
 icon: Languages
 ---
 

@@ -1,6 +1,6 @@
 ---
-name: Casual Chat
-description: Light cleanup while preserving the natural, conversational tone of the speech. Perfect for messaging and informal communication.
+name: Clean & Format (Casual)
+description: Light cleanup preserving natural, conversational tone. Perfect for messaging.
 icon: MessageCircle
 ---
 

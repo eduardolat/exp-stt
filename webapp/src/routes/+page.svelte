@@ -11,10 +11,13 @@
 		CircleAlert,
 		Clock,
 		ArrowRight,
-		LayoutDashboard
+		LayoutDashboard,
+		Trash2
 	} from '@lucide/svelte';
-	import { HistoryItem, Card, PageHeader } from '$lib/components';
+	import { HistoryItem, Card, PageHeader, Modal, CopyButton } from '$lib/components';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
+	import type { HistoryEntry } from '$lib/client.gen';
+	import { formatRelativeTime } from '$lib/date';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
 		unknown: { icon: CircleAlert, pulse: false, spin: false },
@@ -30,10 +33,30 @@
 	let config = $derived(statusConfig[store.status] ?? statusConfig.unknown);
 	let IconComponent = $derived(config.icon);
 	let recentHistory = $derived(store.history.slice(0, 3));
+	let detailsModal: Modal | undefined = $state();
+	let selectedEntry: HistoryEntry | undefined = $state();
 
 	async function handleDelete(entry: (typeof store.history)[0]) {
 		if (!confirm('Delete this transcription?')) return;
 		await store.deleteHistoryEntry(entry.id);
+		if (selectedEntry?.id === entry.id) {
+			detailsModal?.close();
+			selectedEntry = undefined;
+		}
+	}
+
+	function openDetails(entry: HistoryEntry) {
+		selectedEntry = entry;
+		detailsModal?.open();
+	}
+
+	function getAudioUrl(id: string): string {
+		return `/api/v1/audio/${id}`;
+	}
+
+	function formatTimestamp(iso: string): string {
+		const text = formatRelativeTime(iso);
+		return text.charAt(0).toUpperCase() + text.slice(1);
 	}
 </script>
 
@@ -46,6 +69,63 @@
 	title="Dashboard"
 	description="Overview of your transcription activity and system status"
 />
+
+<Modal bind:this={detailsModal} title="Transcription Details">
+	{#snippet children()}
+		{#if selectedEntry}
+			<div class="space-y-4">
+				<div class="flex items-center gap-2 text-sm opacity-70">
+					<span>{formatTimestamp(selectedEntry.timestamp)}</span>
+					<span>•</span>
+					<span>Took {Math.floor(selectedEntry.durationMs / 1000)}s</span>
+					{#if selectedEntry.postProcessed}
+						<span class="ml-auto badge gap-1 badge-sm badge-secondary">
+							<Sparkles class="size-3" />
+							AI Enhanced
+						</span>
+					{/if}
+				</div>
+
+				<Card class="p-4">
+					<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
+					<audio controls class="w-full" preload="none">
+						<source src={getAudioUrl(selectedEntry.id)} type="audio/wav" />
+						Your browser does not support audio playback.
+					</audio>
+				</Card>
+
+				<Card class="p-4">
+					<div class="mb-1 flex items-center justify-between">
+						<p class="text-xs font-medium opacity-70">Original:</p>
+						<CopyButton text={selectedEntry.textRaw} showLabel />
+					</div>
+					<p class="text-sm">{selectedEntry.textRaw}</p>
+				</Card>
+
+				{#if selectedEntry.postProcessed && selectedEntry.textRaw !== selectedEntry.textFinal}
+					<Card class="p-4">
+						<div class="mb-1 flex items-center justify-between">
+							<p class="text-xs font-medium opacity-70">Enhanced:</p>
+							<CopyButton text={selectedEntry.textFinal} showLabel />
+						</div>
+						<p class="text-sm">{selectedEntry.textFinal}</p>
+					</Card>
+				{/if}
+			</div>
+		{/if}
+	{/snippet}
+
+	{#snippet actions()}
+		{#if selectedEntry}
+			<div class="flex justify-end gap-2 pt-2">
+				<button class="btn btn-outline btn-sm btn-error" onclick={() => handleDelete(selectedEntry!)}>
+					<Trash2 class="size-3.5" />
+					Delete
+				</button>
+			</div>
+		{/if}
+	{/snippet}
+</Modal>
 
 <div class="columns-2 gap-4 space-y-4">
 	<!-- Recording Control Panel -->
@@ -112,7 +192,7 @@
 		{:else}
 			<div class="space-y-4">
 				{#each recentHistory as entry (entry.id)}
-					<HistoryItem {entry} onDelete={handleDelete} darker />
+					<HistoryItem {entry} onView={openDetails} darker />
 				{/each}
 			</div>
 

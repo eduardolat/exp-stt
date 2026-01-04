@@ -1,0 +1,4 @@
+## 2026-01-04 - CORS Vulnerability Fix
+**Vulnerability:** The application was configured to allow Cross-Origin Resource Sharing (CORS) from *any* origin using a wildcard-like configuration (`return true, nil`). This is a high-risk vulnerability as it allows malicious websites to make requests to the local API server if a user visits them.
+**Learning:** Even if an application is intended for "local use", enabling permissive CORS allows remote attackers to interact with it via the user's browser. Strict origin validation is essential.
+**Prevention:** Implement a strict allowlist for origins. For local applications, validate that the origin is `localhost` or `127.0.0.1` and strictly check the port logic (or allow any port on localhost but *only* localhost). Always use strict prefix/string matching to avoid bypasses like `localhost.evil.com`.

@@ -29,10 +29,10 @@ func NewServer(
 
 	// Add security headers
 	server.Use(middleware.SecureWithConfig(middleware.SecureConfig{
-		XContentTypeOptions: "nosniff",
-		XFrameOptions:       "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
-		ReferrerPolicy:      "strict-origin-when-cross-origin",
-		XXSSProtection:      "1; mode=block", // Basic protection for older browsers
+		ContentTypeNosniff: "nosniff",
+		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
+		ReferrerPolicy:     "strict-origin-when-cross-origin",
+		XSSProtection:      "1; mode=block", // Basic protection for older browsers
 	}))
 
 	// Configure CORS

@@ -82,7 +82,7 @@
 			onclick={() => store.toggleRecording()}
 		>
 			<Mic class="size-5" />
-			Toggle Recording
+			{store.isRecording ? 'Stop Recording' : 'Start Recording'}
 		</button>
 
 		<WaylandShortcutAlert>

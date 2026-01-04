@@ -34,7 +34,12 @@
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b border-base-300 p-4">
 			<h3 class="text-lg font-bold">{title}</h3>
-			<button class="btn btn-circle btn-ghost btn-sm" onclick={close} title="Close">
+			<button
+				class="btn btn-circle btn-ghost btn-sm"
+				onclick={close}
+				title="Close"
+				aria-label="Close"
+			>
 				<X class="size-4" />
 			</button>
 		</div>

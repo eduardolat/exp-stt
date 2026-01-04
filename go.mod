@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	fyne.io/systray v1.12.0
+	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/atotto/clipboard v0.1.4
 	github.com/gen2brain/beeep v0.11.1
 	github.com/gen2brain/malgo v0.11.24

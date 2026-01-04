@@ -270,6 +270,16 @@ proc ShortcutToggleUpdate {
   }
 }
 
+"""
+Get the application version.
+"""
+proc VersionGet {
+  output {
+    """ Application version string, e.g. 0.1.0 """
+    appVersion: string
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Streams
 // ---------------------------------------------------------------------------

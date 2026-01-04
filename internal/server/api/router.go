@@ -67,6 +67,7 @@ func (h *handlers) registerURPC() {
 	h.registerProcHistoryDeleteEntry()
 	h.registerProcHistoryClear()
 	h.registerProcShortcutToggleUpdate()
+	h.registerProcVersionGet()
 
 	// Streams
 	h.registerStreamListenForEvents()

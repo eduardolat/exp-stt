@@ -68,6 +68,7 @@ class Store {
 	isConnected = $state(false);
 	isLoading = $state(true);
 	error: string | null = $state(null);
+	appVersion = $state('');
 
 	get status() {
 		return this.state.status;
@@ -141,7 +142,7 @@ class Store {
 		this.error = null;
 
 		try {
-			await Promise.all([this.fetchState(), this.fetchSettings()]);
+			await Promise.all([this.fetchState(), this.fetchSettings(), this.fetchVersion()]);
 			this.startEventStream();
 			this.isConnected = true;
 		} catch (err) {
@@ -160,6 +161,11 @@ class Store {
 	private async fetchSettings(): Promise<void> {
 		const { settings } = await this.client.procs.settingsGet().execute({});
 		this.settings = settings;
+	}
+
+	private async fetchVersion(): Promise<void> {
+		const { appVersion } = await this.client.procs.versionGet().execute({});
+		this.appVersion = appVersion;
 	}
 
 	private startEventStream(): void {

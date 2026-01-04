@@ -3,12 +3,15 @@ package state
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/gen2brain/malgo"
+	"github.com/varavelio/tribar/internal/eventbus"
 	"github.com/varavelio/tribar/internal/history"
 )
 
@@ -106,6 +109,7 @@ type SystemInfo struct {
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
+	eventBus       *eventbus.EventBus
 	historyManager *history.Manager
 
 	statusMu       sync.RWMutex
@@ -119,10 +123,11 @@ type Instance struct {
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
-func New(historyManager *history.Manager) *Instance {
+func New(eventBus *eventbus.EventBus, historyManager *history.Manager) *Instance {
 	audioCtx, _ := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 
 	return &Instance{
+		eventBus:       eventBus,
 		historyManager: historyManager,
 		statusMu:       sync.RWMutex{},
 		statusPrevious: StatusUnknown,
@@ -138,6 +143,7 @@ func (i *Instance) SetStatus(newStatus Status) {
 	defer i.statusMu.Unlock()
 	i.statusPrevious = i.statusCurrent
 	i.statusCurrent = newStatus
+	i.eventBus.PublishStateChanged()
 }
 
 // GetStatus retrieves the current and previous statuses of the application instance.
@@ -157,6 +163,12 @@ func (i *Instance) SetDownloadProgress(fileName string, downloaded, total int64,
 		Total:      total,
 		Percent:    percent,
 	}
+
+	// Publish state changes only for every exact 5%
+	percentsToPublish := []float64{0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}
+	if slices.Contains(percentsToPublish, percent) {
+		i.eventBus.PublishStateChanged()
+	}
 }
 
 // GetDownloadProgress returns the current download progress.
@@ -171,6 +183,7 @@ func (i *Instance) ClearDownloadProgress() {
 	i.downloadMu.Lock()
 	defer i.downloadMu.Unlock()
 	i.downloadProgress = DownloadProgress{}
+	i.eventBus.PublishStateChanged()
 }
 
 // GetAvailableDevices returns lists of available input and output audio devices.
@@ -229,12 +242,20 @@ func (i *Instance) GetHistoryAudioPath(id string) string {
 
 // DeleteHistoryEntry removes a history entry by ID.
 func (i *Instance) DeleteHistoryEntry(ctx context.Context, id string) error {
-	return i.historyManager.Delete(ctx, id)
+	err := i.historyManager.Delete(ctx, id)
+	if err == nil {
+		i.eventBus.PublishStateChanged()
+	}
+	return fmt.Errorf("failed to delete history entry: %w", err)
 }
 
 // ClearHistory removes all entries from the history.
 func (i *Instance) ClearHistory(ctx context.Context) error {
-	return i.historyManager.Clear(ctx)
+	err := i.historyManager.Clear(ctx)
+	if err == nil {
+		i.eventBus.PublishStateChanged()
+	}
+	return fmt.Errorf("failed to clear history: %w", err)
 }
 
 // HistoryCount returns the number of entries in the history.

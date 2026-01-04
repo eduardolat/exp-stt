@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/engine"
+	"github.com/varavelio/tribar/internal/eventbus"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/server/api/uforpc"
 	"github.com/varavelio/tribar/internal/shortcut"
@@ -28,6 +29,7 @@ type handlers struct {
 	appState        *state.Instance
 	engine          *engine.Engine
 	shortcutManager *shortcut.Manager
+	eventBus        *eventbus.EventBus
 	uforpcServer    *uforpc.Server[urpcProps]
 }
 
@@ -38,6 +40,7 @@ func MountRouter(
 	appState *state.Instance,
 	eng *engine.Engine,
 	shortcutMgr *shortcut.Manager,
+	eventBus *eventbus.EventBus,
 ) {
 	uforpcServer := uforpc.NewServer[urpcProps]()
 	handlers := &handlers{
@@ -46,6 +49,7 @@ func MountRouter(
 		appState:        appState,
 		engine:          eng,
 		shortcutManager: shortcutMgr,
+		eventBus:        eventBus,
 		uforpcServer:    uforpcServer,
 	}
 

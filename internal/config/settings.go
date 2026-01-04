@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/varavelio/tribar/internal/eventbus"
 )
 
 const settingsFileName = "settings.json"
@@ -143,14 +145,16 @@ var defaultSettings = Settings{
 
 // SettingsManager handles loading and saving of user settings.
 type SettingsManager struct {
+	eventBus *eventbus.EventBus
 	mu       sync.RWMutex
 	settings Settings
 	filePath string
 }
 
 // NewSettingsManager creates a new settings manager and loads existing settings.
-func NewSettingsManager() (*SettingsManager, error) {
+func NewSettingsManager(eventBus *eventbus.EventBus) (*SettingsManager, error) {
 	sm := &SettingsManager{
+		eventBus: eventBus,
 		settings: defaultSettings,
 		filePath: filepath.Join(DirectoryConfig, settingsFileName),
 	}
@@ -181,7 +185,12 @@ func (sm *SettingsManager) Update(settings Settings) error {
 	defer sm.mu.Unlock()
 
 	sm.settings = settings
-	return sm.saveUnsafe()
+	if err := sm.saveUnsafe(); err != nil {
+		return fmt.Errorf("failed to save settings: %w", err)
+	}
+
+	sm.eventBus.PublishSettingsChanged()
+	return nil
 }
 
 // Load reads settings from the config file, merging with defaults.
@@ -212,7 +221,10 @@ func (sm *SettingsManager) Load() error {
 func (sm *SettingsManager) Save() error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	return sm.saveUnsafe()
+	if err := sm.saveUnsafe(); err != nil {
+		return fmt.Errorf("failed to save settings: %w", err)
+	}
+	return nil
 }
 
 // saveUnsafe writes settings to disk without acquiring the lock.

@@ -12,6 +12,7 @@ import (
 	"github.com/varavelio/tribar/internal/clipboard"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/engine"
+	"github.com/varavelio/tribar/internal/eventbus"
 	"github.com/varavelio/tribar/internal/history"
 	"github.com/varavelio/tribar/internal/instance"
 	"github.com/varavelio/tribar/internal/logger"
@@ -88,7 +89,9 @@ func run(logger logger.Logger, flags config.Flags) error {
 		return fmt.Errorf("error ensuring ONNX Runtime shared library: %w", err)
 	}
 
-	settingsManager, err := config.NewSettingsManager()
+	eventBus := eventbus.New()
+
+	settingsManager, err := config.NewSettingsManager(eventBus)
 	if err != nil {
 		return fmt.Errorf("error loading settings: %w", err)
 	}
@@ -96,7 +99,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 	historyManager := history.NewManager(logger, settingsManager)
 	historyManager.LoadAsync(ctx)
 
-	appState := state.New(historyManager)
+	appState := state.New(eventBus, historyManager)
 
 	recorder, err := record.NewRecorder(settingsManager)
 	if err != nil {
@@ -144,7 +147,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 	}
 	defer shortcutMgr.Stop()
 
-	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr)
+	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr, eventBus)
 	go func() {
 		addr := fmt.Sprintf("%s:%d", flags.Host, inst.Port())
 		logger.Info(ctx, "Starting server", "address", "http://"+addr+"/", "version", config.AppVersion)

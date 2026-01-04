@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/engine"
+	"github.com/varavelio/tribar/internal/eventbus"
 	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/server/api"
 	"github.com/varavelio/tribar/internal/shortcut"
@@ -21,6 +22,7 @@ func NewServer(
 	appState *state.Instance,
 	eng *engine.Engine,
 	shortcutMgr *shortcut.Manager,
+	eventBus *eventbus.EventBus,
 ) *echo.Echo {
 	server := echo.New()
 	server.HideBanner = true
@@ -57,7 +59,7 @@ func NewServer(
 
 	// Mount API routes
 	apiGroup := server.Group("/api/v1")
-	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr)
+	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr, eventBus)
 
 	// Mount Web UI routes
 	subFS, _ := fs.Sub(webapp.BuildFS, "build")

@@ -1,8 +1,11 @@
 package config
 
-const (
-	AppName    = "Tribar Voice"
-	AppVersion = "0.1.0"
-	UserAgent  = "TribarVoice/" + AppVersion
-	RepoURL    = "https://github.com/varavelio/tribar"
+var (
+	// AppVersion is set at build time via -ldflags
+	// Example: go build -ldflags="-X github.com/varavelio/tribar/internal/config.AppVersion=1.0.0"
+	AppVersion = "0.0.0-dev"
+
+	AppName   = "Tribar Voice"
+	RepoURL   = "https://github.com/varavelio/tribar"
+	UserAgent = "TribarVoice/" + AppVersion
 )

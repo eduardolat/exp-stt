@@ -155,8 +155,10 @@ jobs:
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: '1'
         run: |
-          VERSION="${GITHUB_REF_NAME:-dev}"
-          OUTPUT_NAME="tribar-${VERSION}-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}"
+          # Get version from tag, strip leading 'v' if present (e.g., v1.0.0 -> 1.0.0)
+          RAW_VERSION="${GITHUB_REF_NAME:-dev}"
+          VERSION="${RAW_VERSION#v}"
+          OUTPUT_NAME="tribar-v${VERSION}-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}"
 
           echo "Building ${OUTPUT_NAME}..."
           echo "GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=${CGO_ENABLED}"

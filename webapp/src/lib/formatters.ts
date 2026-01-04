@@ -13,9 +13,11 @@ export function formatTimeAgo(date: Date | string | number): string {
 		return rtf.format(Math.round(diffInSeconds / 60), 'minute');
 	} else if (absDiff < 86400) {
 		return rtf.format(Math.round(diffInSeconds / 3600), 'hour');
-	} else if (absDiff < 2592000) { // 30 days
+	} else if (absDiff < 2592000) {
+		// 30 days
 		return rtf.format(Math.round(diffInSeconds / 86400), 'day');
-	} else if (absDiff < 31536000) { // 365 days
+	} else if (absDiff < 31536000) {
+		// 365 days
 		return rtf.format(Math.round(diffInSeconds / 2592000), 'month');
 	} else {
 		return rtf.format(Math.round(diffInSeconds / 31536000), 'year');

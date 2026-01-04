@@ -112,10 +112,7 @@
 	{#snippet actions()}
 		{#if entry}
 			<div class="flex justify-end gap-2 pt-2">
-				<button
-					class="btn btn-outline btn-sm btn-error"
-					onclick={handleDelete}
-				>
+				<button class="btn btn-outline btn-sm btn-error" onclick={handleDelete}>
 					<Trash2 class="size-3.5" />
 					Delete
 				</button>

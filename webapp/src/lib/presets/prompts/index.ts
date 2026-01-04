@@ -1,14 +1,15 @@
 /**
  * ADD MORE ICONS HERE IF NEEDED
  */
-import { Sparkles, GraduationCap, MessageCircle, FileText, Languages } from '@lucide/svelte';
+import { Sparkles, GraduationCap, MessageCircle, FileText, Languages, Code } from '@lucide/svelte';
 
 const ICON_MAP: Record<string, Component> = {
 	Sparkles,
 	GraduationCap,
 	MessageCircle,
 	FileText,
-	Languages
+	Languages,
+	Code
 };
 
 /**

@@ -14,6 +14,7 @@
 	} from '@lucide/svelte';
 	import { Card, PageHeader } from '$lib/components';
 	import ShortcutInput from './ShortcutInput.svelte';
+	import SoundPicker from './SoundPicker.svelte';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 </script>
 
@@ -212,6 +213,32 @@
 							store.updateSettings({ soundFeedbackVolume: parseInt(e.currentTarget.value) })}
 					/>
 				</fieldset>
+
+				<div>
+					<SoundPicker
+						label="Recording Sound"
+						soundType="record"
+						options={['1', '2', '3', '4', '5', '6', '7', '8', '9']}
+						value={store.settings.soundFeedbackRecordId}
+						onchange={(value) => store.updateSettings({ soundFeedbackRecordId: value })}
+					/>
+
+					<SoundPicker
+						label="Success Sound"
+						soundType="success"
+						options={['1', '2', '3', '4']}
+						value={store.settings.soundFeedbackSuccessId}
+						onchange={(value) => store.updateSettings({ soundFeedbackSuccessId: value })}
+					/>
+
+					<SoundPicker
+						label="Error Sound"
+						soundType="error"
+						options={['1', '2', '3', '4', '5', '6', '7', '8']}
+						value={store.settings.soundFeedbackErrorId}
+						onchange={(value) => store.updateSettings({ soundFeedbackErrorId: value })}
+					/>
+				</div>
 			{/if}
 		</div>
 	</Card>

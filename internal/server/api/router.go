@@ -56,6 +56,7 @@ func MountRouter(
 	parent.POST("/urpc/:operationName", handlers.handleURPC)
 
 	parent.GET("/audio/:id", handlers.handleAudioStream)
+	parent.GET("/sound/:type/:id", handlers.handleSoundPreview)
 }
 
 func (h *handlers) registerURPC() {

@@ -22,6 +22,7 @@
 	class="btn btn-ghost btn-xs {showLabel ? 'gap-1' : 'btn-square'} {className}"
 	onclick={handleCopy}
 	title="Copy to clipboard"
+	aria-label="Copy to clipboard"
 >
 	<Copy class="size-3" />
 	{#if showLabel && label}

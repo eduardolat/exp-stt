@@ -54,9 +54,6 @@ func NewServer(
 				return true, nil
 			}
 
-			// Also allow the app's own origin if it's serving from a different host/port binding
-			// (though usually covered by localhost checks above if bound to localhost)
-
 			return false, nil
 		},
 		AllowMethods: []string{

@@ -189,6 +189,8 @@ var defaultSettings = Settings{
 	ModelUnloadEnable:  true,
 	ModelUnloadSeconds: 300,
 
+	AllowExternalOrigins: false,
+
 	ShortcutToggle: Shortcut{
 		Modifiers: []string{"ctrl"},
 		Key:       "space",

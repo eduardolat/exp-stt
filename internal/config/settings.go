@@ -76,7 +76,9 @@ type Settings struct {
 	ModelUnloadSeconds int  `json:"model_unload_seconds"`
 
 	// Security settings
-	AllowExternalOrigins bool `json:"allow_external_origins"`
+	// Specific origins allowed to access the API via CORS.
+	// If any element is "*", all origins are allowed.
+	AllowedCORSOrigins []string `json:"allowed_cors_origins"`
 
 	// Global shortcut settings
 	ShortcutToggle Shortcut `json:"shortcut_toggle"`
@@ -138,7 +140,7 @@ var defaultSettings = Settings{
 	ModelUnloadEnable:  true,
 	ModelUnloadSeconds: 300,
 
-	AllowExternalOrigins: false,
+	AllowedCORSOrigins: []string{},
 
 	ShortcutToggle: Shortcut{
 		Modifiers: []string{"ctrl"},

@@ -40,12 +40,7 @@ func NewServer(
 	// Configure CORS
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOriginFunc: func(origin string) (bool, error) {
-			// Check if user has explicitly allowed all origins
-			if settingsManager.Get().AllowExternalOrigins {
-				return true, nil
-			}
-
-			// Default: Restrict to localhost/loopback
+			// Always allow localhost/loopback for local development and usage.
 			// This prevents malicious websites from accessing the local API
 			// via cross-site requests (CSRF/CORS attacks).
 			// We allow dynamic ports (e.g. :5173) for development.
@@ -54,6 +49,18 @@ func NewServer(
 				origin == "http://127.0.0.1" || strings.HasPrefix(origin, "http://127.0.0.1:") ||
 				origin == "https://127.0.0.1" || strings.HasPrefix(origin, "https://127.0.0.1:") {
 				return true, nil
+			}
+
+			// Check user-configured allowed origins
+			for _, allowed := range settingsManager.Get().AllowedCORSOrigins {
+				// Wildcard allows all origins
+				if allowed == "*" {
+					return true, nil
+				}
+				// Exact match
+				if allowed == origin {
+					return true, nil
+				}
 			}
 
 			return false, nil

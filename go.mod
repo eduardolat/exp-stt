@@ -1,8 +1,6 @@
 module github.com/varavelio/tribar
 
-go 1.24.0
-
-toolchain go1.24.3
+go 1.25.4
 
 require (
 	fyne.io/systray v1.12.0

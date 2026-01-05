@@ -5,6 +5,7 @@ package clipboard
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	atclip "github.com/atotto/clipboard"
@@ -41,37 +42,48 @@ func parsePasteShortcut(s string) PasteShortcut {
 // Instance handles output of transcription results.
 type Instance struct {
 	logger logger.Logger
+	mu     sync.Mutex
 }
 
 // New creates a new clipboard instance.
 func New(logger logger.Logger) *Instance {
 	return &Instance{
 		logger: logger,
+		mu:     sync.Mutex{},
 	}
 }
 
 // Write outputs the transcription result based on the configured mode.
 func (w *Instance) Write(ctx context.Context, mode config.OutputMode, pasteShortcutRaw string, text string) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	if text == "" {
 		return nil
 	}
 
 	shortcut := parsePasteShortcut(pasteShortcutRaw)
 
-	switch mode {
-	case config.OutputModeCopyOnly:
-		return w.copyToClipboard(ctx, text)
-	case config.OutputModeCopyPaste:
-		return w.pasteWorkflow(ctx, shortcut, text, false)
-	case config.OutputModeGhostPaste:
-		return w.pasteWorkflow(ctx, shortcut, text, true)
-	default:
-		return w.copyToClipboard(ctx, text)
+	// workflowFunc is the function that will be called to write to the clipboard
+	// it defaults and fallbacks to copy only workflow
+	workflowFunc := w.copyOnlyWorkflow
+	if mode == config.OutputModeCopyPaste {
+		workflowFunc = w.copyPasteWorkflow
 	}
+	if mode == config.OutputModeGhostPaste {
+		workflowFunc = w.ghostPasteWorkflow
+	}
+
+	if err := workflowFunc(ctx, shortcut, text); err != nil {
+		w.logger.Error(ctx, "failed to write to clipboard", "mode", mode, "shortcut", shortcut, "text", text, "err", err)
+		return fmt.Errorf("%s error: %w", mode, err)
+	}
+
+	return nil
 }
 
-// copyToClipboard copies text to the system clipboard.
-func (w *Instance) copyToClipboard(ctx context.Context, text string) error {
+// copyOnlyWorkflow copies text to the system clipboard.
+func (w *Instance) copyOnlyWorkflow(ctx context.Context, _ PasteShortcut, text string) error {
 	if err := atclip.WriteAll(text); err != nil {
 		w.logger.Error(ctx, "failed to copy to clipboard", "err", err)
 		return fmt.Errorf("clipboard error: %w", err)
@@ -79,32 +91,33 @@ func (w *Instance) copyToClipboard(ctx context.Context, text string) error {
 	return nil
 }
 
-// pasteWorkflow handles the copy-paste workflow with optional clipboard restoration.
-func (w *Instance) pasteWorkflow(ctx context.Context, shortcut PasteShortcut, text string, restore bool) error {
-	var originalContent string
-
-	if restore {
-		originalContent, _ = atclip.ReadAll()
-	}
-
-	if err := w.copyToClipboard(ctx, text); err != nil {
+// copyPasteWorkflow handles the copy-paste workflow.
+func (w *Instance) copyPasteWorkflow(ctx context.Context, shortcut PasteShortcut, text string) error {
+	if err := w.copyOnlyWorkflow(ctx, shortcut, text); err != nil {
 		return err
 	}
 
+	// Wait for the OS to process the copy before pasting
 	time.Sleep(50 * time.Millisecond)
-
 	if err := triggerPastePlatform(shortcut); err != nil {
 		w.logger.Warn(ctx, "paste trigger failed, text remains in clipboard", "err", err)
 		return err
 	}
 
-	if restore {
-		go func() {
-			// Wait for the OS to process the paste before restoring
-			time.Sleep(250 * time.Millisecond)
-			_ = atclip.WriteAll(originalContent)
-		}()
+	return nil
+}
+
+// ghostPasteWorkflow handles the ghost-paste workflow.
+func (w *Instance) ghostPasteWorkflow(ctx context.Context, shortcut PasteShortcut, text string) error {
+	originalContent, _ := atclip.ReadAll()
+
+	if err := w.copyPasteWorkflow(ctx, shortcut, text); err != nil {
+		return err
 	}
+
+	// Wait for the OS to process the paste before restoring
+	time.Sleep(150 * time.Millisecond)
+	_ = atclip.WriteAll(originalContent)
 
 	return nil
 }

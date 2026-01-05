@@ -10,7 +10,8 @@
 		Ghost,
 		Timer,
 		Keyboard,
-		Settings
+		Settings,
+		X
 	} from '@lucide/svelte';
 	import { Card, PageHeader } from '$lib/components';
 	import ShortcutInput from './ShortcutInput.svelte';
@@ -357,17 +358,30 @@
 					</select>
 
 					{#if showInput}
-						<label class="input input-sm mt-2 flex items-center gap-2">
-							<input
-								type="number"
-								class="grow"
-								placeholder="Custom seconds"
-								value={store.settings.modelUnloadSeconds}
-								onchange={(e) =>
-									store.updateSettings({ modelUnloadSeconds: parseInt(e.currentTarget.value) })}
-							/>
-							<span class="text-xs opacity-50">seconds</span>
-						</label>
+						<div class="mt-2 flex items-center gap-2">
+							<label class="input input-sm flex grow items-center gap-2">
+								<input
+									type="number"
+									class="grow"
+									placeholder="Custom seconds"
+									value={store.settings.modelUnloadSeconds}
+									onchange={(e) =>
+										store.updateSettings({ modelUnloadSeconds: parseInt(e.currentTarget.value) })}
+								/>
+								<span class="text-xs opacity-50">seconds</span>
+							</label>
+							<button
+								class="btn btn-square btn-sm btn-ghost"
+								aria-label="Reset to default"
+								title="Reset to default (5 minutes)"
+								onclick={() => {
+									customMode = false;
+									store.updateSettings({ modelUnloadSeconds: 300 });
+								}}
+							>
+								<X class="size-4" />
+							</button>
+						</div>
 					{/if}
 				</fieldset>
 			{/if}

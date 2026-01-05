@@ -3,6 +3,7 @@ package server
 import (
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,11 +29,24 @@ func NewServer(
 	server.HideBanner = true
 	server.HidePort = true
 
-	// Allow any origin coming from localhost (any port)
-	// Very permissive since it's for local use
+	// Allow any origin coming from localhost (any port) or configured allowed origins
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOriginFunc: func(origin string) (bool, error) {
-			return true, nil
+			// Check if origin is localhost/127.0.0.1
+			if origin == "http://localhost" || strings.HasPrefix(origin, "http://localhost:") ||
+				origin == "http://127.0.0.1" || strings.HasPrefix(origin, "http://127.0.0.1:") {
+				return true, nil
+			}
+
+			// Check configured allowed origins
+			settings := settingsManager.Get()
+			for _, allowed := range settings.AllowedOrigins {
+				if origin == allowed {
+					return true, nil
+				}
+			}
+
+			return false, nil
 		},
 		AllowMethods: []string{
 			http.MethodGet,

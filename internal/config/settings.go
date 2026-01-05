@@ -80,6 +80,9 @@ type Settings struct {
 
 	// Paste shortcut settings
 	PasteShortcut string `json:"paste_shortcut"`
+
+	// Security settings
+	AllowedOrigins []string `json:"allowed_origins"`
 }
 
 // defaultPrompts returns the predefined prompts for post-processing.
@@ -141,6 +144,8 @@ var defaultSettings = Settings{
 	},
 
 	PasteShortcut: "ctrl+v",
+
+	AllowedOrigins: []string{},
 }
 
 // SettingsManager handles loading and saving of user settings.

@@ -75,6 +75,9 @@ type Settings struct {
 	ModelUnloadEnable  bool `json:"model_unload_enable"`
 	ModelUnloadSeconds int  `json:"model_unload_seconds"`
 
+	// Security settings
+	AllowExternalOrigins bool `json:"allow_external_origins"`
+
 	// Global shortcut settings
 	ShortcutToggle Shortcut `json:"shortcut_toggle"`
 
@@ -134,6 +137,8 @@ var defaultSettings = Settings{
 
 	ModelUnloadEnable:  true,
 	ModelUnloadSeconds: 300,
+
+	AllowExternalOrigins: false,
 
 	ShortcutToggle: Shortcut{
 		Modifiers: []string{"ctrl"},

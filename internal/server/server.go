@@ -3,6 +3,7 @@ package server
 import (
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,11 +29,34 @@ func NewServer(
 	server.HideBanner = true
 	server.HidePort = true
 
-	// Allow any origin coming from localhost (any port)
-	// Very permissive since it's for local use
+	// Add security headers
+	server.Use(middleware.SecureWithConfig(middleware.SecureConfig{
+		ContentTypeNosniff: "nosniff",
+		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
+		ReferrerPolicy:     "strict-origin-when-cross-origin",
+		XSSProtection:      "1; mode=block", // Basic protection for older browsers
+	}))
+
+	// Configure CORS
 	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOriginFunc: func(origin string) (bool, error) {
-			return true, nil
+			// Check if user has explicitly allowed all origins
+			if settingsManager.Get().AllowExternalOrigins {
+				return true, nil
+			}
+
+			// Default: Restrict to localhost/loopback
+			// This prevents malicious websites from accessing the local API
+			// via cross-site requests (CSRF/CORS attacks).
+			// We allow dynamic ports (e.g. :5173) for development.
+			if origin == "http://localhost" || strings.HasPrefix(origin, "http://localhost:") ||
+				origin == "https://localhost" || strings.HasPrefix(origin, "https://localhost:") ||
+				origin == "http://127.0.0.1" || strings.HasPrefix(origin, "http://127.0.0.1:") ||
+				origin == "https://127.0.0.1" || strings.HasPrefix(origin, "https://127.0.0.1:") {
+				return true, nil
+			}
+
+			return false, nil
 		},
 		AllowMethods: []string{
 			http.MethodGet,

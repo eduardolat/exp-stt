@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Trash2, Sparkles } from '@lucide/svelte';
-	import { formatDistanceToNow } from 'date-fns';
 	import type { HistoryEntry } from '$lib/client.gen';
 	import { Card, Modal, CopyButton } from '$lib/components';
 
@@ -19,9 +18,31 @@
 	}
 
 	function formatTimestamp(iso: string): string {
-		const text = formatDistanceToNow(new Date(iso), { addSuffix: true });
-		const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
-		return capitalized;
+		const date = new Date(iso);
+		const now = new Date();
+		const seconds = Math.floor((date.getTime() - now.getTime()) / 1000);
+		const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+		let text = '';
+		const absSeconds = Math.abs(seconds);
+
+		if (absSeconds < 60) {
+			text = rtf.format(seconds, 'second');
+		} else if (absSeconds < 3600) {
+			text = rtf.format(Math.round(seconds / 60), 'minute');
+		} else if (absSeconds < 86400) {
+			text = rtf.format(Math.round(seconds / 3600), 'hour');
+		} else if (absSeconds < 2592000) {
+			// 30 days
+			text = rtf.format(Math.round(seconds / 86400), 'day');
+		} else if (absSeconds < 31536000) {
+			// 365 days
+			text = rtf.format(Math.round(seconds / 2592000), 'month');
+		} else {
+			text = rtf.format(Math.round(seconds / 31536000), 'year');
+		}
+
+		return text.charAt(0).toUpperCase() + text.slice(1);
 	}
 
 	function handleItemClick() {

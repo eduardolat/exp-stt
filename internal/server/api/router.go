@@ -57,7 +57,7 @@ func MountRouter(
 
 	subFS, _ := fs.Sub(playgroundFS, "playground")
 	parent.Group("/playground").StaticFS("", subFS)
-	parent.POST("/urpc/:operationName", handlers.handleURPC)
+	parent.POST("/urpc/:operationName", handlers.handleURPC, requireJSONContentType)
 
 	parent.GET("/audio/:id", handlers.handleAudioStream)
 	parent.GET("/sound/:type/:id", handlers.handleSoundPreview)

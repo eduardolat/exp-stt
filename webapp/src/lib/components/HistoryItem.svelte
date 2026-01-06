@@ -2,7 +2,7 @@
 	import { Trash2, Sparkles } from '@lucide/svelte';
 	import type { HistoryEntry } from '$lib/client.gen';
 	import { Card, Modal, CopyButton } from '$lib/components';
-	import { formatRelativeTime } from '$lib/utils';
+	import { formatRelativeTime } from '$lib/utils/formatRelativeTime';
 
 	interface Props {
 		entry: HistoryEntry;

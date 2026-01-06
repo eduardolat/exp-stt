@@ -10,12 +10,22 @@
 		Ghost,
 		Timer,
 		Keyboard,
-		Settings
+		Settings,
+		X
 	} from '@lucide/svelte';
 	import { Card, PageHeader } from '$lib/components';
 	import ShortcutInput from './ShortcutInput.svelte';
 	import SoundPicker from './SoundPicker.svelte';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
+
+	const presetValues = [60, 120, 180, 240, 300, 600, 900, 1200, 1800, 3600, 7200];
+	let customMode = $state(false);
+
+	let isPreset = $derived(presetValues.includes(store.settings.modelUnloadSeconds));
+	let showInput = $derived(customMode || !isPreset);
+	let selectValue = $derived(
+		showInput ? 'custom' : String(store.settings.modelUnloadSeconds)
+	);
 </script>
 
 <svelte:head>
@@ -315,10 +325,6 @@
 			</label>
 
 			{#if store.settings.modelUnloadEnable}
-				{@const presetValues = [60, 120, 180, 240, 300, 600, 900, 1200, 1800, 3600, 7200]}
-				{@const isPreset = presetValues.includes(store.settings.modelUnloadSeconds)}
-				{@const selectValue = isPreset ? String(store.settings.modelUnloadSeconds) : 'custom'}
-
 				<fieldset class="fieldset">
 					<label class="label" for="unloadSeconds">
 						<span class="label-text">Unload after</span>
@@ -330,14 +336,9 @@
 						onchange={(e) => {
 							const value = e.currentTarget.value;
 							if (value === 'custom') {
-								const customValue = prompt(
-									'Enter custom time in seconds:',
-									String(store.settings.modelUnloadSeconds)
-								);
-								if (customValue !== null && !isNaN(parseInt(customValue))) {
-									store.updateSettings({ modelUnloadSeconds: parseInt(customValue) });
-								}
+								customMode = true;
 							} else {
+								customMode = false;
 								store.updateSettings({ modelUnloadSeconds: parseInt(value) });
 							}
 						}}
@@ -353,10 +354,35 @@
 						<option value="1800">30 minutes</option>
 						<option value="3600">1 hour</option>
 						<option value="7200">2 hours</option>
-						<option value="custom"
-							>{isPreset ? 'Custom...' : `Custom (${store.settings.modelUnloadSeconds}s)`}</option
-						>
+						<option value="custom">Custom...</option>
 					</select>
+
+					{#if showInput}
+						<div class="mt-2 flex items-center gap-2">
+							<label class="input input-sm flex grow items-center gap-2">
+								<input
+									type="number"
+									class="grow"
+									placeholder="Custom seconds"
+									value={store.settings.modelUnloadSeconds}
+									onchange={(e) =>
+										store.updateSettings({ modelUnloadSeconds: parseInt(e.currentTarget.value) })}
+								/>
+								<span class="text-xs opacity-50">seconds</span>
+							</label>
+							<button
+								class="btn btn-square btn-sm btn-ghost"
+								aria-label="Reset to default"
+								title="Reset to default (5 minutes)"
+								onclick={() => {
+									customMode = false;
+									store.updateSettings({ modelUnloadSeconds: 300 });
+								}}
+							>
+								<X class="size-4" />
+							</button>
+						</div>
+					{/if}
 				</fieldset>
 			{/if}
 		</div>

@@ -1,6 +1,7 @@
 package record
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gen2brain/malgo"
 	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/logger"
 )
 
 var (
@@ -15,6 +17,7 @@ var (
 )
 
 type Recorder struct {
+	logger          logger.Logger
 	device          *malgo.Device
 	ctx             *malgo.AllocatedContext
 	settingsManager *config.SettingsManager
@@ -23,15 +26,26 @@ type Recorder struct {
 	mu              sync.Mutex
 }
 
-func NewRecorder(settingsManager *config.SettingsManager) (*Recorder, error) {
+func NewRecorder(logger logger.Logger, settingsManager *config.SettingsManager) (*Recorder, error) {
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
 		return nil, err
 	}
 	return &Recorder{
+		logger:          logger,
 		ctx:             ctx,
 		settingsManager: settingsManager,
 	}, nil
+}
+
+// Shutdown cleans up resources used by the recorder.
+func (r *Recorder) Shutdown() {
+	r.Stop()
+	if r.ctx != nil {
+		if err := r.ctx.Uninit(); err != nil {
+			r.logger.Error(context.Background(), "failed to uninit context", "err", err)
+		}
+	}
 }
 
 // Start begins the recording process. It cleans the buffer and starts capturing audio data.
@@ -84,7 +98,9 @@ func (r *Recorder) Stop() {
 	r.mu.Unlock()
 
 	if r.device != nil {
-		_ = r.device.Stop()
+		if err := r.device.Stop(); err != nil {
+			r.logger.Error(context.Background(), "failed to stop device", "err", err)
+		}
 		r.device.Uninit()
 	}
 }

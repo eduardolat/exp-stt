@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/varavelio/tribar/internal/clipboard"
 	"github.com/varavelio/tribar/internal/config"
@@ -29,6 +30,11 @@ import (
 	"github.com/varavelio/tribar/internal/transcribe"
 	"golang.design/x/hotkey/mainthread"
 )
+
+// singleShutdownTimeout is the maximum time to wait for graceful
+// shutdown of a single component. After this duration, the process
+// exits forcefully to prevent system freezes.
+const singleShutdownTimeout = 3 * time.Second
 
 func main() {
 	flags := config.ParseFlags()
@@ -101,21 +107,22 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	appState := state.New(eventBus, historyManager)
 
-	recorder, err := record.NewRecorder(settingsManager)
+	recorder, err := record.NewRecorder(logger, settingsManager)
 	if err != nil {
 		return fmt.Errorf("error creating recorder: %w", err)
 	}
+	defer shutdownWithTimeout(recorder.Shutdown)
 
-	transcriber, err := transcribe.New()
+	transcriber, err := transcribe.New(logger)
 	if err != nil {
 		return fmt.Errorf("error creating transcriber: %w", err)
 	}
-	defer func() { _ = transcriber.Shutdown() }()
+	defer shutdownWithTimeout(transcriber.Shutdown)
 
 	notifier := notify.New(logger, settingsManager)
 
 	soundPlayer := sound.New(logger, settingsManager)
-	defer soundPlayer.Shutdown()
+	defer shutdownWithTimeout(soundPlayer.Shutdown)
 
 	cpb := clipboard.New(logger)
 
@@ -133,7 +140,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 		Notifier:        notifier,
 		Sound:           soundPlayer,
 	})
-	defer eng.Shutdown()
+	defer shutdownWithTimeout(eng.Shutdown)
 
 	go func() {
 		if err := eng.EnsureModelsDownloaded(); err != nil {
@@ -145,7 +152,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 	if err := shortcutMgr.Start(); err != nil {
 		logger.Warn(ctx, "hotkey registration failed", "err", err)
 	}
-	defer shortcutMgr.Stop()
+	defer shutdownWithTimeout(shortcutMgr.Stop)
 
 	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr, eventBus)
 	go func() {
@@ -159,10 +166,26 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	stray := systray.New(appState, eng, inst.Port(), stop)
 	go stray.Start()
-	defer stray.Shutdown()
+	defer shutdownWithTimeout(stray.Shutdown)
 
 	<-ctx.Done()
 	stop()
 	logger.Info(ctx, "shutting down gracefully...")
 	return nil
+}
+
+// shutdownWithTimeout runs fn in a goroutine and waits up to shutdownTimeout for it
+// to complete. This prevents any single cleanup operation from blocking the
+// entire shutdown process indefinitely.
+func shutdownWithTimeout(fn func()) {
+	done := make(chan any)
+	go func() {
+		defer close(done)
+		fn()
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(singleShutdownTimeout):
+	}
 }

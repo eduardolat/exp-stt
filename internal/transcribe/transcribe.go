@@ -2,23 +2,26 @@ package transcribe
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
 
 	"github.com/go-audio/wav"
+	"github.com/varavelio/tribar/internal/logger"
 	"github.com/varavelio/tribar/internal/onnx"
 	ort "github.com/yalue/onnxruntime_go"
 )
 
 // Instance represents a transcription engine instance.
 type Instance struct {
+	logger            logger.Logger
 	parakeet          *ParakeetModel
 	integrityVerified bool
 }
 
 // New creates a new transcription instance.
-func New() (*Instance, error) {
+func New(logger logger.Logger) (*Instance, error) {
 	ort.SetSharedLibraryPath(onnx.SharedLibraryPath)
 
 	if err := ort.InitializeEnvironment(); err != nil {
@@ -31,16 +34,16 @@ func New() (*Instance, error) {
 	}
 
 	return &Instance{
+		logger:   logger,
 		parakeet: parakeet,
 	}, nil
 }
 
 // Shutdown cleans up resources used by the transcription instance.
-func (i *Instance) Shutdown() error {
+func (i *Instance) Shutdown() {
 	if err := ort.DestroyEnvironment(); err != nil {
-		return fmt.Errorf("error destroying onnx runtime environment: %w", err)
+		i.logger.Error(context.Background(), "error destroying onnx runtime environment", "err", err)
 	}
-	return nil
 }
 
 // CheckModels checks if all required models exist with full SHA256 verification.

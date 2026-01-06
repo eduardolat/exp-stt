@@ -117,6 +117,30 @@ func TestProcess(t *testing.T) {
 		require.Equal(t, "raw text", result)
 	})
 
+	t.Run("Missing Base URL", func(t *testing.T) {
+		noUrlSettings := defaultSettings
+		noUrlSettings.PostProcessBaseURL = ""
+		settingsProvider := &MockSettingsProvider{Settings: noUrlSettings}
+
+		instance := New(newTestLogger(), settingsProvider)
+
+		result, err := instance.Process(ctx, "raw text")
+		require.NoError(t, err)
+		require.Equal(t, "raw text", result)
+	})
+
+	t.Run("Missing Model", func(t *testing.T) {
+		noModelSettings := defaultSettings
+		noModelSettings.PostProcessModel = ""
+		settingsProvider := &MockSettingsProvider{Settings: noModelSettings}
+
+		instance := New(newTestLogger(), settingsProvider)
+
+		result, err := instance.Process(ctx, "raw text")
+		require.NoError(t, err)
+		require.Equal(t, "raw text", result)
+	})
+
 	t.Run("Empty Input", func(t *testing.T) {
 		settingsProvider := &MockSettingsProvider{Settings: defaultSettings}
 		instance := New(newTestLogger(), settingsProvider)
@@ -163,9 +187,7 @@ func TestProcess(t *testing.T) {
 		result, err := instance.Process(ctx, "raw text")
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "API request failed")
-		require.Equal(t, "raw text", result) // Returns original text on error? Wait, implementation returns error.
-		// Wait, look at implementation: return text, fmt.Errorf(...)
-		// So it returns original text AND error.
+		require.Equal(t, "raw text", result)
 	})
 
 	t.Run("API Error (JSON Error Response)", func(t *testing.T) {

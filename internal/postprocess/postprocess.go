@@ -51,10 +51,22 @@ func (p *Instance) SetClient(client HTTPClient) {
 	p.client = client
 }
 
-// IsEnabled returns whether post-processing is enabled.
+// IsEnabled returns whether post-processing is enabled and valid.
 func (p *Instance) IsEnabled() bool {
 	settings := p.settingsManager.Get()
-	return settings.PostProcessEnabled && settings.PostProcessAPIKey != ""
+	if !settings.PostProcessEnabled {
+		return false
+	}
+	if settings.PostProcessAPIKey == "" {
+		return false
+	}
+	if settings.PostProcessBaseURL == "" {
+		return false
+	}
+	if settings.PostProcessModel == "" {
+		return false
+	}
+	return true
 }
 
 // Process enhances the transcription using the configured LLM.

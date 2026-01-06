@@ -1,5 +1,3 @@
-// Package postprocess provides LLM-based text enhancement for transcriptions.
-// It supports OpenAI-compatible APIs to improve grammar, punctuation, and formatting.
 package postprocess
 
 import (
@@ -16,29 +14,39 @@ import (
 	"github.com/varavelio/tribar/internal/logger"
 )
 
+// SettingsProvider abstracts the configuration source.
+type SettingsProvider interface {
+	Get() config.Settings
+}
+
 // Instance handles LLM-based text post-processing.
 type Instance struct {
-	logger          logger.Logger
-	settingsManager *config.SettingsManager
-	client          *http.Client
+	logger           logger.Logger
+	settingsProvider SettingsProvider
+	client           *http.Client
 }
 
 const defaultTimeout = 30 * time.Second
 
 // New creates a new post-processor instance.
-func New(logger logger.Logger, settingsManager *config.SettingsManager) *Instance {
+func New(logger logger.Logger, settingsProvider SettingsProvider) *Instance {
 	return &Instance{
-		logger:          logger,
-		settingsManager: settingsManager,
+		logger:           logger,
+		settingsProvider: settingsProvider,
 		client: &http.Client{
 			Timeout: defaultTimeout,
 		},
 	}
 }
 
+// SetHTTPClient sets the HTTP client (useful for testing).
+func (p *Instance) SetHTTPClient(client *http.Client) {
+	p.client = client
+}
+
 // IsEnabled returns whether post-processing is enabled.
 func (p *Instance) IsEnabled() bool {
-	settings := p.settingsManager.Get()
+	settings := p.settingsProvider.Get()
 	return settings.PostProcessEnabled && settings.PostProcessAPIKey != ""
 }
 
@@ -59,12 +67,18 @@ func (p *Instance) Process(ctx context.Context, text string) (string, error) {
 
 	// Replace placeholder with actual transcription text
 	input := strings.ReplaceAll(prompt, "${output}", text)
-	return p.callAPI(ctx, input)
+
+	result, err := p.callAPI(ctx, input)
+	if err != nil {
+		// If the API call fails, return the original text instead of the prompt-injected text
+		return text, err
+	}
+	return result, nil
 }
 
 // getSystemPrompt returns the prompt body for the configured prompt ID.
 func (p *Instance) getSystemPrompt() string {
-	settings := p.settingsManager.Get()
+	settings := p.settingsProvider.Get()
 
 	for _, prompt := range settings.Prompts {
 		if prompt.ID == settings.PostProcessPromptID {
@@ -100,7 +114,7 @@ type chatResponse struct {
 
 // callAPI sends the text to the LLM API for enhancement.
 func (p *Instance) callAPI(ctx context.Context, text string) (string, error) {
-	settings := p.settingsManager.Get()
+	settings := p.settingsProvider.Get()
 
 	reqBody := chatRequest{
 		Model: settings.PostProcessModel,

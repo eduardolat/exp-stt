@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Trash2, Sparkles } from '@lucide/svelte';
-	import { formatDistanceToNow } from 'date-fns';
 	import type { HistoryEntry } from '$lib/client.gen';
 	import { Card, Modal, CopyButton } from '$lib/components';
+	import { formatRelativeTime } from '$lib/utils/formatRelativeTime';
 
 	interface Props {
 		entry: HistoryEntry;
@@ -19,7 +19,7 @@
 	}
 
 	function formatTimestamp(iso: string): string {
-		const text = formatDistanceToNow(new Date(iso), { addSuffix: true });
+		const text = formatRelativeTime(iso);
 		const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
 		return capitalized;
 	}

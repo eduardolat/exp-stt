@@ -67,7 +67,9 @@ tasks:
 
   test:
     desc: Run all tests
-    cmd: go test ./...
+    cmds:
+      - go test ./...
+      - cd ./webapp && pnpm run test
 
   lint:
     desc: Run all linters

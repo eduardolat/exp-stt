@@ -126,8 +126,6 @@ func (m *Manager) loadLocked(ctx context.Context) error {
 	})
 
 	m.entries = entries
-	m.logger.Info(ctx, "history loaded", "count", len(entries))
-
 	return nil
 }
 

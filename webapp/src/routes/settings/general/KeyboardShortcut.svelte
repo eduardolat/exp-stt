@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 	import type { Shortcut } from '$lib/client.gen';
+	import Card from '$lib/components/Card.svelte';
+	import { Keyboard } from '@lucide/svelte';
+	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 
 	const AVAILABLE_MODIFIERS = ['ctrl', 'alt', 'shift', 'meta'] as const;
 	const AVAILABLE_KEYS = [
@@ -107,54 +110,63 @@
 	}
 </script>
 
-<div class="space-y-4">
-	<div>
-		<span class="mb-2 block text-sm font-medium">Modifiers</span>
-		<div class="flex flex-wrap gap-2">
-			{#each AVAILABLE_MODIFIERS as modifier}
-				<button
-					type="button"
-					class="btn btn-sm"
-					class:btn-primary={modifiers.includes(modifier)}
-					class:btn-outline={!modifiers.includes(modifier)}
-					onclick={() => toggleModifier(modifier)}
-				>
-					{formatModifierLabel(modifier)}
-				</button>
-			{/each}
-		</div>
-	</div>
+<Card class="card-body break-inside-avoid">
+	<h3 class="card-title text-base">
+		<Keyboard class="size-4" />
+		Keyboard Shortcut
+	</h3>
 
-	<fieldset class="fieldset">
-		<label class="label" for="shortcut-key">
-			<span class="label-text">Key</span>
-		</label>
-		<select id="shortcut-key" class="select w-40 select-sm" bind:value={key}>
-			<option value="">Select key...</option>
-			{#each AVAILABLE_KEYS as k}
-				<option value={k}>{k.toUpperCase()}</option>
-			{/each}
-		</select>
-	</fieldset>
+	<WaylandShortcutAlert>
+		<div class="space-y-4">
+			<div>
+				<span class="mb-2 block text-sm font-medium">Modifiers</span>
+				<div class="flex flex-wrap gap-2">
+					{#each AVAILABLE_MODIFIERS as modifier}
+						<button
+							type="button"
+							class="btn btn-sm"
+							class:btn-primary={modifiers.includes(modifier)}
+							class:btn-outline={!modifiers.includes(modifier)}
+							onclick={() => toggleModifier(modifier)}
+						>
+							{formatModifierLabel(modifier)}
+						</button>
+					{/each}
+				</div>
+			</div>
 
-	{#if key}
-		<div class="flex items-center gap-2 text-sm">
-			<span class="opacity-70">Current shortcut:</span>
-			{#if modifiers.length > 0}
-				{#each modifiers as mod}
-					<kbd class="kbd kbd-sm">{mod}</kbd>
-					<span>+</span>
-				{/each}
+			<fieldset class="fieldset">
+				<label class="label" for="shortcut-key">
+					<span class="label-text">Key</span>
+				</label>
+				<select id="shortcut-key" class="select w-40 select-sm" bind:value={key}>
+					<option value="">Select key...</option>
+					{#each AVAILABLE_KEYS as k}
+						<option value={k}>{k.toUpperCase()}</option>
+					{/each}
+				</select>
+			</fieldset>
+
+			{#if key}
+				<div class="flex items-center gap-2 text-sm">
+					<span class="opacity-70">Current shortcut:</span>
+					{#if modifiers.length > 0}
+						{#each modifiers as mod}
+							<kbd class="kbd kbd-sm">{mod}</kbd>
+							<span>+</span>
+						{/each}
+					{/if}
+					<kbd class="kbd kbd-sm">{key}</kbd>
+				</div>
 			{/if}
-			<kbd class="kbd kbd-sm">{key}</kbd>
+
+			{#if updateError}
+				<p class="text-sm text-error">{updateError}</p>
+			{/if}
+
+			<button class="btn btn-sm btn-primary" disabled={isUpdating || !key} onclick={saveShortcut}>
+				{isUpdating ? 'Saving...' : 'Save Shortcut'}
+			</button>
 		</div>
-	{/if}
-
-	{#if updateError}
-		<p class="text-sm text-error">{updateError}</p>
-	{/if}
-
-	<button class="btn btn-sm btn-primary" disabled={isUpdating || !key} onclick={saveShortcut}>
-		{isUpdating ? 'Saving...' : 'Save Shortcut'}
-	</button>
-</div>
+	</WaylandShortcutAlert>
+</Card>

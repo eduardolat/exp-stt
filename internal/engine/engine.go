@@ -372,6 +372,4 @@ func (e *Engine) Shutdown() {
 	if status == state.StatusListening {
 		e.recorder.Stop()
 	}
-
-	e.logger.Info(e.ctx, "engine shutdown complete")
 }

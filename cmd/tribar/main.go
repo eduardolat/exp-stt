@@ -111,18 +111,18 @@ func run(logger logger.Logger, flags config.Flags) error {
 	if err != nil {
 		return fmt.Errorf("error creating recorder: %w", err)
 	}
-	defer shutdownWithTimeout(recorder.Shutdown)
+	defer shutdownWithTimeout(logger, recorder.Shutdown, "recorder")
 
 	transcriber, err := transcribe.New(logger)
 	if err != nil {
 		return fmt.Errorf("error creating transcriber: %w", err)
 	}
-	defer shutdownWithTimeout(transcriber.Shutdown)
+	defer shutdownWithTimeout(logger, transcriber.Shutdown, "transcriber")
 
 	notifier := notify.New(logger, settingsManager)
 
 	soundPlayer := sound.New(logger, settingsManager)
-	defer shutdownWithTimeout(soundPlayer.Shutdown)
+	defer shutdownWithTimeout(logger, soundPlayer.Shutdown, "sound player")
 
 	cpb := clipboard.New(logger)
 
@@ -140,7 +140,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 		Notifier:        notifier,
 		Sound:           soundPlayer,
 	})
-	defer shutdownWithTimeout(eng.Shutdown)
+	defer shutdownWithTimeout(logger, eng.Shutdown, "engine")
 
 	go func() {
 		if err := eng.EnsureModelsDownloaded(); err != nil {
@@ -152,12 +152,12 @@ func run(logger logger.Logger, flags config.Flags) error {
 	if err := shortcutMgr.Start(); err != nil {
 		logger.Warn(ctx, "hotkey registration failed", "err", err)
 	}
-	defer shutdownWithTimeout(shortcutMgr.Stop)
+	defer shutdownWithTimeout(logger, shortcutMgr.Stop, "shortcut manager")
 
 	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr, eventBus)
 	go func() {
 		addr := fmt.Sprintf("%s:%d", flags.Host, inst.Port())
-		logger.Info(ctx, "Starting server", "address", "http://"+addr+"/", "version", config.AppVersion)
+		logger.Info(ctx, "starting server", "address", "http://"+addr+"/", "version", config.AppVersion)
 		if err := srv.Server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			logger.Error(ctx, "server error", "err", err)
 			stop()
@@ -166,18 +166,18 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	stray := systray.New(appState, eng, inst.Port(), stop)
 	go stray.Start()
-	defer shutdownWithTimeout(stray.Shutdown)
+	defer shutdownWithTimeout(logger, stray.Shutdown, "systray")
 
 	<-ctx.Done()
 	stop()
-	logger.Info(ctx, "shutting down gracefully...")
+	logger.Info(ctx, "gracefully shutting down")
 	return nil
 }
 
 // shutdownWithTimeout runs fn in a goroutine and waits up to shutdownTimeout for it
 // to complete. This prevents any single cleanup operation from blocking the
 // entire shutdown process indefinitely.
-func shutdownWithTimeout(fn func()) {
+func shutdownWithTimeout(logger logger.Logger, fn func(), name string) {
 	done := make(chan any)
 	go func() {
 		defer close(done)
@@ -186,6 +186,8 @@ func shutdownWithTimeout(fn func()) {
 
 	select {
 	case <-done:
+		logger.Info(context.Background(), "shutdown complete", "component", name)
 	case <-time.After(singleShutdownTimeout):
+		logger.Warn(context.Background(), "shutdown forced due to timeout", "component", name)
 	}
 }

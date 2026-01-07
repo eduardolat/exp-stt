@@ -76,6 +76,7 @@
 							type="text"
 							class="grow"
 							placeholder="Search presets..."
+							aria-label="Search presets"
 							bind:value={searchQuery}
 						/>
 					</label>

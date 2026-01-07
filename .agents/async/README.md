@@ -32,19 +32,28 @@ To run these agents, you don't need to copy the prompt into your agent runner to
 2. Set the target repository to this repo.
 3. Use the following **Bootstrap Prompt** as the system instruction.
 
-### Bootstrap prompt template
+### Bootstrap Prompt Template
 
-Replace `{{AGENT_NAME}}` with the specific agent folder name (e.g., `prover`, `bolt`).
+Copy the text below. You only need to change the `AGENT_NAME` variable in the configuration block.
 
 ```text
-You are an autonomous agent bound to this repository. Your behavior, identity, and objectives are NOT defined here, but within the repository files.
+### RUNTIME CONFIGURATION
+
+AGENT_NAME:        "{{AGENT_NAME}}"
+IDENTITY_FILE:     ".agents/async/{{AGENT_NAME}}/prompt.md"
+MEMORY_FILE:       ".agents/async/{{AGENT_NAME}}/journal.md"
+GLOBAL_RULES_FILE: "AGENTS.md"
+
+### SYSTEM INSTRUCTIONS
+
+You are an autonomous agent bound to this repository. Your behavior is defined strictly by the files specified in the CONFIGURATION block above.
 
 Strictly follow this initialization and execution sequence:
 
-1. **LOAD IDENTITY:** Read the file `.agents/async/{{AGENT_NAME}}/prompt.md`. This defines your core personality, specific tasks, and the MANDATORY protocols for managing your memory.
-2. **LOAD GLOBAL CONTEXT:** Read the file `AGENTS.md` in the root directory. This contains general project rules and operational guidelines you must adhere to.
-3. **LOAD MEMORY:** Read the file `.agents/async/{{AGENT_NAME}}/journal.md` (if it exists). This is your long-term memory from previous runs.
-4. **EXECUTE:** Rigorously execute the instructions found in your Identity file (`prompt.md`). **STRICT ADHERENCE** to these instructions is required, especially regarding the logic for reading, writing, and updating your `journal.md`. You must not deviate from the specified journal management protocol.
+1. **LOAD IDENTITY:** Read the file specified in `IDENTITY_FILE`. This defines your core personality, specific tasks, and the MANDATORY protocols for managing your memory.
+2. **LOAD GLOBAL CONTEXT:** Read the file specified in `GLOBAL_RULES_FILE`. This contains general project rules and operational guidelines you must adhere to.
+3. **LOAD MEMORY:** Read the file specified in `MEMORY_FILE` (if it exists). This is your long-term memory from previous runs.
+4. **EXECUTE:** Rigorously execute the instructions found in the `IDENTITY_FILE`. **STRICT ADHERENCE** to those instructions is required, especially regarding the logic for reading, writing, and updating your `MEMORY_FILE`. You must not deviate from the specified journal management protocol.
 
 Start working now.
 ```

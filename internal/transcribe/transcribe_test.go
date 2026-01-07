@@ -1,4 +1,4 @@
-package transcribe_test
+package transcribe
 
 import (
 	"os"
@@ -8,7 +8,6 @@ import (
 	"github.com/go-audio/wav"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/varavelio/tribar/internal/transcribe"
 )
 
 // Helper to generate a valid WAV buffer
@@ -54,7 +53,7 @@ func TestProcessWAVBytes(t *testing.T) {
 		inputData := []int{0, 32767, -32768, 16384}
 		wavData := generateWAV(t, 16000, 16, 1, inputData)
 
-		samples, err := transcribe.ProcessWAVBytes(wavData)
+		samples, err := processWAVBytes(wavData)
 		require.NoError(t, err)
 		require.Len(t, samples, 4)
 
@@ -66,14 +65,14 @@ func TestProcessWAVBytes(t *testing.T) {
 	})
 
 	t.Run("Empty WAV Data", func(t *testing.T) {
-		samples, err := transcribe.ProcessWAVBytes([]byte{})
+		samples, err := processWAVBytes([]byte{})
 		require.Error(t, err)
 		assert.Nil(t, samples)
 		assert.Contains(t, err.Error(), "invalid WAV file") // Or specific error from library
 	})
 
 	t.Run("Garbage Data", func(t *testing.T) {
-		samples, err := transcribe.ProcessWAVBytes([]byte("not a wav file"))
+		samples, err := processWAVBytes([]byte("not a wav file"))
 		require.Error(t, err)
 		assert.Nil(t, samples)
 	})
@@ -83,7 +82,7 @@ func TestProcessWAVBytes(t *testing.T) {
 		data := []byte("RIFF\x24\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\x80>\x00\x00\x00}\x00\x00\x02\x00\x10\x00data\x00\x00\x00\x00")
 		// Corrupt it slightly
 		data[0] = 'X'
-		samples, err := transcribe.ProcessWAVBytes(data)
+		samples, err := processWAVBytes(data)
 		require.Error(t, err)
 		assert.Nil(t, samples)
 	})
@@ -95,7 +94,7 @@ func TestProcessWAVBytes(t *testing.T) {
 		inputData := []int{100, 200, 300, 400} // L R L R
 		wavData := generateWAV(t, 16000, 16, 2, inputData)
 
-		samples, err := transcribe.ProcessWAVBytes(wavData)
+		samples, err := processWAVBytes(wavData)
 		require.NoError(t, err)
 		require.Len(t, samples, 4)
 		// It just treats them as a stream of samples
@@ -118,11 +117,11 @@ func TestReadWAVFile(t *testing.T) {
 	_ = tmpFile.Close()
 
 	// Test ReadWAVFile
-	data, err := transcribe.ReadWAVFile(tmpFile.Name())
+	data, err := ReadWAVFile(tmpFile.Name())
 	require.NoError(t, err)
 	assert.Equal(t, wavData, data)
 
 	// Test non-existent file
-	_, err = transcribe.ReadWAVFile("nonexistent.wav")
+	_, err = ReadWAVFile("nonexistent.wav")
 	require.Error(t, err)
 }

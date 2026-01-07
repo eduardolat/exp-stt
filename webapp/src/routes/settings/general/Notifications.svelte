@@ -9,8 +9,8 @@
 		<Bell class="size-4" />
 		Notifications
 	</h3>
-	<div class="space-y-4">
-		<label class="label cursor-pointer justify-between py-2">
+	<div class="select-none">
+		<label class="label flex w-full cursor-pointer items-center justify-between py-2">
 			<span class="text-sm">Notify on errors</span>
 			<input
 				type="checkbox"
@@ -19,7 +19,7 @@
 				onchange={(e) => store.updateSettings({ notifyOnError: e.currentTarget.checked })}
 			/>
 		</label>
-		<label class="label cursor-pointer justify-between py-2">
+		<label class="label flex w-full cursor-pointer items-center justify-between py-2">
 			<span class="text-sm">Notify on recording start</span>
 			<input
 				type="checkbox"
@@ -28,7 +28,7 @@
 				onchange={(e) => store.updateSettings({ notifyOnStart: e.currentTarget.checked })}
 			/>
 		</label>
-		<label class="label cursor-pointer justify-between py-2">
+		<label class="label flex w-full cursor-pointer items-center justify-between py-2">
 			<span class="text-sm">Notify on transcription complete</span>
 			<input
 				type="checkbox"

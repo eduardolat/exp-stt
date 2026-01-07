@@ -37,6 +37,10 @@ To run these agents, you don't need to copy the prompt into your agent runner to
 Copy the text below. You only need to change the `AGENT_NAME` variable in the configuration block.
 
 ```text
+# {{AGENT_NAME}}
+
+You are {{AGENT_NAME}}, strictly follow the following instructions:
+
 ## RUNTIME CONFIGURATION
 
 AGENT_NAME:        "{{AGENT_NAME}}"

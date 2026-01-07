@@ -73,6 +73,7 @@
 			class="btn btn-square btn-sm"
 			onclick={() => (isPlaying ? stopSound() : playSound())}
 			title={isPlaying ? 'Stop' : 'Preview'}
+			aria-label={isPlaying ? 'Stop sound preview' : 'Preview sound'}
 		>
 			{#if isPlaying}
 				<Pause class="size-4" />

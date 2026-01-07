@@ -34,6 +34,23 @@ When updating this document, do so with the context of the entire document in mi
 
 - Before you finish any task, go to the root of the project and run the `task ci` command. That way all the code you wrote will be type-checked, tested and linted to catch errors as soon as possible. Fix any type errors you find before finishing the task. It includes checks for both the Go application and the Svelte webapp.
 
+## Testing
+
+Ensure all tests provide real value and avoid testing trivialities. Focus on edge cases and business logic. All test files must be co-located with their corresponding source files.
+
+### Backend (Go)
+
+- Use the `github.com/stretchr/testify/require` package for assertions.
+- Create exactly one test function per function/method.
+- Use subtests (`t.Run`) for each individual test case within a function.
+- Test files must use the `_test.go` suffix (e.g., `my_function.go` -> `my_function_test.go`).
+
+### Web UI
+
+- Use `vitest` for unit and component testing.
+- Follow the same principle of value-added tests and edge case coverage.
+- Test files must use the `.test.ts` suffix (e.g., `myFunction.ts` -> `myFunction.test.ts`).
+
 ## Shared architecture
 
 The UFO RPC schema and config file is located here:

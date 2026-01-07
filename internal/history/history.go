@@ -48,10 +48,15 @@ type WriteRequest struct {
 	AudioData           []byte
 }
 
+// SettingsProvider abstracts the settings retrieval.
+type SettingsProvider interface {
+	Get() config.Settings
+}
+
 // Manager handles all history operations including loading, saving, and pruning.
 type Manager struct {
 	logger          logger.Logger
-	settingsManager *config.SettingsManager
+	settingsManager SettingsProvider
 	directory       string
 
 	mu      sync.RWMutex
@@ -59,11 +64,11 @@ type Manager struct {
 }
 
 // NewManager creates a new history manager.
-func NewManager(logger logger.Logger, settingsManager *config.SettingsManager) *Manager {
+func NewManager(logger logger.Logger, settingsManager SettingsProvider, directory string) *Manager {
 	return &Manager{
 		logger:          logger,
 		settingsManager: settingsManager,
-		directory:       config.DirectoryRecordings,
+		directory:       directory,
 		entries:         make([]Entry, 0),
 	}
 }

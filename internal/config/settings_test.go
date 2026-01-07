@@ -1,4 +1,4 @@
-package config_test
+package config
 
 import (
 	"encoding/json"
@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/eventbus"
 )
 
@@ -16,7 +15,7 @@ func TestNewSettingsManager(t *testing.T) {
 	tempDir := t.TempDir()
 	eb := eventbus.New()
 
-	sm, err := config.NewSettingsManager(eb, tempDir)
+	sm, err := NewSettingsManager(eb, tempDir)
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
@@ -26,11 +25,7 @@ func TestNewSettingsManager(t *testing.T) {
 
 	// Verify default settings
 	settings := sm.Get()
-	require.Equal(t, "default", settings.InputDevice)
-	require.Equal(t, 100, settings.SoundFeedbackVolume)
-	require.Equal(t, config.OutputModeCopyPaste, settings.OutputMode)
-	require.Equal(t, 10, settings.HistoryLimit)
-	require.True(t, settings.NotifyOnError)
+	require.Equal(t, defaultSettings, settings)
 }
 
 func TestSettingsManager_Load(t *testing.T) {
@@ -39,7 +34,7 @@ func TestSettingsManager_Load(t *testing.T) {
 	settingsPath := filepath.Join(tempDir, "settings.json")
 
 	// Create a pre-existing settings file with custom values
-	initialSettings := config.Settings{
+	initialSettings := Settings{
 		Version:             1,
 		InputDevice:         "custom-mic",
 		SoundFeedbackVolume: 50,
@@ -49,7 +44,7 @@ func TestSettingsManager_Load(t *testing.T) {
 	err = os.WriteFile(settingsPath, data, 0644)
 	require.NoError(t, err)
 
-	sm, err := config.NewSettingsManager(eb, tempDir)
+	sm, err := NewSettingsManager(eb, tempDir)
 	require.NoError(t, err)
 
 	// Verify loaded settings
@@ -62,7 +57,7 @@ func TestSettingsManager_Update(t *testing.T) {
 	tempDir := t.TempDir()
 	eb := eventbus.New()
 
-	sm, err := config.NewSettingsManager(eb, tempDir)
+	sm, err := NewSettingsManager(eb, tempDir)
 	require.NoError(t, err)
 
 	// Subscribe to settings changed event
@@ -85,7 +80,7 @@ func TestSettingsManager_Update(t *testing.T) {
 	// Verify persistence
 	data, err := os.ReadFile(filepath.Join(tempDir, "settings.json"))
 	require.NoError(t, err)
-	var savedSettings config.Settings
+	var savedSettings Settings
 	err = json.Unmarshal(data, &savedSettings)
 	require.NoError(t, err)
 	require.Equal(t, "new-mic", savedSettings.InputDevice)
@@ -98,7 +93,7 @@ func TestSettingsManager_ConcurrentAccess(t *testing.T) {
 	tempDir := t.TempDir()
 	eb := eventbus.New()
 
-	sm, err := config.NewSettingsManager(eb, tempDir)
+	sm, err := NewSettingsManager(eb, tempDir)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup

@@ -15,6 +15,42 @@ import (
 	"github.com/varavelio/tribar/internal/history"
 )
 
+// DeviceInfo abstracts device information to avoid direct dependency on malgo.DeviceInfo.
+type DeviceInfo interface {
+	IDString() string
+	NameString() string
+}
+
+// AudioContext abstracts audio device enumeration.
+type AudioContext interface {
+	Devices(deviceType malgo.DeviceType) ([]DeviceInfo, error)
+}
+
+// audioContextWrapper implements AudioContext using malgo.
+type audioContextWrapper struct {
+	ctx *malgo.AllocatedContext
+}
+
+// realDeviceInfo implements DeviceInfo wrapping malgo.DeviceInfo.
+type realDeviceInfo struct {
+	d malgo.DeviceInfo
+}
+
+func (r realDeviceInfo) IDString() string   { return r.d.ID.String() }
+func (r realDeviceInfo) NameString() string { return r.d.Name() }
+
+func (w *audioContextWrapper) Devices(deviceType malgo.DeviceType) ([]DeviceInfo, error) {
+	devices, err := w.ctx.Devices(deviceType)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DeviceInfo, len(devices))
+	for i, d := range devices {
+		result[i] = realDeviceInfo{d: d}
+	}
+	return result, nil
+}
+
 // RuntimeInfo holds system information detected at startup.
 // This is populated by InitRuntime and should not be modified afterwards.
 var RuntimeInfo = SystemInfo{}
@@ -119,13 +155,25 @@ type Instance struct {
 	downloadMu       sync.RWMutex
 	downloadProgress DownloadProgress
 
-	audioCtx *malgo.AllocatedContext
+	audioCtx AudioContext
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
 func New(eventBus *eventbus.EventBus, historyManager *history.Manager) *Instance {
 	audioCtx, _ := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 
+	return &Instance{
+		eventBus:       eventBus,
+		historyManager: historyManager,
+		statusMu:       sync.RWMutex{},
+		statusPrevious: StatusUnknown,
+		statusCurrent:  StatusUnloaded,
+		audioCtx:       &audioContextWrapper{ctx: audioCtx},
+	}
+}
+
+// NewWithContext creates a new Instance with a custom AudioContext (for testing).
+func NewWithContext(eventBus *eventbus.EventBus, historyManager *history.Manager, audioCtx AudioContext) *Instance {
 	return &Instance{
 		eventBus:       eventBus,
 		historyManager: historyManager,
@@ -202,8 +250,8 @@ func (i *Instance) GetAvailableDevices() AvailableDevices {
 	if err == nil {
 		for idx, dev := range captureDevices {
 			result.InputDevices = append(result.InputDevices, AudioDevice{
-				ID:        dev.ID.String(),
-				Name:      dev.Name(),
+				ID:        dev.IDString(),
+				Name:      dev.NameString(),
 				IsDefault: idx == 0,
 			})
 		}
@@ -214,8 +262,8 @@ func (i *Instance) GetAvailableDevices() AvailableDevices {
 	if err == nil {
 		for idx, dev := range playbackDevices {
 			result.OutputDevices = append(result.OutputDevices, AudioDevice{
-				ID:        dev.ID.String(),
-				Name:      dev.Name(),
+				ID:        dev.IDString(),
+				Name:      dev.NameString(),
 				IsDefault: idx == 0,
 			})
 		}

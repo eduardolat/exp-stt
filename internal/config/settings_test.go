@@ -28,6 +28,9 @@ func TestNewSettingsManager(t *testing.T) {
 	settings := sm.Get()
 	require.Equal(t, "default", settings.InputDevice)
 	require.Equal(t, 100, settings.SoundFeedbackVolume)
+	require.Equal(t, config.OutputModeCopyPaste, settings.OutputMode)
+	require.Equal(t, 10, settings.HistoryLimit)
+	require.True(t, settings.NotifyOnError)
 }
 
 func TestSettingsManager_Load(t *testing.T) {
@@ -106,7 +109,11 @@ func TestSettingsManager_ConcurrentAccess(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < iterations; i++ {
-			_ = sm.Get()
+			s := sm.Get()
+			// Basic validity check
+			if s.Version == 0 {
+				t.Error("settings version should not be 0")
+			}
 		}
 	}()
 
@@ -117,7 +124,9 @@ func TestSettingsManager_ConcurrentAccess(t *testing.T) {
 		for i := 0; i < iterations; i++ {
 			s := sm.Get()
 			s.SoundFeedbackVolume = i
-			_ = sm.Update(s)
+			if err := sm.Update(s); err != nil {
+				t.Errorf("failed to update settings: %v", err)
+			}
 		}
 	}()
 

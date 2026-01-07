@@ -102,7 +102,7 @@ func (i *Instance) UnloadModels() {
 // TranscribeWAV transcribes audio from WAV bytes.
 // The WAV must be 16kHz mono PCM format (as produced by the recorder).
 func (i *Instance) TranscribeWAV(wavData []byte) (string, error) {
-	samples, err := processWAVBytes(wavData)
+	samples, err := ProcessWAVBytes(wavData)
 	if err != nil {
 		return "", fmt.Errorf("error processing WAV data: %w", err)
 	}
@@ -116,9 +116,9 @@ func (i *Instance) TranscribeSamples(samples []float32) (string, error) {
 	return i.parakeet.Transcribe(samples)
 }
 
-// processWAVBytes reads WAV bytes and converts to float32 samples.
+// ProcessWAVBytes reads WAV bytes and converts to float32 samples.
 // Expects 16kHz mono PCM format (as produced by the recorder).
-func processWAVBytes(wavData []byte) ([]float32, error) {
+func ProcessWAVBytes(wavData []byte) ([]float32, error) {
 	reader := bytes.NewReader(wavData)
 	decoder := wav.NewDecoder(reader)
 

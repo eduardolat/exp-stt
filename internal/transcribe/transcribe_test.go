@@ -59,9 +59,9 @@ func TestProcessWAVBytes(t *testing.T) {
 
 		// Check normalization
 		assert.InDelta(t, 0.0, samples[0], 0.0001)
-		assert.InDelta(t, 0.999969, samples[1], 0.0001) // 32767 / 32768
-		assert.InDelta(t, -1.0, samples[2], 0.0001)     // -32768 / 32768
-		assert.InDelta(t, 0.5, samples[3], 0.0001)      // 16384 / 32768
+		assert.InDelta(t, 1.0, samples[1], 0.0001)  // 32767 / 32768 ~= 1.0
+		assert.InDelta(t, -1.0, samples[2], 0.0001)  // -32768 / 32768
+		assert.InDelta(t, 0.5, samples[3], 0.0001)   // 16384 / 32768
 	})
 
 	t.Run("Empty WAV Data", func(t *testing.T) {

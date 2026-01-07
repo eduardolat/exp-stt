@@ -1,3 +1,5 @@
+const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
 export function formatRelativeTime(date: Date | string | number): string {
 	const now = new Date();
 	const diffMs = now.getTime() - new Date(date).getTime();
@@ -7,8 +9,6 @@ export function formatRelativeTime(date: Date | string | number): string {
 	const diffDays = Math.round(diffHours / 24);
 	const diffMonths = Math.round(diffDays / 30);
 	const diffYears = Math.round(diffDays / 365);
-
-	const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
 	if (Math.abs(diffSeconds) < 60) return 'just now';
 	if (Math.abs(diffMinutes) < 60) return rtf.format(-diffMinutes, 'minute');

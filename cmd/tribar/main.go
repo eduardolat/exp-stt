@@ -97,7 +97,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	eventBus := eventbus.New()
 
-	settingsManager, err := config.NewSettingsManager(eventBus)
+	settingsManager, err := config.NewSettingsManager(eventBus, config.DirectoryConfig)
 	if err != nil {
 		return fmt.Errorf("error loading settings: %w", err)
 	}

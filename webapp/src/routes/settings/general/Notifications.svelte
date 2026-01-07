@@ -9,47 +9,33 @@
 		<Bell class="size-4" />
 		Notifications
 	</h3>
-	<table class="w-full">
-		<tbody>
-			<tr>
-				<td class="py-2">
-					<span class="text-sm">Notify on errors</span>
-				</td>
-				<td class="py-2 text-right">
-					<input
-						type="checkbox"
-						class="toggle toggle-sm"
-						checked={store.settings.notifyOnError}
-						onchange={(e) => store.updateSettings({ notifyOnError: e.currentTarget.checked })}
-					/>
-				</td>
-			</tr>
-			<tr>
-				<td class="py-2">
-					<span class="text-sm">Notify on recording start</span>
-				</td>
-				<td class="py-2 text-right">
-					<input
-						type="checkbox"
-						class="toggle toggle-sm"
-						checked={store.settings.notifyOnStart}
-						onchange={(e) => store.updateSettings({ notifyOnStart: e.currentTarget.checked })}
-					/>
-				</td>
-			</tr>
-			<tr>
-				<td class="py-2">
-					<span class="text-sm">Notify on transcription complete</span>
-				</td>
-				<td class="py-2 text-right">
-					<input
-						type="checkbox"
-						class="toggle toggle-sm"
-						checked={store.settings.notifyOnFinish}
-						onchange={(e) => store.updateSettings({ notifyOnFinish: e.currentTarget.checked })}
-					/>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+	<div class="space-y-4">
+		<label class="label cursor-pointer justify-between py-2">
+			<span class="text-sm">Notify on errors</span>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm"
+				checked={store.settings.notifyOnError}
+				onchange={(e) => store.updateSettings({ notifyOnError: e.currentTarget.checked })}
+			/>
+		</label>
+		<label class="label cursor-pointer justify-between py-2">
+			<span class="text-sm">Notify on recording start</span>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm"
+				checked={store.settings.notifyOnStart}
+				onchange={(e) => store.updateSettings({ notifyOnStart: e.currentTarget.checked })}
+			/>
+		</label>
+		<label class="label cursor-pointer justify-between py-2">
+			<span class="text-sm">Notify on transcription complete</span>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm"
+				checked={store.settings.notifyOnFinish}
+				onchange={(e) => store.updateSettings({ notifyOnFinish: e.currentTarget.checked })}
+			/>
+		</label>
+	</div>
 </Card>

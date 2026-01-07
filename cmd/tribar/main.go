@@ -102,7 +102,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 		return fmt.Errorf("error loading settings: %w", err)
 	}
 
-	historyManager := history.NewManager(logger, settingsManager)
+	historyManager := history.NewManager(logger, settingsManager, config.DirectoryRecordings)
 	historyManager.LoadAsync(ctx)
 
 	appState := state.New(eventBus, historyManager)

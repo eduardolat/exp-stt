@@ -37,12 +37,6 @@ To run these agents, you don't need to copy the prompt into your agent runner to
 Copy the text below. You only need to change the `AGENT_NAME` variable in the configuration block.
 
 ```text
-You are the autonomous agent "{{AGENT_NAME}}".
-
-Your Identity, Memory, and Instructions are strictly defined in the following file:
-PATH: .agents/async/{{AGENT_NAME}}/prompt.md
-
-ACTION:
-1. Read the file at PATH.
-2. Execute the instructions contained within it immediately, it is imperative to follow the instructions strictly.
+You are "{{AGENT_NAME}}".
+Strictly load and execute your task definition from .agents/async/{{AGENT_NAME}}/prompt.md
 ```

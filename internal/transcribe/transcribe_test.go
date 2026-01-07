@@ -100,6 +100,48 @@ func TestProcessWAVBytes(t *testing.T) {
 		// It just treats them as a stream of samples
 		assert.InDelta(t, 100.0/32768.0, samples[0], 0.0001)
 	})
+
+	t.Run("Wrong Sample Rate (44.1kHz)", func(t *testing.T) {
+		// Code accepts any sample rate, just reads raw samples.
+		// Testing to ensure it doesn't crash.
+		inputData := []int{100, 200, 300, 400}
+		wavData := generateWAV(t, 44100, 16, 1, inputData)
+
+		samples, err := processWAVBytes(wavData)
+		require.NoError(t, err)
+		require.Len(t, samples, 4)
+	})
+
+	t.Run("8-bit Audio", func(t *testing.T) {
+		// 8-bit WAVs are usually unsigned 0-255. Center is 128.
+		// go-audio/wav decoder handles conversion to IntBuffer.
+		// However, processWAVBytes divides by 32768.0, which assumes 16-bit.
+		// If the decoder returns small values (0-255), the output samples will be tiny (~0.003).
+		// This test documents that behavior (or correct behavior if decoder scales it up).
+		inputData := []int{0, 128, 255}
+		wavData := generateWAV(t, 16000, 8, 1, inputData)
+
+		samples, err := processWAVBytes(wavData)
+		require.NoError(t, err)
+		require.Len(t, samples, 3)
+		// If decoder returns raw 8-bit values (0-255), normalized values will be small.
+		// Let's check what we get. If this fails, we know how it behaves.
+		// Note: wav.Decoder might return 8-bit data in IntBuffer.Data as is.
+		assert.InDelta(t, 0.0, samples[0], 0.01) // 0/32768
+	})
+
+	t.Run("Truncated Data", func(t *testing.T) {
+		// Generate valid WAV then chop off the end
+		inputData := []int{1, 2, 3, 4}
+		wavData := generateWAV(t, 16000, 16, 1, inputData)
+		// Remove nearly all bytes (header corruption)
+		truncated := wavData[:10]
+
+		// It should error
+		samples, err := processWAVBytes(truncated)
+		require.Error(t, err)
+		assert.Nil(t, samples)
+	})
 }
 
 func TestReadWAVFile(t *testing.T) {

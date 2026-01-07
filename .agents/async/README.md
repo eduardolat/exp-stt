@@ -37,14 +37,14 @@ To run these agents, you don't need to copy the prompt into your agent runner to
 Copy the text below. You only need to change the `AGENT_NAME` variable in the configuration block.
 
 ```text
-### RUNTIME CONFIGURATION
+## RUNTIME CONFIGURATION
 
 AGENT_NAME:        "{{AGENT_NAME}}"
 IDENTITY_FILE:     ".agents/async/{{AGENT_NAME}}/prompt.md"
 MEMORY_FILE:       ".agents/async/{{AGENT_NAME}}/journal.md"
 GLOBAL_RULES_FILE: "AGENTS.md"
 
-### SYSTEM INSTRUCTIONS
+## SYSTEM INSTRUCTIONS
 
 You are an autonomous agent bound to this repository. Your behavior is defined strictly by the files specified in the CONFIGURATION block above.
 

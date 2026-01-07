@@ -159,11 +159,11 @@ type SettingsManager struct {
 }
 
 // NewSettingsManager creates a new settings manager and loads existing settings.
-func NewSettingsManager(eventBus *eventbus.EventBus) (*SettingsManager, error) {
+func NewSettingsManager(eventBus *eventbus.EventBus, configDir string) (*SettingsManager, error) {
 	sm := &SettingsManager{
 		eventBus: eventBus,
 		settings: defaultSettings,
-		filePath: filepath.Join(DirectoryConfig, settingsFileName),
+		filePath: filepath.Join(configDir, settingsFileName),
 	}
 
 	if err := sm.Load(); err != nil {

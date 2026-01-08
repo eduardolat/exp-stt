@@ -241,7 +241,7 @@ func (sm *SettingsManager) saveUnsafe() error {
 		return fmt.Errorf("failed to marshal settings: %w", err)
 	}
 
-	if err := os.WriteFile(sm.filePath, data, 0644); err != nil {
+	if err := os.WriteFile(sm.filePath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write settings file: %w", err)
 	}
 

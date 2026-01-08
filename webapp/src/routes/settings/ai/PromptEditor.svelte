@@ -68,6 +68,7 @@
 					startEdit();
 				}}
 				title="Edit"
+				aria-label="Edit prompt"
 			>
 				<Pencil class="size-3.5" />
 			</button>
@@ -78,6 +79,7 @@
 					handleDelete();
 				}}
 				title="Delete"
+				aria-label="Delete prompt"
 			>
 				<Trash2 class="size-3.5" />
 			</button>

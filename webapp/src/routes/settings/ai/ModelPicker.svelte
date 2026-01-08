@@ -97,7 +97,13 @@
 		<div class="flex h-125 flex-col gap-4">
 			<label class="input w-full">
 				<Search class="size-4" />
-				<input type="text" class="grow" placeholder="Search models..." bind:value={searchQuery} />
+				<input
+					type="text"
+					class="grow"
+					placeholder="Search models..."
+					aria-label="Search models"
+					bind:value={searchQuery}
+				/>
 			</label>
 
 			<div class="flex min-h-0 flex-1 flex-col">

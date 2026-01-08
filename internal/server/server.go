@@ -35,6 +35,14 @@ func NewServer(
 		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
 		ReferrerPolicy:     "strict-origin-when-cross-origin",
 		XSSProtection:      "1; mode=block", // Basic protection for older browsers
+		// Content Security Policy
+		// default-src: only allow resources from the same origin
+		// script-src: allow same origin and inline scripts (needed for Svelte hydration/transitions)
+		// style-src: allow same origin and inline styles (needed for Svelte/Tailwind)
+		// img-src: allow same origin and data URIs (for inline SVGs/images)
+		// font-src: allow same origin
+		// connect-src: allow same origin (for API/SSE)
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self';",
 	}))
 
 	// Configure CORS

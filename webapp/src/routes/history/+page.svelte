@@ -1,13 +1,25 @@
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
-	import { Trash2, Clock, Settings, History } from '@lucide/svelte';
-	import { HistoryItem, Card, Modal, PageHeader } from '$lib/components';
+	import { Trash2, Clock, Settings, History, Sparkles } from '@lucide/svelte';
+	import { HistoryItem, Card, Modal, PageHeader, CopyButton } from '$lib/components';
+	import type { HistoryEntry } from '$lib/client.gen';
+	import { formatRelativeTime } from '$lib/utils/formatRelativeTime';
 
 	let settingsModal: Modal | undefined = $state();
+	let detailsModal: Modal | undefined = $state();
+	let selectedEntry: HistoryEntry | undefined = $state();
 
-	async function handleDelete(entry: (typeof store.history)[0]) {
+	async function handleDelete() {
+		if (!selectedEntry) return;
+		// Close modal first
+		detailsModal?.close();
+
+		// Use confirm dialog as before, or rely on user clicking "Delete" in modal which is explicit enough?
+		// The previous implementation used confirm inside handleDelete
 		if (!confirm('Delete this transcription?')) return;
-		await store.deleteHistoryEntry(entry.id);
+
+		await store.deleteHistoryEntry(selectedEntry.id);
+		selectedEntry = undefined;
 	}
 
 	async function handleClearAll() {
@@ -68,8 +80,75 @@
 	{:else}
 		<div class="space-y-4">
 			{#each store.history as entry (entry.id)}
-				<HistoryItem {entry} onDelete={handleDelete} />
+				<HistoryItem
+					{entry}
+					onSelect={(e) => {
+						selectedEntry = e;
+						detailsModal?.open();
+					}}
+				/>
 			{/each}
 		</div>
 	{/if}
 </div>
+
+{#snippet textWithFallback(text: string)}
+	{#if text.trim()}
+		{text}
+	{:else}
+		<span class="opacity-70">(No text available)</span>
+	{/if}
+{/snippet}
+
+<Modal bind:this={detailsModal} title="Transcription Details">
+	{#if selectedEntry}
+		{@const entry = selectedEntry}
+		<div class="space-y-4">
+			<div class="flex items-center gap-2 text-sm opacity-70">
+				<span>{formatRelativeTime(entry.timestamp)}</span>
+				<span>•</span>
+				<span>Took {Math.floor(entry.durationMs / 1000)}s</span>
+				{#if entry.postProcessed}
+					<span class="ml-auto badge gap-1 badge-sm badge-secondary">
+						<Sparkles class="size-3" />
+						AI Enhanced
+					</span>
+				{/if}
+			</div>
+
+			<Card class="p-4">
+				<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
+				<audio controls class="w-full" preload="none" src={`/api/v1/audio/${entry.id}`}>
+					Your browser does not support audio playback.
+				</audio>
+			</Card>
+
+			<Card class="p-4">
+				<div class="mb-1 flex items-center justify-between">
+					<p class="text-xs font-medium opacity-70">Original:</p>
+					<CopyButton text={entry.textRaw} showLabel />
+				</div>
+				<p class="text-sm">{@render textWithFallback(entry.textRaw)}</p>
+			</Card>
+
+			{#if entry.postProcessed && entry.textRaw !== entry.textFinal}
+				<Card class="p-4">
+					<div class="mb-1 flex items-center justify-between">
+						<p class="text-xs font-medium opacity-70">Enhanced:</p>
+						<CopyButton text={entry.textFinal} showLabel />
+					</div>
+					<p class="text-sm">{@render textWithFallback(entry.textFinal)}</p>
+				</Card>
+			{/if}
+		</div>
+	{/if}
+
+	{#snippet actions()}
+		<div class="flex justify-end gap-2 pt-2">
+			<button class="btn btn-outline btn-sm btn-error" onclick={handleDelete}>
+				<Trash2 class="size-3.5" />
+				Delete
+			</button>
+		</div>
+	{/snippet}
+</Modal>

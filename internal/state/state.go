@@ -15,6 +15,21 @@ import (
 	"github.com/varavelio/tribar/internal/history"
 )
 
+// AudioContext abstracts the audio context for testing.
+type AudioContext interface {
+	Devices(kind malgo.DeviceType) ([]malgo.DeviceInfo, error)
+}
+
+// HistoryManager abstracts the history manager for testing.
+type HistoryManager interface {
+	GetAll(ctx context.Context) []history.Entry
+	GetByID(id string) (history.Entry, bool)
+	GetAudioPath(id string) string
+	Delete(ctx context.Context, id string) error
+	Clear(ctx context.Context) error
+	Count() int
+}
+
 // RuntimeInfo holds system information detected at startup.
 // This is populated by InitRuntime and should not be modified afterwards.
 var RuntimeInfo = SystemInfo{}
@@ -110,7 +125,7 @@ type SystemInfo struct {
 // packages to react to the current state of the application.
 type Instance struct {
 	eventBus       *eventbus.EventBus
-	historyManager *history.Manager
+	historyManager HistoryManager
 
 	statusMu       sync.RWMutex
 	statusPrevious Status
@@ -119,13 +134,17 @@ type Instance struct {
 	downloadMu       sync.RWMutex
 	downloadProgress DownloadProgress
 
-	audioCtx *malgo.AllocatedContext
+	audioCtx AudioContext
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
 func New(eventBus *eventbus.EventBus, historyManager *history.Manager) *Instance {
 	audioCtx, _ := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+	return NewWithDependencies(eventBus, historyManager, audioCtx)
+}
 
+// NewWithDependencies creates a new Instance with injected dependencies.
+func NewWithDependencies(eventBus *eventbus.EventBus, historyManager HistoryManager, audioCtx AudioContext) *Instance {
 	return &Instance{
 		eventBus:       eventBus,
 		historyManager: historyManager,
@@ -245,6 +264,7 @@ func (i *Instance) DeleteHistoryEntry(ctx context.Context, id string) error {
 	err := i.historyManager.Delete(ctx, id)
 	if err == nil {
 		i.eventBus.PublishStateChanged()
+		return nil
 	}
 	return fmt.Errorf("failed to delete history entry: %w", err)
 }
@@ -254,6 +274,7 @@ func (i *Instance) ClearHistory(ctx context.Context) error {
 	err := i.historyManager.Clear(ctx)
 	if err == nil {
 		i.eventBus.PublishStateChanged()
+		return nil
 	}
 	return fmt.Errorf("failed to clear history: %w", err)
 }

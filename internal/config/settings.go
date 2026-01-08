@@ -241,7 +241,6 @@ func (sm *SettingsManager) saveUnsafe() error {
 		return fmt.Errorf("failed to marshal settings: %w", err)
 	}
 
-	// Sentinel: CRITICAL Fix - Use 0600 to protect API key
 	if err := os.WriteFile(sm.filePath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write settings file: %w", err)
 	}

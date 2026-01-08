@@ -194,7 +194,6 @@ func (m *Manager) Write(ctx context.Context, req WriteRequest) (Entry, error) {
 
 	// Step 1: Save the audio file
 	wavPath := filepath.Join(m.directory, entry.ID+wavExtension)
-	// Sentinel: HIGH Fix - Use 0600 to protect user privacy (audio)
 	if err := os.WriteFile(wavPath, req.AudioData, 0600); err != nil {
 		return Entry{}, fmt.Errorf("failed to write audio file: %w", err)
 	}
@@ -208,7 +207,6 @@ func (m *Manager) Write(ctx context.Context, req WriteRequest) (Entry, error) {
 		return Entry{}, fmt.Errorf("failed to marshal entry: %w", err)
 	}
 
-	// Sentinel: HIGH Fix - Use 0600 to protect user privacy (metadata)
 	if err := os.WriteFile(jsonPath, jsonData, 0600); err != nil {
 		// Cleanup audio file on failure
 		_ = os.Remove(wavPath)

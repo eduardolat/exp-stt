@@ -14,6 +14,7 @@
 			class="select w-full select-sm"
 			value={store.settings.inputDevice}
 			onchange={(e) => store.updateSettings({ inputDevice: e.currentTarget.value })}
+			aria-label="Input Device"
 		>
 			<option value="default">System Default</option>
 			{#each store.inputDevices as device (device.id)}

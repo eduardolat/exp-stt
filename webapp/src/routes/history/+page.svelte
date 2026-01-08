@@ -4,15 +4,28 @@
 	import { HistoryItem, Card, Modal, PageHeader } from '$lib/components';
 
 	let settingsModal: Modal | undefined = $state();
+	let confirmModal: Modal | undefined = $state();
+	let confirmationState = $state<{ type: 'delete' | 'clear'; entry?: (typeof store.history)[0] }>({
+		type: 'delete'
+	});
 
-	async function handleDelete(entry: (typeof store.history)[0]) {
-		if (!confirm('Delete this transcription?')) return;
-		await store.deleteHistoryEntry(entry.id);
+	function handleDelete(entry: (typeof store.history)[0]) {
+		confirmationState = { type: 'delete', entry };
+		confirmModal?.open();
 	}
 
-	async function handleClearAll() {
-		if (!confirm('Clear all history? This cannot be undone.')) return;
-		await store.clearHistory();
+	function handleClearAll() {
+		confirmationState = { type: 'clear' };
+		confirmModal?.open();
+	}
+
+	async function onConfirm() {
+		if (confirmationState.type === 'delete' && confirmationState.entry) {
+			await store.deleteHistoryEntry(confirmationState.entry.id);
+		} else if (confirmationState.type === 'clear') {
+			await store.clearHistory();
+		}
+		confirmModal?.close();
 	}
 </script>
 
@@ -73,3 +86,20 @@
 		</div>
 	{/if}
 </div>
+
+<Modal
+	bind:this={confirmModal}
+	title={confirmationState.type === 'delete' ? 'Delete Transcription' : 'Clear All History'}
+>
+	<p class="py-4">
+		{confirmationState.type === 'delete'
+			? 'Are you sure you want to delete this transcription?'
+			: 'Are you sure you want to clear all history? This cannot be undone.'}
+	</p>
+	{#snippet actions()}
+		<button class="btn" onclick={() => confirmModal?.close()}>Cancel</button>
+		<button class="btn btn-error" onclick={onConfirm}>
+			{confirmationState.type === 'delete' ? 'Delete' : 'Clear All'}
+		</button>
+	{/snippet}
+</Modal>

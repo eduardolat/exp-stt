@@ -13,7 +13,7 @@
 		ArrowRight,
 		LayoutDashboard
 	} from '@lucide/svelte';
-	import { HistoryItem, Card, PageHeader } from '$lib/components';
+	import { HistoryItem, Card, PageHeader, Modal } from '$lib/components';
 	import WaylandShortcutAlert from '$lib/components/WaylandShortcutAlert.svelte';
 
 	const statusConfig: Record<string, { icon: typeof Mic; pulse: boolean; spin: boolean }> = {
@@ -31,9 +31,19 @@
 	let IconComponent = $derived(config.icon);
 	let recentHistory = $derived(store.history.slice(0, 3));
 
-	async function handleDelete(entry: (typeof store.history)[0]) {
-		if (!confirm('Delete this transcription?')) return;
-		await store.deleteHistoryEntry(entry.id);
+	let deleteModal: Modal | undefined = $state();
+	let entryToDelete: (typeof store.history)[0] | null = $state(null);
+
+	function handleDelete(entry: (typeof store.history)[0]) {
+		entryToDelete = entry;
+		deleteModal?.open();
+	}
+
+	async function confirmDelete() {
+		if (!entryToDelete) return;
+		await store.deleteHistoryEntry(entryToDelete.id);
+		deleteModal?.close();
+		entryToDelete = null;
 	}
 </script>
 
@@ -125,3 +135,11 @@
 		{/if}
 	</Card>
 </div>
+
+<Modal bind:this={deleteModal} title="Confirm Deletion">
+	<p class="py-4">Are you sure you want to delete this transcription?</p>
+	{#snippet actions()}
+		<button class="btn" onclick={() => deleteModal?.close()}>Cancel</button>
+		<button class="btn btn-error" onclick={confirmDelete}>Delete</button>
+	{/snippet}
+</Modal>

@@ -61,7 +61,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 1;
+	--noise: 0;
 }
 
 @plugin 'daisyui/theme' {
@@ -114,7 +114,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 1;
+	--noise: 0;
 }
 
 @plugin 'daisyui/theme' {
@@ -166,7 +166,7 @@
 
 	/* effects */
 	--depth: 1;
-	--noise: 1;
+	--noise: 0;
 }
 
 @utility input {

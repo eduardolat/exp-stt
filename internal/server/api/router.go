@@ -14,6 +14,7 @@ import (
 	"github.com/varavelio/tribar/internal/server/api/uforpc"
 	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/state"
+	"github.com/varavelio/tribar/internal/workflow"
 )
 
 //go:embed all:playground/**
@@ -30,6 +31,7 @@ type handlers struct {
 	engine          *engine.Engine
 	shortcutManager *shortcut.Manager
 	eventBus        *eventbus.EventBus
+	workflowManager *workflow.Manager
 	uforpcServer    *uforpc.Server[urpcProps]
 }
 
@@ -41,6 +43,7 @@ func MountRouter(
 	eng *engine.Engine,
 	shortcutMgr *shortcut.Manager,
 	eventBus *eventbus.EventBus,
+	workflowMgr *workflow.Manager,
 ) {
 	uforpcServer := uforpc.NewServer[urpcProps]()
 	handlers := &handlers{
@@ -50,6 +53,7 @@ func MountRouter(
 		engine:          eng,
 		shortcutManager: shortcutMgr,
 		eventBus:        eventBus,
+		workflowManager: workflowMgr,
 		uforpcServer:    uforpcServer,
 	}
 
@@ -73,6 +77,17 @@ func (h *handlers) registerURPC() {
 	h.registerProcHistoryClear()
 	h.registerProcShortcutToggleUpdate()
 	h.registerProcVersionGet()
+
+	// Workflow procedures
+	h.registerProcWorkflowsGet()
+	h.registerProcWorkflowGet()
+	h.registerProcWorkflowCreate()
+	h.registerProcWorkflowUpdate()
+	h.registerProcWorkflowDelete()
+	h.registerProcWorkflowDuplicate()
+	h.registerProcWorkflowSetActive()
+	h.registerProcWorkflowGetActive()
+	h.registerProcWorkflowGetAvailableNodes()
 
 	// Streams
 	h.registerStreamListenForEvents()

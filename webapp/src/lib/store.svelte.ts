@@ -8,7 +8,10 @@ import {
 	type DownloadProgress,
 	type SystemInfo,
 	type Prompt,
-	type Shortcut
+	type Shortcut,
+	type Workflow,
+	type WorkflowInput,
+	type NodeDefinition
 } from './client.gen';
 
 const URPC_API_DEFAULT_URL = '/api/v1/urpc';
@@ -55,7 +58,9 @@ function createDefaultSettings(): Settings {
 		modelUnloadEnable: false,
 		modelUnloadSeconds: 300,
 		shortcutToggle: { modifiers: [], key: '' },
-		pasteShortcut: 'ctrl+v'
+		pasteShortcut: 'ctrl+v',
+		advancedMode: false,
+		activeWorkflowId: ''
 	};
 }
 
@@ -69,6 +74,8 @@ class Store {
 	isLoading = $state(true);
 	error: string | null = $state(null);
 	appVersion = $state('');
+	workflows: Workflow[] = $state([]);
+	availableNodes: NodeDefinition[] = $state([]);
 
 	get status() {
 		return this.state.status;
@@ -104,6 +111,14 @@ class Store {
 
 	get isRecording(): boolean {
 		return this.status === 'listening';
+	}
+
+	get advancedMode(): boolean {
+		return this.settings.advancedMode;
+	}
+
+	get activeWorkflowId(): string {
+		return this.settings.activeWorkflowId;
 	}
 
 	get isProcessing(): boolean {
@@ -247,6 +262,88 @@ class Store {
 			await this.client.procs.historyClear().execute({});
 		} catch (err) {
 			console.error('Failed to clear history:', err);
+			throw err;
+		}
+	}
+
+	// Workflow Management
+	async fetchWorkflows(): Promise<void> {
+		try {
+			const { workflows } = await this.client.procs.workflowsGet().execute({});
+			this.workflows = workflows;
+		} catch (err) {
+			console.error('Failed to fetch workflows:', err);
+		}
+	}
+
+	async fetchAvailableNodes(): Promise<void> {
+		try {
+			const { nodes } = await this.client.procs.workflowGetAvailableNodes().execute({});
+			this.availableNodes = nodes;
+		} catch (err) {
+			console.error('Failed to fetch available nodes:', err);
+		}
+	}
+
+	async getWorkflow(id: string): Promise<Workflow | null> {
+		try {
+			const { workflow } = await this.client.procs.workflowGet().execute({ id });
+			return workflow;
+		} catch (err) {
+			console.error('Failed to get workflow:', err);
+			return null;
+		}
+	}
+
+	async createWorkflow(workflow: WorkflowInput): Promise<Workflow | null> {
+		try {
+			const result = await this.client.procs.workflowCreate().execute({ workflow });
+			await this.fetchWorkflows();
+			return result.workflow;
+		} catch (err) {
+			console.error('Failed to create workflow:', err);
+			return null;
+		}
+	}
+
+	async updateWorkflow(id: string, workflow: WorkflowInput): Promise<Workflow | null> {
+		try {
+			const result = await this.client.procs.workflowUpdate().execute({ id, workflow });
+			await this.fetchWorkflows();
+			return result.workflow;
+		} catch (err) {
+			console.error('Failed to update workflow:', err);
+			return null;
+		}
+	}
+
+	async deleteWorkflow(id: string): Promise<void> {
+		try {
+			await this.client.procs.workflowDelete().execute({ id });
+			await this.fetchWorkflows();
+		} catch (err) {
+			console.error('Failed to delete workflow:', err);
+			throw err;
+		}
+	}
+
+	async duplicateWorkflow(id: string): Promise<Workflow | null> {
+		try {
+			const result = await this.client.procs.workflowDuplicate().execute({ id });
+			await this.fetchWorkflows();
+			return result.workflow;
+		} catch (err) {
+			console.error('Failed to duplicate workflow:', err);
+			return null;
+		}
+	}
+
+	async setActiveWorkflow(id: string): Promise<void> {
+		try {
+			await this.client.procs.workflowSetActive().execute({ id });
+			this.settings.activeWorkflowId = id; // Optimistic update
+		} catch (err) {
+			console.error('Failed to set active workflow:', err);
 			throw err;
 		}
 	}

@@ -115,6 +115,12 @@ type Settings {
 
   """ Global keyboard shortcut for toggle recording """
   shortcutToggle: Shortcut
+
+  """ Enable advanced workflow mode """
+  advancedMode: bool
+
+  """ Active workflow ID when in advanced mode """
+  activeWorkflowId: string
 }
 
 """
@@ -206,6 +212,117 @@ type State {
   systemInfo: SystemInfo
 }
 
+"""
+Position of a node in the workflow editor.
+"""
+type Position {
+  x: float
+  y: float
+}
+
+"""
+A workflow node.
+"""
+type WorkflowNode {
+  id: string
+  nodeType: string
+  position: Position
+  config: string
+  data: string
+}
+
+"""
+A connection between two workflow nodes.
+"""
+type WorkflowEdge {
+  """ Unique identifier for the edge """
+  id: string
+
+  """ Source node ID """
+  source: string
+
+  """ Target node ID """
+  target: string
+
+  """ Source handle (output port) """
+  sourceHandle?: string
+
+  """ Target handle (input port) """
+  targetHandle?: string
+}
+
+"""
+Workflow trigger configuration.
+"""
+type WorkflowTrigger {
+  triggerType: string
+  config: string
+}
+
+"""
+A complete workflow definition.
+"""
+type Workflow {
+  """ Unique identifier """
+  id: string
+
+  """ Display name """
+  name: string
+
+  """ Optional description """
+  description?: string
+
+  """ Whether workflow is enabled """
+  enabled: bool
+
+  """ Creation timestamp (ISO 8601) """
+  createdAt: string
+
+  """ Last update timestamp (ISO 8601) """
+  updatedAt: string
+
+  """ What triggers this workflow """
+  trigger: WorkflowTrigger
+
+  """ Nodes in the workflow """
+  nodes: WorkflowNode[]
+
+  """ Connections between nodes """
+  edges: WorkflowEdge[]
+}
+
+"""
+Input for creating/updating a workflow.
+"""
+type WorkflowInput {
+  name: string
+  description?: string
+  enabled: bool
+  trigger: WorkflowTrigger
+  nodes: WorkflowNode[]
+  edges: WorkflowEdge[]
+}
+
+"""
+Output field definition for a node type.
+"""
+type NodeOutputField {
+  fieldType: string
+  description: string
+}
+
+"""
+Definition of a node type for the frontend palette.
+"""
+type NodeDefinition {
+  nodeType: string
+  name: string
+  description: string
+  category: string
+  inputs: string[]
+  outputs: string
+}
+
 // ---------------------------------------------------------------------------
 // Procedures
 // ---------------------------------------------------------------------------
@@ -277,6 +394,104 @@ proc VersionGet {
   output {
     """ Application version string, e.g. 0.1.0 """
     appVersion: string
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workflow Management
+// ---------------------------------------------------------------------------
+
+"""
+Get all workflows.
+"""
+proc WorkflowsGet {
+  output {
+    workflows: Workflow[]
+  }
+}
+
+"""
+Get a specific workflow by ID.
+"""
+proc WorkflowGet {
+  input {
+    id: string
+  }
+  output {
+    workflow: Workflow
+  }
+}
+
+"""
+Create a new workflow.
+"""
+proc WorkflowCreate {
+  input {
+    workflow: WorkflowInput
+  }
+  output {
+    workflow: Workflow
+  }
+}
+
+"""
+Update an existing workflow.
+"""
+proc WorkflowUpdate {
+  input {
+    id: string
+    workflow: WorkflowInput
+  }
+  output {
+    workflow: Workflow
+  }
+}
+
+"""
+Delete a workflow.
+"""
+proc WorkflowDelete {
+  input {
+    id: string
+  }
+}
+
+"""
+Duplicate a workflow.
+"""
+proc WorkflowDuplicate {
+  input {
+    id: string
+  }
+  output {
+    workflow: Workflow
+  }
+}
+
+"""
+Set the active workflow.
+"""
+proc WorkflowSetActive {
+  input {
+    id: string
+  }
+}
+
+"""
+Get the currently active workflow.
+"""
+proc WorkflowGetActive {
+  output {
+    workflow?: Workflow
+  }
+}
+
+"""
+Get available node types for the workflow editor.
+"""
+proc WorkflowGetAvailableNodes {
+  output {
+    nodes: NodeDefinition[]
   }
 }
 

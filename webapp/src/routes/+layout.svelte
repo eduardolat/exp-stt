@@ -12,7 +12,8 @@
 		Loader,
 		Sun,
 		Moon,
-		Eclipse
+		Eclipse,
+		Workflow
 	} from '@lucide/svelte';
 	import { themeChange } from 'theme-change';
 	import { page } from '$app/state';
@@ -116,10 +117,27 @@
 				<Sparkles class="size-4" />
 				AI
 			</a>
+			{#if store.advancedMode}
+				<a
+					href="#/workflows"
+					class="flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors {isActive(
+						'/workflows'
+					)
+						? 'border-primary text-primary'
+						: 'border-transparent opacity-70 hover:opacity-100'}"
+				>
+					<Workflow class="size-4" />
+					Workflows
+				</a>
+			{/if}
 		</div>
 	</nav>
 
-	<main class="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-4 py-4">
+	<main
+		class="flex-1 {isActive('/workflows')
+			? 'flex min-h-0 flex-col overflow-hidden'
+			: 'mx-auto max-w-4xl overflow-y-auto px-4 py-4'}"
+	>
 		{#if store.isLoading}
 			<div class="flex flex-col items-center justify-center py-20">
 				<Loader class="size-8 animate-spin text-primary" />

@@ -18,22 +18,26 @@ import (
 	"github.com/varavelio/tribar/internal/sound"
 	"github.com/varavelio/tribar/internal/state"
 	"github.com/varavelio/tribar/internal/transcribe"
+	"github.com/varavelio/tribar/internal/workflow"
+	"github.com/varavelio/tribar/internal/workflow/executor"
 )
 
 const unloadTickerInterval = 10 * time.Second
 
 // Dependencies contains all required dependencies for the engine.
 type Dependencies struct {
-	Logger          logger.Logger
-	SettingsManager *config.SettingsManager
-	HistoryManager  *history.Manager
-	State           *state.Instance
-	Recorder        *record.Recorder
-	Transcriber     *transcribe.Instance
-	PostProcess     *postprocess.Instance
-	Writer          *clipboard.Instance
-	Notifier        *notify.Instance
-	Sound           *sound.Instance
+	Logger           logger.Logger
+	SettingsManager  *config.SettingsManager
+	HistoryManager   *history.Manager
+	State            *state.Instance
+	Recorder         *record.Recorder
+	Transcriber      *transcribe.Instance
+	PostProcess      *postprocess.Instance
+	Writer           *clipboard.Instance
+	Notifier         *notify.Instance
+	Sound            *sound.Instance
+	WorkflowManager  *workflow.Manager
+	WorkflowExecutor *executor.Executor
 }
 
 // Engine orchestrates the transcription workflow.
@@ -48,6 +52,10 @@ type Engine struct {
 	writer          *clipboard.Instance
 	notifier        *notify.Instance
 	sound           *sound.Instance
+
+	// Workflow execution (Advanced Mode)
+	workflowManager  *workflow.Manager
+	workflowExecutor *executor.Executor
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -65,18 +73,20 @@ func New(deps Dependencies) *Engine {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Engine{
-		logger:          deps.Logger,
-		settingsManager: deps.SettingsManager,
-		historyManager:  deps.HistoryManager,
-		state:           deps.State,
-		recorder:        deps.Recorder,
-		transcriber:     deps.Transcriber,
-		postprocess:     deps.PostProcess,
-		writer:          deps.Writer,
-		notifier:        deps.Notifier,
-		sound:           deps.Sound,
-		ctx:             ctx,
-		cancel:          cancel,
+		logger:           deps.Logger,
+		settingsManager:  deps.SettingsManager,
+		historyManager:   deps.HistoryManager,
+		state:            deps.State,
+		recorder:         deps.Recorder,
+		transcriber:      deps.Transcriber,
+		postprocess:      deps.PostProcess,
+		writer:           deps.Writer,
+		notifier:         deps.Notifier,
+		sound:            deps.Sound,
+		workflowManager:  deps.WorkflowManager,
+		workflowExecutor: deps.WorkflowExecutor,
+		ctx:              ctx,
+		cancel:           cancel,
 	}
 }
 
@@ -271,6 +281,51 @@ func (e *Engine) processRecording() {
 	audioData := e.recorder.GetData()
 	recordingDurationMs := calculateDurationMs(len(audioData))
 	wavData := e.recorder.BuildWAV()
+
+	// Check if we should use advanced mode with custom workflow
+	if settings.AdvancedMode && settings.ActiveWorkflowID != "" {
+		e.processWithWorkflow(settings.ActiveWorkflowID, wavData, audioData, recordingDurationMs, startedAt)
+		return
+	}
+
+	// Default pipeline (simple mode)
+	e.processDefault(wavData, audioData, recordingDurationMs, startedAt)
+}
+
+// processWithWorkflow executes the active workflow in advanced mode.
+func (e *Engine) processWithWorkflow(workflowID string, wavData, audioData []byte, recordingDurationMs int64, startedAt time.Time) {
+	// Load the workflow
+	wf, ok := e.workflowManager.GetByID(workflowID)
+	if !ok {
+		e.logger.Error(e.ctx, "failed to load workflow, falling back to default", "workflowID", workflowID)
+		e.processDefault(wavData, audioData, recordingDurationMs, startedAt)
+		return
+	}
+
+	e.logger.Info(e.ctx, "executing workflow", "workflowID", workflowID, "workflowName", wf.Name)
+
+	// Create execution context with trigger data
+	triggerData := map[string]interface{}{
+		"audioData": wavData,
+		"rawAudio":  audioData,
+	}
+	execCtx := executor.NewExecutionContext(triggerData)
+
+	// Execute the workflow
+	if err := e.workflowExecutor.Execute(e.ctx, wf, execCtx); err != nil {
+		e.handleError("workflow execution failed", err)
+		return
+	}
+
+	e.sound.TranscriptionSuccess(e.ctx)
+	e.state.SetStatus(state.StatusLoaded)
+	e.recordActivity()
+	e.logger.Info(e.ctx, "workflow execution complete", "workflowID", workflowID)
+}
+
+// processDefault handles the default transcription pipeline (non-advanced mode).
+func (e *Engine) processDefault(wavData, audioData []byte, recordingDurationMs int64, startedAt time.Time) {
+	settings := e.settingsManager.Get()
 
 	// Ensure models are loaded before transcription
 	if !e.ensureModelsLoaded() {

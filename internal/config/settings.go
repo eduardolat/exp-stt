@@ -85,6 +85,10 @@ type Settings struct {
 
 	// Paste shortcut settings
 	PasteShortcut string `json:"paste_shortcut"`
+
+	// Workflow settings
+	AdvancedMode     bool   `json:"advanced_mode"`
+	ActiveWorkflowID string `json:"active_workflow_id"`
 }
 
 // defaultPrompts returns the predefined prompts for post-processing.
@@ -148,6 +152,9 @@ var defaultSettings = Settings{
 	},
 
 	PasteShortcut: "ctrl+v",
+
+	AdvancedMode:     false,
+	ActiveWorkflowID: "",
 }
 
 // SettingsManager handles loading and saving of user settings.

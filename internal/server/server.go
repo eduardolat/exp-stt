@@ -14,6 +14,7 @@ import (
 	"github.com/varavelio/tribar/internal/server/api"
 	"github.com/varavelio/tribar/internal/shortcut"
 	"github.com/varavelio/tribar/internal/state"
+	"github.com/varavelio/tribar/internal/workflow"
 	"github.com/varavelio/tribar/webapp"
 )
 
@@ -24,6 +25,7 @@ func NewServer(
 	eng *engine.Engine,
 	shortcutMgr *shortcut.Manager,
 	eventBus *eventbus.EventBus,
+	workflowMgr *workflow.Manager,
 ) *echo.Echo {
 	server := echo.New()
 	server.HideBanner = true
@@ -90,7 +92,7 @@ func NewServer(
 
 	// Mount API routes
 	apiGroup := server.Group("/api/v1")
-	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr, eventBus)
+	api.MountRouter(apiGroup, logger, settingsManager, appState, eng, shortcutMgr, eventBus, workflowMgr)
 
 	// Mount Web UI routes
 	subFS, _ := fs.Sub(webapp.BuildFS, "build")

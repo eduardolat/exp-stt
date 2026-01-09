@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -28,6 +29,8 @@ import (
 	"github.com/varavelio/tribar/internal/systray"
 	"github.com/varavelio/tribar/internal/toggle"
 	"github.com/varavelio/tribar/internal/transcribe"
+	"github.com/varavelio/tribar/internal/workflow"
+	"github.com/varavelio/tribar/internal/workflow/executor"
 	"golang.design/x/hotkey/mainthread"
 )
 
@@ -128,17 +131,42 @@ func run(logger logger.Logger, flags config.Flags) error {
 
 	postProcessor := postprocess.New(logger, settingsManager)
 
+	// Initialize Workflow System (Advanced Mode)
+	workflowsDir := filepath.Join(config.DirectoryConfig, "workflows")
+	workflowMgr, err := workflow.NewManager(workflowsDir)
+	if err != nil {
+		return fmt.Errorf("error creating workflow manager: %w", err)
+	}
+
+	// Create service container for workflow nodes
+	serviceContainer := executor.NewServiceContainer(
+		logger,
+		settingsManager,
+		transcriber,
+		postProcessor,
+		notifier,
+		soundPlayer,
+		cpb,
+		historyManager,
+	)
+
+	// Create workflow executor with default node registry
+	nodeRegistry := executor.DefaultRegistry()
+	workflowExecutor := executor.New(serviceContainer, nodeRegistry)
+
 	eng := engine.New(engine.Dependencies{
-		Logger:          logger,
-		SettingsManager: settingsManager,
-		HistoryManager:  historyManager,
-		State:           appState,
-		Recorder:        recorder,
-		Transcriber:     transcriber,
-		PostProcess:     postProcessor,
-		Writer:          cpb,
-		Notifier:        notifier,
-		Sound:           soundPlayer,
+		Logger:           logger,
+		SettingsManager:  settingsManager,
+		HistoryManager:   historyManager,
+		State:            appState,
+		Recorder:         recorder,
+		Transcriber:      transcriber,
+		PostProcess:      postProcessor,
+		Writer:           cpb,
+		Notifier:         notifier,
+		Sound:            soundPlayer,
+		WorkflowManager:  workflowMgr,
+		WorkflowExecutor: workflowExecutor,
 	})
 	defer shutdownWithTimeout(logger, eng.Shutdown, "engine")
 
@@ -154,7 +182,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 	}
 	defer shutdownWithTimeout(logger, shortcutMgr.Stop, "shortcut manager")
 
-	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr, eventBus)
+	srv := server.NewServer(logger, settingsManager, appState, eng, shortcutMgr, eventBus, workflowMgr)
 	go func() {
 		addr := fmt.Sprintf("%s:%d", flags.Host, inst.Port())
 		logger.Info(ctx, "starting server", "address", "http://"+addr+"/", "version", config.AppVersion)

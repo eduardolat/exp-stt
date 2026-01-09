@@ -7,6 +7,7 @@
 	import InputDevice from './InputDevice.svelte';
 	import OutputMode from './OutputMode.svelte';
 	import Notifications from './Notifications.svelte';
+	import AdvancedMode from './AdvancedMode.svelte';
 </script>
 
 <svelte:head>
@@ -26,4 +27,5 @@
 	<SoundFeedback />
 	<Notifications />
 	<ModelUnloading />
+	<AdvancedMode />
 </div>

@@ -80,6 +80,8 @@ func buildSettings(s config.Settings) uforpc.Settings {
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
 		ShortcutToggle:         shortcutToAPI(s.ShortcutToggle),
 		PasteShortcut:          s.PasteShortcut,
+		AdvancedMode:           s.AdvancedMode,
+		ActiveWorkflowId:       s.ActiveWorkflowID,
 	}
 }
 
@@ -109,6 +111,8 @@ func settingsFromAPI(s uforpc.Settings) config.Settings {
 		ModelUnloadSeconds:     s.ModelUnloadSeconds,
 		ShortcutToggle:         shortcutFromAPI(s.ShortcutToggle),
 		PasteShortcut:          s.PasteShortcut,
+		AdvancedMode:           s.AdvancedMode,
+		ActiveWorkflowID:       s.ActiveWorkflowId,
 	}
 }
 

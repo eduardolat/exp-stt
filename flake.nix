@@ -66,7 +66,12 @@
           pkg-config # Required for oto audio library build
           alsa-lib.dev # ALSA headers for audio playback
           libnotify # For desktop notifications
+          stdenv.cc.cc.lib # libstdc++ for ONNX Runtime
         ];
+
+        shellHook = ''
+          export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+        '';
       };
     };
 }

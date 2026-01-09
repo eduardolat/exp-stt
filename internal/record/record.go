@@ -41,10 +41,19 @@ func NewRecorder(logger logger.Logger, settingsManager *config.SettingsManager) 
 // Shutdown cleans up resources used by the recorder.
 func (r *Recorder) Shutdown() {
 	r.Stop()
-	if r.ctx != nil {
-		if err := r.ctx.Uninit(); err != nil {
-			r.logger.Error(context.Background(), "failed to uninit context", "err", err)
-		}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.ctx == nil {
+		return
+	}
+
+	ctx := r.ctx
+	r.ctx = nil
+
+	if err := ctx.Uninit(); err != nil {
+		r.logger.Error(context.Background(), "failed to uninit context", "err", err)
 	}
 }
 
@@ -94,15 +103,24 @@ func (r *Recorder) Start() error {
 // Stop stops the recording process.
 func (r *Recorder) Stop() {
 	r.mu.Lock()
-	r.isRecording = false
-	r.mu.Unlock()
+	defer r.mu.Unlock()
 
-	if r.device != nil {
-		if err := r.device.Stop(); err != nil {
+	wasRecording := r.isRecording
+	r.isRecording = false
+
+	if r.device == nil {
+		return
+	}
+
+	device := r.device
+	r.device = nil
+
+	if wasRecording {
+		if err := device.Stop(); err != nil {
 			r.logger.Error(context.Background(), "failed to stop device", "err", err)
 		}
-		r.device.Uninit()
 	}
+	device.Uninit()
 }
 
 // GetData returns a copy of the raw PCM audio data.

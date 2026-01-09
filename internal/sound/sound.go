@@ -155,7 +155,7 @@ func (s *Instance) playSound(ctx context.Context, data []byte) {
 	}
 }
 
-// Shutdown is a no-op for this implementation.
+// Shutdown closes the speaker to release audio resources.
 func (s *Instance) Shutdown() {
-	// Nothing to clean up
+	speaker.Close()
 }

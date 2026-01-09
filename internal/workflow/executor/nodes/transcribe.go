@@ -20,11 +20,9 @@ func (n *TranscribeNode) Type() string {
 
 // Execute transcribes the audio data from the trigger.
 func (n *TranscribeNode) Execute(ctx context.Context, input NodeInput, services ServiceProvider) (NodeOutput, error) {
-	// Get WAV data from trigger data or config
+	// Get WAV data from trigger data (passed via Data field for entry node)
 	var wavData []byte
-	if data, ok := input.Config["audioData"].([]byte); ok {
-		wavData = data
-	} else if data, ok := input.Data["wavData"].([]byte); ok {
+	if data, ok := input.Data["audioData"].([]byte); ok {
 		wavData = data
 	}
 

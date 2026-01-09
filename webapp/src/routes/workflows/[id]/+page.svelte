@@ -9,6 +9,12 @@
 	import type { Workflow as WorkflowType, WorkflowNode, WorkflowEdge } from '$lib/client.gen';
 	import { toast } from 'svelte-sonner';
 	import NodeConfigPanel from '../NodeConfigPanel.svelte';
+	import WorkflowNodeComponent from '../WorkflowNode.svelte';
+
+	// Custom node types for SvelteFlow
+	const nodeTypes = {
+		workflow: WorkflowNodeComponent
+	};
 
 	let workflow: WorkflowType | null = $state(null);
 	let isLoading = $state(true);
@@ -49,7 +55,7 @@
 	function convertToFlowNodes(workflowNodes: WorkflowNode[]): Node[] {
 		return workflowNodes.map((node) => ({
 			id: node.id,
-			type: 'default',
+			type: 'workflow',
 			position: { x: node.position.x, y: node.position.y },
 			data: {
 				label: getNodeLabel(node.nodeType),
@@ -132,7 +138,7 @@
 		const newId = crypto.randomUUID();
 		const newNode: Node = {
 			id: newId,
-			type: 'default',
+			type: 'workflow',
 			position: { x: 250, y: nodes.length * 100 + 50 },
 			data: {
 				label: getNodeLabel(nodeType),
@@ -192,6 +198,13 @@
 
 	function handlePaneClick() {
 		selectedNode = null;
+	}
+
+	// Handle edge deletion with Backspace/Delete key when edges are selected
+	function handleEdgeClick(event: { edge: Edge }) {
+		if (isDefault()) return;
+		// Remove the clicked edge
+		edges = edges.filter((e) => e.id !== event.edge.id);
 	}
 </script>
 
@@ -258,9 +271,11 @@
 				<SvelteFlow
 					bind:nodes
 					bind:edges
+					{nodeTypes}
 					fitView
 					onnodeclick={handleNodeClick}
 					onpaneclick={handlePaneClick}
+					onedgeclick={handleEdgeClick}
 				>
 					<Controls />
 					<Background />

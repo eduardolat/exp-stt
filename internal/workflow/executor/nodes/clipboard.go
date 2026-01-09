@@ -22,7 +22,18 @@ func (n *ClipboardCopyNode) Type() string {
 
 // Execute copies text to the clipboard.
 func (n *ClipboardCopyNode) Execute(ctx context.Context, input NodeInput, services ServiceProvider) (NodeOutput, error) {
+	// Get text from config first, fallback to input data (from previous node)
 	text, _ := input.Config["text"].(string)
+	if text == "" {
+		text, _ = input.Data["rawText"].(string)
+	}
+	if text == "" {
+		text, _ = input.Data["text"].(string)
+	}
+	if text == "" {
+		text, _ = input.Data["processedText"].(string)
+	}
+
 	if text == "" {
 		return NewNodeOutput(map[string]interface{}{
 			"text": "",
@@ -55,7 +66,18 @@ func (n *ClipboardPasteNode) Type() string {
 
 // Execute copies and pastes text.
 func (n *ClipboardPasteNode) Execute(ctx context.Context, input NodeInput, services ServiceProvider) (NodeOutput, error) {
+	// Get text from config first, fallback to input data (from previous node)
 	text, _ := input.Config["text"].(string)
+	if text == "" {
+		text, _ = input.Data["rawText"].(string)
+	}
+	if text == "" {
+		text, _ = input.Data["text"].(string)
+	}
+	if text == "" {
+		text, _ = input.Data["processedText"].(string)
+	}
+
 	if text == "" {
 		return NewNodeOutput(map[string]interface{}{
 			"text": "",

@@ -88,10 +88,20 @@ func (e *Executor) executeNode(ctx context.Context, node *workflow.Node, wf *wor
 	// Resolve variables in config
 	resolvedConfig := execCtx.ResolveConfig(node.Config)
 
-	// Create input for the node
+	// Build input data for the node
+	// Priority: 1) Trigger data for transcribe, 2) Parent node output, 3) Node's own data
+	var nodeData map[string]interface{}
+	if node.Type == workflow.NodeTypeTranscribe {
+		// Entry point receives trigger data
+		nodeData = execCtx.TriggerData
+	} else {
+		// Find parent node (node that has an edge targeting this node)
+		nodeData = e.getParentNodeOutput(node.ID, wf, execCtx)
+	}
+
 	input := nodes.NodeInput{
 		Config: resolvedConfig,
-		Data:   node.Data,
+		Data:   nodeData,
 	}
 
 	// Execute the node
@@ -107,6 +117,20 @@ func (e *Executor) executeNode(ctx context.Context, node *workflow.Node, wf *wor
 	// Emit "completed" event
 	e.emitEvent(NewExecutionEvent(execCtx.ExecutionID, node.ID, StatusCompleted).WithOutputPreview(output.Preview()))
 
+	return nil
+}
+
+// getParentNodeOutput finds the output of the parent node (the one connected via incoming edge).
+func (e *Executor) getParentNodeOutput(nodeID string, wf *workflow.Workflow, execCtx *ExecutionContext) map[string]interface{} {
+	// Find edges that target this node
+	for _, edge := range wf.Edges {
+		if edge.Target == nodeID {
+			// Get the output of the source node
+			if output, ok := execCtx.GetOutput(edge.Source); ok {
+				return output.Fields()
+			}
+		}
+	}
 	return nil
 }
 

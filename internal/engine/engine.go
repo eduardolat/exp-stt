@@ -273,36 +273,47 @@ func (e *Engine) stopRecording() {
 }
 
 // processRecording handles the transcription pipeline in a goroutine.
+// All recordings are processed through the workflow executor - either using:
+// - The active workflow (when in advanced mode with a selected workflow)
+// - The default workflow (standard transcribe → process → paste flow)
 func (e *Engine) processRecording() {
 	settings := e.settingsManager.Get()
-	startedAt := time.Now()
 
 	// Get the raw audio data from the recorder
 	audioData := e.recorder.GetData()
-	recordingDurationMs := calculateDurationMs(len(audioData))
 	wavData := e.recorder.BuildWAV()
 
-	// Check if we should use advanced mode with custom workflow
+	// Determine which workflow to execute
+	var wf *workflow.Workflow
+	var workflowID string
+
 	if settings.AdvancedMode && settings.ActiveWorkflowID != "" {
-		e.processWithWorkflow(settings.ActiveWorkflowID, wavData, audioData, recordingDurationMs, startedAt)
-		return
-	}
-
-	// Default pipeline (simple mode)
-	e.processDefault(wavData, audioData, recordingDurationMs, startedAt)
-}
-
-// processWithWorkflow executes the active workflow in advanced mode.
-func (e *Engine) processWithWorkflow(workflowID string, wavData, audioData []byte, recordingDurationMs int64, startedAt time.Time) {
-	// Load the workflow
-	wf, ok := e.workflowManager.GetByID(workflowID)
-	if !ok {
-		e.logger.Error(e.ctx, "failed to load workflow, falling back to default", "workflowID", workflowID)
-		e.processDefault(wavData, audioData, recordingDurationMs, startedAt)
-		return
+		// Use the user-selected workflow
+		workflowID = settings.ActiveWorkflowID
+		var ok bool
+		wf, ok = e.workflowManager.GetByID(workflowID)
+		if !ok {
+			e.logger.Warn(e.ctx, "active workflow not found, using default", "workflowID", workflowID)
+			wf = workflow.DefaultWorkflow()
+			workflowID = "default"
+		}
+	} else {
+		// Use the default workflow (standard pipeline)
+		wf = workflow.DefaultWorkflow()
+		workflowID = "default"
 	}
 
 	e.logger.Info(e.ctx, "executing workflow", "workflowID", workflowID, "workflowName", wf.Name)
+
+	// Ensure models are loaded before transcription
+	if !e.ensureModelsLoaded() {
+		e.sound.TranscriptionError(e.ctx)
+		e.notifier.Error(e.ctx, config.AppName, "Failed to load models for transcription")
+		e.state.SetStatus(state.StatusUnloaded)
+		return
+	}
+
+	e.state.SetStatus(state.StatusTranscribing)
 
 	// Create execution context with trigger data
 	triggerData := map[string]interface{}{
@@ -317,93 +328,9 @@ func (e *Engine) processWithWorkflow(workflowID string, wavData, audioData []byt
 		return
 	}
 
-	e.sound.TranscriptionSuccess(e.ctx)
 	e.state.SetStatus(state.StatusLoaded)
 	e.recordActivity()
 	e.logger.Info(e.ctx, "workflow execution complete", "workflowID", workflowID)
-}
-
-// processDefault handles the default transcription pipeline (non-advanced mode).
-func (e *Engine) processDefault(wavData, audioData []byte, recordingDurationMs int64, startedAt time.Time) {
-	settings := e.settingsManager.Get()
-
-	// Ensure models are loaded before transcription
-	if !e.ensureModelsLoaded() {
-		e.sound.TranscriptionError(e.ctx)
-		e.notifier.Error(e.ctx, config.AppName, "Failed to load models for transcription")
-		e.state.SetStatus(state.StatusUnloaded)
-		return
-	}
-
-	e.state.SetStatus(state.StatusTranscribing)
-
-	text, err := e.transcriber.TranscribeWAV(wavData)
-	if err != nil {
-		e.handleError("transcription failed", err)
-		return
-	}
-
-	e.logger.Debug(e.ctx, "transcription complete", "text", text)
-
-	rawText := text
-	postProcessed := false
-
-	if e.postprocess.IsEnabled() {
-		e.state.SetStatus(state.StatusPostProcessing)
-		processed, err := e.postprocess.Process(e.ctx, text)
-		if err != nil {
-			e.logger.Warn(e.ctx, "post-processing failed, using raw transcription", "err", err)
-		} else {
-			text = processed
-			postProcessed = true
-		}
-	}
-
-	// Apply trailing space if enabled
-	outputText := text
-	if settings.OutputTrailingSpace && outputText != "" {
-		outputText = outputText + " "
-	}
-
-	if err := e.writer.Write(e.ctx, settings.OutputMode, settings.PasteShortcut, outputText); err != nil {
-		e.logger.Error(e.ctx, "failed to write output", "err", err)
-	}
-
-	finishedAt := time.Now()
-
-	// Write to history
-	_, err = e.historyManager.Write(e.ctx, history.WriteRequest{
-		StartedAt:           startedAt,
-		FinishedAt:          finishedAt,
-		RecordingDurationMs: recordingDurationMs,
-		TranscriptionRaw:    rawText,
-		TranscriptionFinal:  text,
-		PostProcessed:       postProcessed,
-		AudioData:           wavData,
-	})
-	if err != nil {
-		e.logger.Error(e.ctx, "failed to save history entry", "err", err)
-	}
-
-	e.sound.TranscriptionSuccess(e.ctx)
-	e.notifier.TranscriptionFinished(e.ctx, text)
-	e.state.SetStatus(state.StatusLoaded)
-
-	// Record activity after processing completes
-	e.recordActivity()
-
-	e.logger.Info(e.ctx, "transcription complete", "length", len(text))
-}
-
-// calculateDurationMs calculates audio duration in milliseconds from raw PCM data.
-// Assumes 16-bit mono audio at 16kHz sample rate.
-func calculateDurationMs(dataSize int) int64 {
-	// 16-bit = 2 bytes per sample, mono = 1 channel, 16kHz sample rate
-	bytesPerSecond := 16000 * 2 * 1
-	if bytesPerSecond == 0 {
-		return 0
-	}
-	return int64(dataSize) * 1000 / int64(bytesPerSecond)
 }
 
 // handleError logs the error, notifies the user, plays error sound, and resets state.

@@ -21,16 +21,27 @@ func (n *NotifyNode) Type() string {
 func (n *NotifyNode) Execute(ctx context.Context, input NodeInput, services ServiceProvider) (NodeOutput, error) {
 	notifier := services.GetNotifier()
 
-	// Get message from config
+	// Get message from config first, fallback to input data (from previous node)
 	message, _ := input.Config["message"].(string)
 	if message == "" {
-		// Try to get from text field (common pattern)
 		message, _ = input.Config["text"].(string)
+	}
+	// Fallback to input data from previous node
+	if message == "" {
+		message, _ = input.Data["rawText"].(string)
+	}
+	if message == "" {
+		message, _ = input.Data["text"].(string)
+	}
+	if message == "" {
+		message, _ = input.Data["processedText"].(string)
 	}
 
 	if message != "" {
 		notifier.TranscriptionFinished(ctx, message)
 	}
 
-	return EmptyOutput(), nil
+	return NewNodeOutput(map[string]interface{}{
+		"text": message,
+	}), nil
 }

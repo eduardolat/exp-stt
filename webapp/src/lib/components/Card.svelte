@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { twMerge } from 'tailwind-merge';
 
 	interface Props {
 		children: Snippet;
@@ -32,7 +33,12 @@
 	);
 
 	let combinedClasses = $derived(
-		`card w-full text-left border border-base-300 shadow-sm transition-all ${bgClass} ${interactiveClasses} ${className}`.trim()
+		twMerge(
+			'card w-full text-left border border-base-300 shadow-sm transition-all',
+			bgClass,
+			interactiveClasses,
+			className
+		)
 	);
 </script>
 

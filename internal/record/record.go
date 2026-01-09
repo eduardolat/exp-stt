@@ -94,14 +94,17 @@ func (r *Recorder) Start() error {
 // Stop stops the recording process.
 func (r *Recorder) Stop() {
 	r.mu.Lock()
+	wasRecording := r.isRecording
 	r.isRecording = false
 	r.mu.Unlock()
 
-	if r.device != nil {
+	// Only stop and uninit device if we were actually recording
+	if r.device != nil && wasRecording {
 		if err := r.device.Stop(); err != nil {
 			r.logger.Error(context.Background(), "failed to stop device", "err", err)
 		}
 		r.device.Uninit()
+		r.device = nil
 	}
 }
 

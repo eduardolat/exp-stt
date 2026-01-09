@@ -13,6 +13,7 @@ import (
 	"github.com/gen2brain/malgo"
 	"github.com/varavelio/tribar/internal/eventbus"
 	"github.com/varavelio/tribar/internal/history"
+	"github.com/varavelio/tribar/internal/logger"
 )
 
 // RuntimeInfo holds system information detected at startup.
@@ -109,6 +110,7 @@ type SystemInfo struct {
 // Instance represents the application state, this state is used in all other
 // packages to react to the current state of the application.
 type Instance struct {
+	logger         logger.Logger
 	eventBus       *eventbus.EventBus
 	historyManager *history.Manager
 
@@ -123,17 +125,21 @@ type Instance struct {
 }
 
 // New creates a new Instance with the initial status set to StatusUnloaded.
-func New(eventBus *eventbus.EventBus, historyManager *history.Manager) *Instance {
-	audioCtx, _ := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+func New(logger logger.Logger, eventBus *eventbus.EventBus, historyManager *history.Manager) (*Instance, error) {
+	audioCtx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init audio context: %w", err)
+	}
 
 	return &Instance{
+		logger:         logger,
 		eventBus:       eventBus,
 		historyManager: historyManager,
 		statusMu:       sync.RWMutex{},
 		statusPrevious: StatusUnknown,
 		statusCurrent:  StatusUnloaded,
 		audioCtx:       audioCtx,
-	}
+	}, nil
 }
 
 // SetStatus changes the current status of the application instance. It also updates
@@ -261,4 +267,13 @@ func (i *Instance) ClearHistory(ctx context.Context) error {
 // HistoryCount returns the number of entries in the history.
 func (i *Instance) HistoryCount() int {
 	return i.historyManager.Count()
+}
+
+// Shutdown cleans up resources used by the state instance.
+func (i *Instance) Shutdown() {
+	if i.audioCtx != nil {
+		if err := i.audioCtx.Uninit(); err != nil {
+			i.logger.Error(context.Background(), "failed to uninit audio context", "err", err)
+		}
+	}
 }

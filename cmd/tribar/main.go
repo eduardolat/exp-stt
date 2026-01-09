@@ -105,7 +105,11 @@ func run(logger logger.Logger, flags config.Flags) error {
 	historyManager := history.NewManager(logger, settingsManager, config.DirectoryRecordings)
 	historyManager.LoadAsync(ctx)
 
-	appState := state.New(eventBus, historyManager)
+	appState, err := state.New(logger, eventBus, historyManager)
+	if err != nil {
+		return fmt.Errorf("error creating app state: %w", err)
+	}
+	defer shutdownWithTimeout(logger, appState.Shutdown, "state")
 
 	recorder, err := record.NewRecorder(logger, settingsManager)
 	if err != nil {

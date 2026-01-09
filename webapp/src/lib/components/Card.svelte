@@ -6,6 +6,7 @@
 		lighter?: boolean;
 		darker?: boolean;
 		interactive?: boolean;
+		hoverable?: boolean;
 		active?: boolean;
 		onclick?: () => void;
 		class?: string;
@@ -16,6 +17,7 @@
 		lighter = false,
 		darker = false,
 		interactive = false,
+		hoverable = false,
 		active = false,
 		onclick,
 		class: className = ''
@@ -24,7 +26,7 @@
 	let bgClass = $derived(lighter ? 'bg-base-100' : darker ? 'bg-base-300' : 'bg-base-200');
 
 	let interactiveClasses = $derived(
-		interactive
+		interactive || hoverable
 			? active
 				? 'border-primary bg-primary/10 shadow-md cursor-pointer'
 				: 'cursor-pointer hover:border-primary hover:bg-primary/10 hover:shadow-md'

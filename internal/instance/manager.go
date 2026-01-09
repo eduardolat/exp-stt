@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/varavelio/tribar/internal/config"
+	"github.com/varavelio/tribar/internal/logger"
 )
 
 const (
@@ -22,6 +24,7 @@ var ErrAlreadyRunning = errors.New("tribar is already running")
 
 // Manager handles single-instance enforcement and port discovery.
 type Manager struct {
+	logger   logger.Logger
 	lock     *flock.Flock
 	lockPath string
 	portPath string
@@ -31,8 +34,9 @@ type Manager struct {
 
 // NewManager creates a new instance manager.
 // Must be called after config.EnsureDirectories.
-func NewManager() *Manager {
+func NewManager(logger logger.Logger) *Manager {
 	return &Manager{
+		logger:   logger,
 		lockPath: filepath.Join(config.DirectoryData, lockFileName),
 		portPath: filepath.Join(config.DirectoryData, portFileName),
 	}
@@ -102,13 +106,19 @@ func (m *Manager) Port() int {
 // Safe to call multiple times or on a partially initialized manager.
 func (m *Manager) Cleanup() {
 	if m.listener != nil {
-		_ = m.listener.Close()
+		if err := m.listener.Close(); err != nil {
+			m.logger.Error(context.Background(), "failed to close listener", "error", err)
+		}
 	}
 
-	_ = os.Remove(m.portPath)
+	if err := os.Remove(m.portPath); err != nil {
+		m.logger.Error(context.Background(), "failed to remove port file", "error", err)
+	}
 
 	if m.lock != nil {
-		_ = m.lock.Unlock()
+		if err := m.lock.Unlock(); err != nil {
+			m.logger.Error(context.Background(), "failed to unlock lock file", "error", err)
+		}
 	}
 }
 

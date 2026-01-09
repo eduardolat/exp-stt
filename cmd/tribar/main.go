@@ -75,7 +75,7 @@ func run(logger logger.Logger, flags config.Flags) error {
 		return nil
 	}
 
-	inst := instance.NewManager()
+	inst := instance.NewManager(logger)
 	if err := inst.AcquireLock(); err != nil {
 		if errors.Is(err, instance.ErrAlreadyRunning) {
 			fmt.Println("tribar is already running")

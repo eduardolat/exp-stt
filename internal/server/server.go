@@ -35,6 +35,14 @@ func NewServer(
 		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
 		ReferrerPolicy:     "strict-origin-when-cross-origin",
 		XSSProtection:      "1; mode=block", // Basic protection for older browsers
+		// CSP:
+		// - default-src 'self': Default to only allowing resources from the same origin
+		// - script-src 'self' 'unsafe-inline': Allow local scripts and inline scripts (required for SvelteKit hydration)
+		// - style-src 'self' 'unsafe-inline' https://raw.githubusercontent.com: Allow local styles, inline styles (for dynamic themes), and DaisyUI themes
+		// - img-src 'self' data:: Allow local images and data URIs (base64)
+		// - font-src 'self' data:: Allow local fonts and data URIs
+		// - connect-src 'self' http: https:: Allow connections to self and external AI providers (http/https)
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://raw.githubusercontent.com; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http: https:;",
 	}))
 
 	// Configure CORS

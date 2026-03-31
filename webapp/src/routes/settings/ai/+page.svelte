@@ -102,6 +102,7 @@
 							class="btn join-item border-base-content/20 btn-outline"
 							onclick={() => baseUrlPicker?.open()}
 							title="Browse providers"
+							aria-label="Browse providers"
 						>
 							<Search class="size-4" />
 						</button>
@@ -152,6 +153,7 @@
 							class="btn join-item border-base-content/20 btn-outline"
 							onclick={() => modelPicker?.open()}
 							title="Browse available models"
+							aria-label="Browse available models"
 						>
 							<Search class="size-4" />
 						</button>

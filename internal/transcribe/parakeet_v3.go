@@ -476,42 +476,114 @@ func (p *ParakeetModel) runDecoder(encoderOut []float32, encoderLen int64) (stri
 	var transcribedTokens []string
 	var lastEmittedToken int32 = -1 // Track last emitted for deduplication
 
-	// Initial decoder states - shape: [2, 1, 640]
+	// 1. Allocate all tensors ONCE to reuse memory
+	// Input 1: Encoder outputs slice [1, 1024, 1]
+	// Initialized with zeros, will be updated in loop
+	encOutTensor, err := ort.NewTensor(ort.NewShape(1, parakeetEncoderHiddenSize, 1), make([]float32, parakeetEncoderHiddenSize))
+	if err != nil {
+		return "", fmt.Errorf("error creating encoder_outputs tensor: %w", err)
+	}
+	defer func() { _ = encOutTensor.Destroy() }()
+
+	// Input 2: Target token [1, 1]
+	targetsTensor, err := ort.NewTensor(ort.NewShape(1, 1), []int32{p.blankIdx})
+	if err != nil {
+		return "", fmt.Errorf("error creating targets tensor: %w", err)
+	}
+	defer func() { _ = targetsTensor.Destroy() }()
+
+	// Input 3: Target length [1] - constant 1
+	targetLenTensor, err := ort.NewTensor(ort.NewShape(1), []int32{1})
+	if err != nil {
+		return "", fmt.Errorf("error creating target_length tensor: %w", err)
+	}
+	defer func() { _ = targetLenTensor.Destroy() }()
+
+	// Input 4: State 1 [2, 1, 640]
 	state1 := make([]float32, 2*1*parakeetDecoderHiddenSize)
+	state1Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state1)
+	if err != nil {
+		return "", fmt.Errorf("error creating input_states_1 tensor: %w", err)
+	}
+	defer func() { _ = state1Tensor.Destroy() }()
+
+	// Input 5: State 2 [2, 1, 640]
 	state2 := make([]float32, 2*1*parakeetDecoderHiddenSize)
+	state2Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state2)
+	if err != nil {
+		return "", fmt.Errorf("error creating input_states_2 tensor: %w", err)
+	}
+	defer func() { _ = state2Tensor.Destroy() }()
+
+	// Output 1: Logits [1, 1, 1, outputSize]
+	outputSize := int64(len(p.vocab) + parakeetNumDurations)
+	logitsTensor, err := ort.NewEmptyTensor[float32](ort.NewShape(1, 1, 1, outputSize))
+	if err != nil {
+		return "", fmt.Errorf("error creating outputs tensor: %w", err)
+	}
+	defer func() { _ = logitsTensor.Destroy() }()
+
+	// Output 2: New State 1 [2, 1, 640]
+	outState1Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
+	if err != nil {
+		return "", fmt.Errorf("error creating output_states_1 tensor: %w", err)
+	}
+	defer func() { _ = outState1Tensor.Destroy() }()
+
+	// Output 3: New State 2 [2, 1, 640]
+	outState2Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
+	if err != nil {
+		return "", fmt.Errorf("error creating output_states_2 tensor: %w", err)
+	}
+	defer func() { _ = outState2Tensor.Destroy() }()
+
+	// Get pointers to raw data for in-place updates
+	encOutData := encOutTensor.GetData()
+	targetsData := targetsTensor.GetData()
+	state1Data := state1Tensor.GetData()
+	state2Data := state2Tensor.GetData()
 
 	vocabSize := len(p.vocab)
 	lastToken := p.blankIdx
 
 	for t := range encoderLen {
-		// Extract encoder output for current step
-		stepData := make([]float32, parakeetEncoderHiddenSize)
+		// 2. Prepare inputs
+		// Update encoder slice for current step directly in tensor memory
 		for k := range parakeetEncoderHiddenSize {
 			idx := int64(k)*encoderLen + t
 			if idx < int64(len(encoderOut)) {
-				stepData[k] = encoderOut[idx]
+				encOutData[k] = encoderOut[idx]
+			} else {
+				encOutData[k] = 0 // Zero padding if out of bounds (safety)
 			}
 		}
 
-		// Run decoder step
-		logits, newState1, newState2, err := p.decoderStep(stepData, lastToken, state1, state2)
-		if err != nil {
-			return "", fmt.Errorf("decoder step error at t=%d: %w", t, err)
+		// Update target token
+		targetsData[0] = lastToken
+
+		// 3. Run decoder step
+		if err := p.decoderSession.Run(
+			[]ort.ArbitraryTensor{encOutTensor, targetsTensor, targetLenTensor, state1Tensor, state2Tensor},
+			[]ort.ArbitraryTensor{logitsTensor, outState1Tensor, outState2Tensor},
+		); err != nil {
+			return "", fmt.Errorf("decoder error at t=%d: %w", t, err)
 		}
 
-		// Get best token from vocab logits only
+		// 4. Process output
+		logits := logitsTensor.GetData()
 		vocabLogits := logits[:vocabSize]
 		bestToken := argmax(vocabLogits)
 
+		// Update states for next iteration directly from output tensors
+		copy(state1Data, outState1Tensor.GetData())
+		copy(state2Data, outState2Tensor.GetData())
+
+		// 5. Deduplication and token emission
 		if bestToken != p.blankIdx && bestToken != lastEmittedToken {
-			// Emit non-blank token (with CTC-style deduplication)
 			transcribedTokens = append(transcribedTokens, p.vocab[bestToken])
 			lastToken = bestToken
 			lastEmittedToken = bestToken
-			state1 = newState1
-			state2 = newState2
 		} else if bestToken == p.blankIdx {
-			// Reset deduplication on blank
 			lastEmittedToken = -1
 		}
 	}
@@ -521,79 +593,6 @@ func (p *ParakeetModel) runDecoder(encoderOut []float32, encoderLen int64) (stri
 	result = strings.ReplaceAll(result, "▁", " ")
 	result = strings.ReplaceAll(result, "\u2581", " ")
 	return strings.TrimSpace(result), nil
-}
-
-func (p *ParakeetModel) decoderStep(encoderStep []float32, targetToken int32, state1, state2 []float32) ([]float32, []float32, []float32, error) {
-	// Input tensors
-	encOutTensor, err := ort.NewTensor(ort.NewShape(1, parakeetEncoderHiddenSize, 1), encoderStep)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating encoder_outputs tensor: %w", err)
-	}
-	defer func() { _ = encOutTensor.Destroy() }()
-
-	targetsTensor, err := ort.NewTensor(ort.NewShape(1, 1), []int32{targetToken})
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating targets tensor: %w", err)
-	}
-	defer func() { _ = targetsTensor.Destroy() }()
-
-	targetLenTensor, err := ort.NewTensor(ort.NewShape(1), []int32{1})
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating target_length tensor: %w", err)
-	}
-	defer func() { _ = targetLenTensor.Destroy() }()
-
-	state1Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state1)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating input_states_1 tensor: %w", err)
-	}
-	defer func() { _ = state1Tensor.Destroy() }()
-
-	state2Tensor, err := ort.NewTensor(ort.NewShape(2, 1, parakeetDecoderHiddenSize), state2)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating input_states_2 tensor: %w", err)
-	}
-	defer func() { _ = state2Tensor.Destroy() }()
-
-	// Output tensors
-	outputSize := int64(len(p.vocab) + parakeetNumDurations)
-	logitsTensor, err := ort.NewEmptyTensor[float32](ort.NewShape(1, 1, 1, outputSize))
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating outputs tensor: %w", err)
-	}
-	defer func() { _ = logitsTensor.Destroy() }()
-
-	outState1Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating output_states_1 tensor: %w", err)
-	}
-	defer func() { _ = outState1Tensor.Destroy() }()
-
-	outState2Tensor, err := ort.NewEmptyTensor[float32](ort.NewShape(2, 1, parakeetDecoderHiddenSize))
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error creating output_states_2 tensor: %w", err)
-	}
-	defer func() { _ = outState2Tensor.Destroy() }()
-
-	// Run using persistent session
-	if err := p.decoderSession.Run(
-		[]ort.ArbitraryTensor{encOutTensor, targetsTensor, targetLenTensor, state1Tensor, state2Tensor},
-		[]ort.ArbitraryTensor{logitsTensor, outState1Tensor, outState2Tensor},
-	); err != nil {
-		return nil, nil, nil, fmt.Errorf("error running decoder: %w", err)
-	}
-
-	// Copy outputs
-	logits := make([]float32, len(logitsTensor.GetData()))
-	copy(logits, logitsTensor.GetData())
-
-	newState1 := make([]float32, len(outState1Tensor.GetData()))
-	copy(newState1, outState1Tensor.GetData())
-
-	newState2 := make([]float32, len(outState2Tensor.GetData()))
-	copy(newState2, outState2Tensor.GetData())
-
-	return logits, newState1, newState2, nil
 }
 
 func argmax(slice []float32) int32 {

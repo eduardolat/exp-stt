@@ -35,6 +35,7 @@ func NewServer(
 		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
 		ReferrerPolicy:     "strict-origin-when-cross-origin",
 		XSSProtection:      "1; mode=block", // Basic protection for older browsers
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://raw.githubusercontent.com; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http: https:;",
 	}))
 
 	// Configure CORS

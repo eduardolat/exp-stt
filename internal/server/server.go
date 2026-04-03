@@ -35,6 +35,11 @@ func NewServer(
 		XFrameOptions:      "SAMEORIGIN", // Allow embedding in same origin (e.g. if we use iframes internally)
 		ReferrerPolicy:     "strict-origin-when-cross-origin",
 		XSSProtection:      "1; mode=block", // Basic protection for older browsers
+		// CSP:
+		// - script/style: unsafe-inline is required for Svelte hydration and Tailwind/DaisyUI
+		// - style: allow loading themes from raw.githubusercontent.com (used in app.css)
+		// - connect: allow connecting to any HTTPS endpoint (for external AI providers) and HTTP (for local AI providers like Ollama)
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://raw.githubusercontent.com; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https: http:",
 	}))
 
 	// Configure CORS

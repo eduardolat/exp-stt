@@ -42,8 +42,14 @@
 	{/if}
 {/snippet}
 
-<Card {darker} interactive onclick={handleItemClick} class="p-3">
-	<div class="mb-1.5 flex items-center justify-between gap-2">
+<Card {darker} hoverable class="relative p-3">
+	<button
+		type="button"
+		class="absolute inset-0 z-0 h-full w-full cursor-pointer opacity-0"
+		aria-label="View transcription details"
+		onclick={handleItemClick}
+	></button>
+	<div class="pointer-events-none relative z-10 mb-1.5 flex items-center justify-between gap-2">
 		<div class="flex items-center gap-2 text-xs opacity-70">
 			<span>{formatTimestamp(entry.timestamp)}</span>
 			{#if entry.postProcessed}
@@ -53,9 +59,11 @@
 				</span>
 			{/if}
 		</div>
-		<CopyButton text={entry.textFinal} showLabel />
+		<div class="pointer-events-auto">
+			<CopyButton text={entry.textFinal} showLabel />
+		</div>
 	</div>
-	<p class="line-clamp-2 text-sm">
+	<p class="pointer-events-none relative z-0 line-clamp-2 text-sm">
 		{@render textWithFallback(entry.textFinal)}
 	</p>
 </Card>
@@ -76,7 +84,7 @@
 
 		<Card class="p-4">
 			<p class="mb-1 text-xs font-medium opacity-70">Audio:</p>
-			<audio controls class="w-full" preload="none">
+			<audio controls class="w-full" preload="none" aria-label="Transcription audio">
 				<source src={getAudioUrl(entry.id)} type="audio/wav" />
 				Your browser does not support audio playback.
 			</audio>

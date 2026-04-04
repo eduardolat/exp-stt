@@ -8,16 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/varavelio/tribar/internal/clipboard"
 	"github.com/varavelio/tribar/internal/config"
 	"github.com/varavelio/tribar/internal/history"
 	"github.com/varavelio/tribar/internal/logger"
-	"github.com/varavelio/tribar/internal/notify"
-	"github.com/varavelio/tribar/internal/postprocess"
-	"github.com/varavelio/tribar/internal/record"
-	"github.com/varavelio/tribar/internal/sound"
 	"github.com/varavelio/tribar/internal/state"
-	"github.com/varavelio/tribar/internal/transcribe"
 )
 
 const unloadTickerInterval = 10 * time.Second
@@ -25,29 +19,29 @@ const unloadTickerInterval = 10 * time.Second
 // Dependencies contains all required dependencies for the engine.
 type Dependencies struct {
 	Logger          logger.Logger
-	SettingsManager *config.SettingsManager
-	HistoryManager  *history.Manager
-	State           *state.Instance
-	Recorder        *record.Recorder
-	Transcriber     *transcribe.Instance
-	PostProcess     *postprocess.Instance
-	Writer          *clipboard.Instance
-	Notifier        *notify.Instance
-	Sound           *sound.Instance
+	SettingsManager SettingsManager
+	HistoryManager  HistoryManager
+	State           StateManager
+	Recorder        Recorder
+	Transcriber     Transcriber
+	PostProcess     PostProcess
+	Writer          ClipboardWriter
+	Notifier        Notifier
+	Sound           SoundManager
 }
 
 // Engine orchestrates the transcription workflow.
 type Engine struct {
 	logger          logger.Logger
-	settingsManager *config.SettingsManager
-	historyManager  *history.Manager
-	state           *state.Instance
-	recorder        *record.Recorder
-	transcriber     *transcribe.Instance
-	postprocess     *postprocess.Instance
-	writer          *clipboard.Instance
-	notifier        *notify.Instance
-	sound           *sound.Instance
+	settingsManager SettingsManager
+	historyManager  HistoryManager
+	state           StateManager
+	recorder        Recorder
+	transcriber     Transcriber
+	postprocess     PostProcess
+	writer          ClipboardWriter
+	notifier        Notifier
+	sound           SoundManager
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -360,7 +354,7 @@ func (e *Engine) handleError(message string, err error) {
 }
 
 // GetState returns the current application state (read-only access for UI).
-func (e *Engine) GetState() *state.Instance {
+func (e *Engine) GetState() StateManager {
 	return e.state
 }
 
